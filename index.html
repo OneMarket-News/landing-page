@@ -60,15 +60,19 @@
       </p>
 
       <!-- Waitlist form -->
-      <form id="waitlistForm" data-type="waitlist" class="mx-auto mt-8 flex max-w-md items-center gap-3">
-        <div class="relative w-full">
-          <input required id="wlEmail" type="email" placeholder="you@company.com"
-            class="w-full rounded-xl border border-slate-700 bg-slate-900/70 pl-3 pr-3 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        </div>
-        <button class="rounded-xl bg-[#3B82F6] hover:bg-[#2563EB] px-5 py-3">
-          Join waitlist →
-        </button>
+      <form name="waitlist" method="POST" data-netlify="true" class="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]">
+        <input type="hidden" name="form-name" value="waitlist" />
+  
+        <input 
+          type="email" 
+          name="email" 
+          required 
+          placeholder="you@company.com" 
+          class="rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+        />
+        <button class="rounded-xl bg-[#3B82F6] hover:bg-[#2563EB] px-5 py-3">Join waitlist →</button>
       </form>
+
       <p id="wlMsg" class="mt-2 text-sm text-emerald-300 hidden">Thanks! We’ll keep you updated with launch details and early access.</p>
 
       <!-- Metrics -->
@@ -203,11 +207,19 @@
         </div>
       </div>
 
-      <form id="newsForm" data-type="newsletter" class="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]">
-        <input required id="newsEmail" type="email" placeholder="you@company.com"
-          class="rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <form name="newsletter" method="POST" data-netlify="true" class="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]">
+        <input type="hidden" name="form-name" value="newsletter" />
+  
+        <input 
+          type="email" 
+          name="email" 
+          required 
+          placeholder="you@company.com" 
+          class="rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+        />
         <button class="rounded-xl bg-[#3B82F6] hover:bg-[#2563EB] px-5 py-3">Subscribe</button>
       </form>
+
       <p id="newsMsg" class="mt-2 text-sm text-emerald-300 hidden">Subscribed! Check your inbox for confirmation.</p>
       <p class="mt-2 text-xs text-[#94A3B8]">By subscribing, you agree to our <a class="underline hover:text-white" href="#">Terms</a> and <a class="underline hover:text-white" href="#">Privacy Policy</a>. Unsubscribe anytime.</p>
     </div>
@@ -246,13 +258,18 @@
             Get early access, help set governance, and shape the standards that news should live by.
           </p>
         </div>
-        <form id="ctaForm" data-type="waitlist" class="flex items-center gap-3">
-          <input required id="ctaEmail" type="email" placeholder="you@company.com"
-            class="w-full rounded-xl border-slate-700 bg-slate-900/70 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 px-3 py-3" />
-          <button class="rounded-xl bg-[#3B82F6] px-5 hover:bg-[#2563EB] py-3">
-            Join waitlist →
-          </button>
-        </form>
+        <form name="cta" method="POST" data-netlify="true" class="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]">
+          <input type="hidden" name="form-name" value="cta" />
+  
+          <input 
+          type="email" 
+          name="email" 
+          required 
+          placeholder="you@company.com" 
+          class="rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+        />
+        <button class="rounded-xl bg-[#3B82F6] hover:bg-[#2563EB] px-5 py-3">Get started →</button>
+      </form>
       </div>
     </div>
   </section>
