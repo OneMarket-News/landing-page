@@ -18,37 +18,59 @@
     /* Subtle noise overlay */
     .noise { background-image: radial-gradient(1px 1px at 25px 25px, rgba(255,255,255,.9) 1px, transparent 0); opacity:.06 }
     /* Mosaic styles */
-    .mosaic { display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(3,1fr); gap:.5rem; height:100%; }
-    .mosaic div { background-size:cover; background-position:center; filter:blur(1px); transform:scale(1.02);}
+    .mosaic { display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(4,1fr); gap:.5rem; height:100%; }
+    .mosaic div { background-size:cover; background-position:center; filter:blur(3px); transform:scale(1.02);}
     /* Gentle floating animation */
     @keyframes float { 0%{transform:scale(1.03);} 50%{transform:scale(1.06);} 100%{transform:scale(1.03);} }
     .float { animation: float 12s ease-in-out infinite; }
+    /* Fade-in & Parallax + Slow Pan */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
+    @keyframes slowPan { 0% { transform: scale(1.04) translate3d(0,0,0) } 50% { transform: scale(1.06) translate3d(6px, -6px, 0) } 100% { transform: scale(1.04) translate3d(0,0,0) } }
+    .fade-in { animation: fadeIn .9s ease-out .2s both }
+    .pan { animation: slowPan 22s ease-in-out infinite; will-change: transform; }
+    .parallax { transition: transform .2s ease-out; will-change: transform; }
   </style>
 </head>
 <body class="min-h-screen text-white bg-black">
   <!-- Background -->
   <div class="fixed inset-0 -z-10 overflow-hidden">
-    <div class="absolute inset-0 bg-black/70"></div>
-    <div class="mosaic opacity-60">
-      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1522205408450-add114ad53fe?q=80&w=1200&auto=format&fit=crop')"></div>
-      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=1200&auto=format&fit=crop')"></div>
-      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1522199710521-72d69614c702?q=80&w=1200&auto=format&fit=crop')"></div>
-      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1200&auto=format&fit=crop')"></div>
-      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1518085250887-2f903c200fee?q=80&w=1200&auto=format&fit=crop')"></div>
-      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1581091870627-3f09c06c7f6e?q=80&w=1200&auto=format&fit=crop')"></div>
-      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1522202222209-775a97b4a38a?q=80&w=1200&auto=format&fit=crop')"></div>
-      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1200&auto=format&fit=crop')"></div>
-      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1581091215367-59ab6e6c3cdd?q=80&w=1200&auto=format&fit=crop')"></div>
-      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1517638851339-4aa32003c11a?q=80&w=1200&auto=format&fit=crop')"></div>
-      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1556767576-cf6e6e6c4161?q=80&w=1200&auto=format&fit=crop')"></div>
-      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1504711331083-9c895941bf81?q=80&w=1200&auto=format&fit=crop')"></div>
+    <div class="absolute inset-0 bg-black/80"></div>
+    $1
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1522205408450-add114ad53fe?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1522199710521-72d69614c702?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1518085250887-2f903c200fee?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1581091870627-3f09c06c7f6e?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1522202222209-775a97b4a38a?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1581091215367-59ab6e6c3cdd?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1517638851339-4aa32003c11a?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1556767576-cf6e6e6c4161?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1504711331083-9c895941bf81?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1517511620798-cec17d428bc0?q=80&w=1200&auto=format&fit=crop')"></div> <!-- microphones / press -->
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1200&auto=format&fit=crop')"></div> <!-- podcast/radio -->
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1517148815978-75f6acaaf32c?q=80&w=1200&auto=format&fit=crop')"></div> <!-- data viz / charts on screen -->
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1516251193007-45ef944ab0c6?q=80&w=1200&auto=format&fit=crop')"></div> <!-- camera/film/production -->
+    $2
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1522199710521-72d69614c702?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1518085250887-2f903c200fee?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1581091870627-3f09c06c7f6e?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1522202222209-775a97b4a38a?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1581091215367-59ab6e6c3cdd?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1517638851339-4aa32003c11a?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1556767576-cf6e6e6c4161?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float pan parallax" style="background-image:url('https://images.unsplash.com/photo-1504711331083-9c895941bf81?q=80&w=1200&auto=format&fit=crop')"></div>
     </div>
     <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/70"></div>
     <div aria-hidden class="noise absolute inset-0 pointer-events-none"></div>
   </div>
 
   <!-- Content -->
-  <main class="mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center px-4 text-center">
+  <main class="fade-in mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center px-4 text-center">
     <!-- Badge -->
     <span class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-white/90 backdrop-blur">
       <span class="h-2 w-2 rounded-full bg-lime-400"></span>
@@ -121,6 +143,30 @@
       }
     }
     form.addEventListener('submit', handleSubmit);
+  </script>
+<script>
+  // Parallax effect (scroll + mouse). Lightweight + GPU‑friendly.
+  (function() {
+    const tiles = Array.from(document.querySelectorAll('.parallax'));
+    if (!tiles.length) return;
+    const speeds = tiles.map((_, i) => 0.02 + (i % 5) * 0.005);
+    function tick() {
+      const y = window.scrollY || 0;
+      tiles.forEach((el, i) => {
+        el.style.transform = `translate3d(0, ${y * speeds[i]}px, 0)`;
+      });
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+    window.addEventListener('mousemove', (e) => {
+      const { innerWidth: w, innerHeight: h } = window;
+      const dx = (e.clientX / w - 0.5) * 6;
+      const dy = (e.clientY / h - 0.5) * 6;
+      tiles.forEach((el, i) => {
+        el.style.transform += ` translate3d(${dx * (0.2 + i%4*0.05)}px, ${dy * (0.2 + i%3*0.05)}px, 0)`;
+      });
+    }, { passive: true });
+  })();
   </script>
 </body>
 </html>
