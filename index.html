@@ -1,327 +1,126 @@
-<!DOCTYPE html>
+<!--
+  OneMarket News – Prelaunch Landing
+  Single-file, paste-ready HTML for GitHub (Pages/Netlify/Vercel static).
+  Drop this as /index.html in your repo. No build tools required.
+-->
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>OneMarket News — Independent relay of truth</title>
-  <meta name="description" content="Verification-first, decentralized news for finance, AI, and the tokenized economy. Independent relay of truth—verified by all, owned by none." />
-  <!-- Tailwind via CDN (no build step) -->
+  <title>OneMarket News — Be First In Line</title>
+  <meta name="description" content="Be first in line for OneMarket News. Curated sources, transparent citations, and real-time community signal— all in one feed." />
+  <meta name="theme-color" content="#a3e635" />
+
+  <!-- Tailwind (CDN) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { background: #0B121A; }
-    .halo::before {
-      content: "";
-      position: absolute;
-      inset: -120px 0 auto 50%;
-      width: 38rem; height: 38rem;
-      transform: translateX(-50%);
-      background: radial-gradient(circle, rgba(59,130,246,0.10) 0%, rgba(59,130,246,0) 70%);
-      filter: blur(12px);
-      z-index: -1;
-    }
+    /* Subtle noise overlay */
+    .noise { background-image: radial-gradient(1px 1px at 25px 25px, rgba(255,255,255,.9) 1px, transparent 0); opacity:.06 }
+    /* Mosaic styles */
+    .mosaic { display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(3,1fr); gap:.5rem; height:100%; }
+    .mosaic div { background-size:cover; background-position:center; filter:blur(1px); transform:scale(1.02);}
+    /* Gentle floating animation */
+    @keyframes float { 0%{transform:scale(1.03);} 50%{transform:scale(1.06);} 100%{transform:scale(1.03);} }
+    .float { animation: float 12s ease-in-out infinite; }
   </style>
 </head>
-<body class="text-white antialiased">
-  <!-- NAV -->
-  <header class="sticky top-0 z-30 backdrop-blur bg-slate-900/60 border-b border-[#334155]">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-       <a href="/" class="flex items-center gap-3 transition-transform duration-200 hover:scale-105 hover:opacity-90">
-        <img src="OM DARK Logo.svg" alt="OneMarket News logo" class="h-16 w-auto object-contain" />
-        <div class="leading-tight">
-          <div class="text-lg font-semibold tracking-tight">OneMarket News</div>
-          <div class="text-xs text-[#94A3B8]">Rebuilding trust in news</div>
-        </div>
-       </a>
-      </div>
-      <nav class="hidden md:flex items-center gap-6 text-sm">
-        <a class="text-[#94A3B8] hover:text-white" href="#how">How it works</a>
-        <a class="text-[#94A3B8] hover:text-white" href="#trust">Trust stack</a>
-        <a class="text-[#94A3B8] hover:text-white" href="#governance">Governance</a>
-        <a class="text-[#94A3B8] hover:text-white" href="#newsletter">Newsletter</a>
-        <a class="text-[#94A3B8] hover:text-white" href="#faq">FAQ</a>
-      </nav>
+<body class="min-h-screen text-white bg-black">
+  <!-- Background -->
+  <div class="fixed inset-0 -z-10 overflow-hidden">
+    <div class="absolute inset-0 bg-black/70"></div>
+    <div class="mosaic opacity-60">
+      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1522205408450-add114ad53fe?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1522199710521-72d69614c702?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1518085250887-2f903c200fee?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1581091870627-3f09c06c7f6e?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1522202222209-775a97b4a38a?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1581091215367-59ab6e6c3cdd?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1517638851339-4aa32003c11a?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1556767576-cf6e6e6c4161?q=80&w=1200&auto=format&fit=crop')"></div>
+      <div class="float" style="background-image:url('https://images.unsplash.com/photo-1504711331083-9c895941bf81?q=80&w=1200&auto=format&fit=crop')"></div>
     </div>
-  </header>
+    <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/70"></div>
+    <div aria-hidden class="noise absolute inset-0 pointer-events-none"></div>
+  </div>
 
-  <!-- HERO -->
-  <section class="relative overflow-hidden">
-    <div class="max-w-7xl mx-auto px-6 py-20 sm:py-28 text-center">
-      <div class="inline-block mb-4 rounded-full bg-emerald-400/15 text-emerald-300 ring-1 ring-emerald-300/30 px-3 py-1 text-xs">
-        PRELAUNCH
-      </div>
-      <h1 class="text-4xl sm:text-5xl md:text-6xl font-semibold leading-tight">
-        Because <span class="text-blue-300">no one is trusted</span>.<br/>
-        <span class="text-slate-200">We’re rebuilding it.</span>
-      </h1>
-      <p class="mx-auto mt-5 max-w-2xl text-[#94A3B8]">
-        OneMarket is the verification-first, decentralized news platform for finance, AI, and the tokenized economy.
-        <strong>Independent relay of truth—verified by all, owned by none.</strong> We score sources, show conflicts, and expose incentives—so you can base decisions on reality, not noise.
-      </p>
+  <!-- Content -->
+  <main class="mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center px-4 text-center">
+    <!-- Badge -->
+    <span class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-white/90 backdrop-blur">
+      <span class="h-2 w-2 rounded-full bg-lime-400"></span>
+      Coming Soon
+    </span>
 
-      <!-- Waitlist form -->
-      <form name="waitlist" method="POST" data-netlify="true" class="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]">
-        <input type="hidden" name="form-name" value="waitlist" />
-  
-        <input 
-          type="email" 
-          name="email" 
-          required 
-          placeholder="you@company.com" 
-          class="rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" 
-        />
-        <button class="rounded-xl bg-[#3B82F6] hover:bg-[#2563EB] px-5 py-3">Join waitlist →</button>
-      </form>
+    <!-- Brand -->
+    <h1 class="mt-4 font-black tracking-tight">
+      <span class="block text-5xl sm:text-6xl md:text-7xl">ONE<span class="text-lime-400">MARKET</span></span>
+      <span class="mt-1 block text-xl font-semibold text-white/70 sm:text-2xl">News</span>
+    </h1>
 
-      <p id="wlMsg" class="mt-2 text-sm text-emerald-300 hidden">Thanks! We’ll keep you updated with launch details and early access.</p>
+    <p class="mt-4 max-w-2xl text-balance text-base text-white/80 sm:text-lg">
+      Be first in line for the trust‑layer of news. Curated sources, transparent citations, and real‑time community signal — all in one feed.
+    </p>
 
-      <!-- Metrics -->
-      <div class="mx-auto mt-10 grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4">
-        <div class="border border-[#334155] bg-[#111827]/40 rounded-xl p-4 text-center">
-          <div class="text-xl font-semibold">12,483</div>
-          <div class="text-xs text-[#94A3B8]">Sources scored</div>
-        </div>
-        <div class="border border-[#334155] bg-[#111827]/40 rounded-xl p-4 text-center">
-          <div class="text-xl font-semibold">3,207</div>
-          <div class="text-xs text-[#94A3B8]">Conflicts flagged</div>
-        </div>
-        <div class="border border-[#334155] bg-[#111827]/40 rounded-xl p-4 text-center">
-          <div class="text-xl font-semibold">1,156</div>
-          <div class="text-xs text-[#94A3B8]">Verified writers</div>
-        </div>
-        <div class="border border-[#334155] bg-[#111827]/40 rounded-xl p-4 text-center">
-          <div class="text-xl font-semibold">842</div>
-          <div class="text-xs text-[#94A3B8]">False claims exposed</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- HOW IT WORKS -->
-  <section id="how" class="max-w-7xl mx-auto px-6 py-16 sm:py-24">
-    <h2 class="text-2xl sm:text-3xl font-semibold">How OneMarket earns trust (decentralized by design)</h2>
-    <div class="mt-8 grid gap-6 md:grid-cols-3">
-      <div class="border border-[#334155] bg-[#111827]/40 rounded-xl p-5">
-        <div class="font-semibold text-white">Verify first, publish second</div>
-        <p class="text-sm text-[#94A3B8] mt-2">Each story must pass source validation, conflict-of-interest checks, and on-chain (or immutable) provenance tracking before it goes live.</p>
-      </div>
-      <div class="border border-[#334155] bg-[#111827]/40 rounded-xl p-5">
-        <div class="font-semibold text-white">Credibility scores</div>
-        <p class="text-sm text-[#94A3B8] mt-2">Every article and contributor carries a visible Trust Score powered by community review + expert moderation.</p>
-      </div>
-      <div class="border border-[#334155] bg-[#111827]/40 rounded-xl p-5">
-        <div class="font-semibold text-white">Community governance</div>
-        <p class="text-sm text-[#94A3B8] mt-2">Members vote to surface verified reporting and quarantine low-credibility claims. Incentives reward truth, not clicks.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- DECENTRALIZATION & GOVERNANCE -->
-  <section id="governance" class="max-w-7xl mx-auto px-6 py-16 sm:py-24">
-    <h2 class="text-2xl sm:text-3xl font-semibold">Decentralization & Governance</h2>
-    <div class="mt-8 grid gap-6 md:grid-cols-3">
-      <div class="border border-[#334155] bg-[#111827]/40 rounded-xl p-5">
-        <div class="font-semibold text-white">Open identity</div>
-        <p class="text-sm text-[#94A3B8] mt-2">Interoperable writer identities with public history. Pseudonymous allowed, reputation required.</p>
-      </div>
-      <div class="border border-[#334155] bg-[#111827]/40 rounded-xl p-5">
-        <div class="font-semibold text-white">On-chain attestations</div>
-        <p class="text-sm text-[#94A3B8] mt-2">Optional anchoring of story hashes, edits, and disclosures for independent verification.</p>
-      </div>
-      <div class="border border-[#334155] bg-[#111827]/40 rounded-xl p-5">
-        <div class="font-semibold text-white">Community control</div>
-        <p class="text-sm text-[#94A3B8] mt-2">Reputation-weighted voting, transparent rules, and appeal processes. No single corporate owner of the truth.</p>
-      </div>
+    <!-- CTA -->
+    <div class="mt-6 flex flex-col items-center gap-3">
+      <a href="https://apps.apple.com/us/app/idXXXXXXXXXX" class="group inline-flex items-center gap-2 rounded-full bg-lime-400 px-6 py-3 font-semibold text-black shadow-lg shadow-lime-500/20 transition hover:-translate-y-0.5 hover:bg-lime-300 focus:outline-none focus:ring-2 focus:ring-lime-300">
+        <!-- Apple icon (inline SVG) -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5"><path d="M16.365 1.43c.27 1.96-1.167 3.86-3.06 3.74-.24-1.78 1.336-3.78 3.06-3.74zM20.32 17.01c-.58 1.33-.87 1.92-1.63 3.1-1.06 1.64-2.56 3.69-4.43 3.72-1.65.03-2.08-1.08-4.33-1.07-2.25.01-2.73 1.1-4.38 1.07-1.87-.03-3.3-1.86-4.36-3.5C-.2 16.71-.72 12.53 1.4 9.66 2.58 8.02 4.45 7.02 6.44 6.99c1.82-.03 3.54 1.2 4.33 1.2.77 0 2.95-1.48 4.98-1.26.85.04 3.25.35 4.78 2.64-4.2 2.29-3.53 8.31-.21 7.44z"/></svg>
+        <span>Pre‑order on the App Store</span>
+      </a>
+      <span class="text-xs text-white/60">Pre‑order today & get day‑one access.</span>
     </div>
 
-    <div class="mt-8 grid gap-3 sm:grid-cols-3">
-      <div class="flex items-center gap-2 rounded-xl border border-[#334155] bg-[#0B121A]/40 px-3 py-2 text-sm text-white">✅ Independent relay of truth</div>
-      <div class="flex items-center gap-2 rounded-xl border border-[#334155] bg-[#0B121A]/40 px-3 py-2 text-sm text-white">✅ No sponsored headlines</div>
-      <div class="flex items-center gap-2 rounded-xl border border-[#334155] bg-[#0B121A]/40 px-3 py-2 text-sm text-white">✅ Public APIs & transparency reports</div>
-    </div>
-  </section>
+    <!-- Notify Form (mailto for zero‑backend) -->
+    <!-- Formspree: works on GitHub Pages. Replace YOUR_FORM_ID below. -->
+    <form id="notifyForm" action="https://formspree.io/f/YOUR_FORM_ID" method="POST" class="mt-4 flex w-full max-w-md items-center gap-2">
+      <div class="relative w-full">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40"><path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v.4l-10 6.25L2 6.4V6Zm0 2.8v9.2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8.8l-10 6.25L2 8.8Z"/></svg>
+        <input id="email" name="email" type="email" required placeholder="Your email for early access" class="w-full rounded-full border border-white/20 bg-white/10 py-3 pl-10 pr-4 text-sm placeholder:text-white/50 outline-none backdrop-blur focus:border-white/40" />
+      </div>
+      <!-- Optional: add a hidden field to tag the list -->
+      <input type="hidden" name="segment" value="onemarket-prelaunch" />
+      <button type="submit" class="rounded-full border border-white/10 bg-white/90 px-4 py-3 text-sm font-semibold text-black transition hover:bg-white">Notify Me</button>
+    </form>
 
-  <!-- TRUST STACK -->
-  <section id="trust" class="border-y border-[#334155] bg-[#0B121A]/40">
-    <div class="max-w-7xl mx-auto px-6 py-16 sm:py-24">
-      <h2 class="text-2xl sm:text-3xl font-semibold">The Trust Stack</h2>
-      <div class="mt-8 grid gap-6 md:grid-cols-2">
-        <div class="border border-[#334155] bg-[#111827]/40 rounded-xl p-5">
-          <div class="font-semibold text-white">Provenance & transparency</div>
-          <ul class="list-disc pl-5 text-sm text-[#94A3B8] mt-2 space-y-1">
-            <li>Source graphs & citation trails on every story</li>
-            <li>Funding disclosures + author affiliations</li>
-            <li>Immutable change logs (optionally anchored on-chain)</li>
-          </ul>
-        </div>
-        <div class="border border-[#334155] bg-[#111827]/40 rounded-xl p-5">
-          <div class="font-semibold text-white">Bias & conflict detection</div>
-          <ul class="list-disc pl-5 text-sm text-[#94A3B8] mt-2 space-y-1">
-            <li>Automated conflict-of-interest flags</li>
-            <li>Model-aided bias detection with human review</li>
-            <li>Side-by-side opposing-source summaries</li>
-          </ul>
-        </div>
-        <div class="border border-[#334155] bg-[#111827]/40 rounded-xl p-5">
-          <div class="font-semibold text-white">Performance without clickbait</div>
-          <ul class="list-disc pl-5 text-sm text-[#94A3B8] mt-2 space-y-1">
-            <li>Engagement measured by accuracy & utility</li>
-            <li>Reputation-weighted voting, Sybil-resistant</li>
-            <li>Contributor escrow & clawbacks for fraud</li>
-          </ul>
-        </div>
-        <div class="border border-[#334155] bg-[#111827]/40 rounded-xl p-5">
-          <div class="font-semibold text-white">Open data layer</div>
-          <ul class="list-disc pl-5 text-sm text-[#94A3B8] mt-2 space-y-1">
-            <li>Public APIs for scores, sources, and revisions</li>
-            <li>Third-party audits & cryptographic attestations</li>
-            <li>Interoperable identity for verified writers</li>
-          </ul>
-        </div>
+    <footer class="pointer-events-auto mt-10 text-xs text-white/60">
+      <div class="flex items-center justify-center gap-4">
+        <a href="/terms" class="hover:text-white/90">Terms of Use</a>
+        <a href="/privacy" class="hover:text-white/90">Privacy Policy</a>
       </div>
-
-      <div class="mt-10 border border-[#334155] bg-[#111827]/40 rounded-2xl p-6 sm:p-8">
-        <div class="grid gap-6 md:grid-cols-2 md:items-center">
-          <div>
-            <h3 class="text-lg font-semibold text-white">A cleaner business model</h3>
-            <p class="mt-2 text-sm text-[#94A3B8]">Subscriptions and community alignment over ads. No pay-to-play, no sponsored headlines, no hidden placements. We publish slower—so you can decide faster.</p>
-          </div>
-          <div class="grid gap-3 sm:grid-cols-3">
-            <div class="flex items-center gap-2 rounded-xl border border-[#334155] bg-[#0B121A]/40 px-3 py-2 text-sm text-white">🛡️ No sponsored posts</div>
-            <div class="flex items-center gap-2 rounded-xl border border-[#334155] bg-[#0B121A]/40 px-3 py-2 text-sm text-white">✅ Open disclosures</div>
-            <div class="flex items-center gap-2 rounded-xl border border-[#334155] bg-[#0B121A]/40 px-3 py-2 text-sm text-white">🔒 Audit-friendly</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- NEWSLETTER -->
-  <section id="newsletter" class="max-w-7xl mx-auto px-6 py-16 sm:py-24">
-    <div class="rounded-3xl border border-[#334155] bg-[#111827]/40 p-8 sm:p-12">
-      <div class="flex items-center gap-3">
-        <div class="h-10 w-10 grid place-items-center rounded-xl bg-blue-500/15 ring-1 ring-blue-400/30">📰</div>
-        <div>
-          <h3 class="text-xl font-semibold text-white">Subscribe to the OneMarket Briefing</h3>
-          <p class="text-sm text-[#94A3B8]">Weekly, verification-first intelligence on tokenization, AI, and markets. No ads. No noise.</p>
-        </div>
-      </div>
-
-      <form name="newsletter" method="POST" data-netlify="true" class="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]">
-        <input type="hidden" name="form-name" value="newsletter" />
-  
-        <input 
-          type="email" 
-          name="email" 
-          required 
-          placeholder="you@company.com" 
-          class="rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" 
-        />
-        <button class="rounded-xl bg-[#3B82F6] hover:bg-[#2563EB] px-5 py-3">Subscribe</button>
-      </form>
-
-      <p id="newsMsg" class="mt-2 text-sm text-emerald-300 hidden">Subscribed! Check your inbox for confirmation.</p>
-      <p class="mt-2 text-xs text-[#94A3B8]">By subscribing, you agree to our <a class="underline hover:text-white" href="#">Terms</a> and <a class="underline hover:text-white" href="#">Privacy Policy</a>. Unsubscribe anytime.</p>
-    </div>
-  </section>
-
-  <!-- FAQ -->
-  <section id="faq" class="max-w-7xl mx-auto px-6 pb-16">
-    <h2 class="text-2xl sm:text-3xl font-semibold">FAQ</h2>
-    <div class="mt-8 grid gap-4 md:grid-cols-2">
-      <div class="border border-[#334155] bg-[#111827]/40 rounded-xl p-5">
-        <div class="font-semibold text-white">Do you take ads?</div>
-        <p class="text-sm text-[#94A3B8] mt-2">During prelaunch and early growth, no display ads or sponsored posts. Long-term, any partnership must pass an independent conflict review and will be labeled clearly.</p>
-      </div>
-      <div class="border border-[#334155] bg-[#111827]/40 rounded-xl p-5">
-        <div class="font-semibold text-white">How are Trust Scores calculated?</div>
-        <p class="text-sm text-[#94A3B8] mt-2">Hybrid model: source quality, historical accuracy, disclosure completeness, replication by independent outlets, on-chain attestations, and community credibility signals.</p>
-      </div>
-      <div class="border border-[#334155] bg-[#111827]/40 rounded-xl p-5">
-        <div class="font-semibold text-white">What topics will you cover first?</div>
-        <p class="text-sm text-[#94A3B8] mt-2">Tokenization/crypto, AI, and markets—domains where misinformation is costly and speed often beats accuracy. Coverage emphasizes verifiable sources and neutrality over velocity.</p>
-      </div>
-      <div class="border border-[#334155] bg-[#111827]/40 rounded-xl p-5">
-        <div class="font-semibold text-white">When do you launch?</div>
-        <p class="text-sm text-[#94A3B8] mt-2">We’re building with early members now. Join the waitlist for alpha invites and governance proposals. Transparency reports and change logs will be public at launch.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA -->
-  <section class="max-w-7xl mx-auto px-6 pb-24">
-    <div class="relative overflow-hidden rounded-3xl border border-[#334155] bg-gradient-to-br from-slate-900 to-slate-950 p-8 sm:p-12">
-      <div class="grid gap-6 md:grid-cols-2 md:items-center">
-        <div>
-          <h3 class="text-2xl font-semibold">Be an early member of the trust movement</h3>
-          <p class="mt-2 max-w-prose text-sm text-[#94A3B8]">
-            Get early access, help set governance, and shape the standards that news should live by.
-          </p>
-        </div>
-        <form name="cta" method="POST" data-netlify="true" class="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]">
-          <input type="hidden" name="form-name" value="cta" />
-  
-          <input 
-          type="email" 
-          name="email" 
-          required 
-          placeholder="you@company.com" 
-          class="rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" 
-        />
-        <button class="rounded-xl bg-[#3B82F6] hover:bg-[#2563EB] px-5 py-3">Get started →</button>
-      </form>
-      </div>
-    </div>
-  </section>
-
-  <!-- FOOTER -->
-  <footer class="border-t border-[#334155]/70">
-    <div class="max-w-7xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div class="flex items-center gap-2 text-[#94A3B8]">
-        <span class="text-sm">OneMarket News © 2025</span>
-      </div>
-      <div class="flex items-center gap-4 text-xs text-[#94A3B8]">
-        <a href="#" class="hover:text-white">Terms</a>
-        <a href="#" class="hover:text-white">Privacy</a>
-        <a href="#" class="hover:text-white">Contact</a>
-      </div>
-    </div>
-  </footer>
+      <p class="mt-2">© <span id="year"></span> OneMarket News, LLC.</p>
+    </footer>
+  </main>
 
   <script>
-    // ====== SIMPLE FORM HANDLER ======
-    // Replace with your own Formspree endpoint (free): https://formspree.io
-    const FORMSPREE_ENDPOINT = "https://formspree.io/f/XXXXXXXX";
+    // dynamic year
+    document.getElementById('year').textContent = new Date().getFullYear();
 
-    async function wire(formId, emailId, msgId) {
-      const form = document.getElementById(formId);
-      if (!form) return;
-      const emailEl = document.getElementById(emailId);
-      const msgEl = msgId ? document.getElementById(msgId) : null;
-
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = emailEl && emailEl.value;
-        if (!email) return;
-        try {
-          const res = await fetch(FORMSPREE_ENDPOINT, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({ email, form: form.dataset.type || 'unknown' })
-          });
-          if (!res.ok) throw new Error('Network error');
-          if (msgEl) msgEl.classList.remove('hidden');
+    // Progressive enhancement for Formspree: AJAX submit + inline success message
+    const form = document.getElementById('notifyForm');
+    async function handleSubmit(e) {
+      e.preventDefault();
+      const fd = new FormData(form);
+      try {
+        const res = await fetch(form.action, { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } });
+        if (res.ok) {
+          const msg = document.createElement('div');
+          msg.className = 'mt-3 text-sm text-lime-300';
+          msg.textContent = "Thanks! You're on the early‑access list.";
+          form.insertAdjacentElement('afterend', msg);
           form.reset();
-        } catch (err) {
-          alert('Something went wrong. Please try again.');
-          console.error(err);
+        } else {
+          alert('Submission failed. Please try again.');
         }
-      });
+      } catch (err) {
+        alert('Network error. Please try again.');
+      }
     }
-
-    wire('waitlistForm', 'wlEmail', 'wlMsg');
-    wire('newsForm', 'newsEmail', 'newsMsg');
-    wire('ctaForm', 'ctaEmail', null);
+    form.addEventListener('submit', handleSubmit);
   </script>
 </body>
 </html>
