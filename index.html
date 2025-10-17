@@ -47,6 +47,7 @@
     /* Mosaic layout and motion */
     .mosaic-grid { display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(4,1fr); gap:.5rem; height:100%; }
     .tile { position:relative; overflow:hidden; filter: blur(3px); }
+    .tile { background:#0b121a; }
     .tile img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transform: scale(1.08); opacity:.9; }
     @keyframes drift {
       0%   { transform: scale(1.08) translate3d(0,0,0); }
@@ -54,6 +55,7 @@
       100% { transform: scale(1.08) translate3d(0,0,0); }
     }
     .tile img { animation: drift 24s ease-in-out infinite; }
+    .tile img.loaded { opacity: .95; transition: opacity .6s ease; }
     .tile.slow  img { animation-duration: 28s; }
     .tile.fast  img { animation-duration: 20s; }
     @media (prefers-reduced-motion: reduce) {
@@ -166,22 +168,27 @@
 <script>
   // --- BACKGROUND MOSAIC (robust on GitHub Pages) ---
   const images = [
-    'https://images.unsplash.com/photo-1522205408450-add114ad53fe?q=80&w=1600&auto=format&fit=crop', // newspapers
-    'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=1600&auto=format&fit=crop', // journalist writing
-    'https://images.unsplash.com/photo-1522199710521-72d69614c702?q=80&w=1600&auto=format&fit=crop', // laptop article
-    'https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1600&auto=format&fit=crop', // headlines screen
-    'https://images.unsplash.com/photo-1518085250887-2f903c200fee?q=80&w=1600&auto=format&fit=crop', // newsroom
-    'https://images.unsplash.com/photo-1581091870627-3f09c06c7f6e?q=80&w=1600&auto=format&fit=crop', // monitor news site
-    'https://images.unsplash.com/photo-1517511620798-cec17d428bc0?q=80&w=1600&auto=format&fit=crop', // microphones
-    'https://images.unsplash.com/photo-1517148815978-75f6acaaf32c?q=80&w=1600&auto=format&fit=crop', // charts/dataviz
-    'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1600&auto=format&fit=crop', // desk
-    'https://images.unsplash.com/photo-1581091215367-59ab6e6c3cdd?q=80&w=1600&auto=format&fit=crop', // editor
-    'https://images.unsplash.com/photo-1516251193007-45ef944ab0c6?q=80&w=1600&auto=format&fit=crop', // camera
-    'https://images.unsplash.com/photo-1556767576-cf6e6e6c4161?q=80&w=1600&auto=format&fit=crop', // mobile reading
-    'https://images.unsplash.com/photo-1504384764586-bb4cdc1707b0?q=80&w=1600&auto=format&fit=crop', // broadcast
-    'https://images.unsplash.com/photo-1494797710133-75ad8b3d3b22?q=80&w=1600&auto=format&fit=crop', // interview portrait
-    'https://images.unsplash.com/photo-1504711331083-9c895941bf81?q=80&w=1600&auto=format&fit=crop', // keyboard close
-    'https://images.unsplash.com/photo-1542228262-3d663b306a56?q=80&w=1600&auto=format&fit=crop'  // radio studio
+    'https://images.unsplash.com/photo-1522205408450-add114ad53fe?q=80&w=1600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=1600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1522199710521-72d69614c702?q=80&w=1600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1518085250887-2f903c200fee?q=80&w=1600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1581091870627-3f09c06c7f6e?q=80&w=1600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1517511620798-cec17d428bc0?q=80&w=1600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1517148815978-75f6acaaf32c?q=80&w=1600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1581091215367-59ab6e6c3cdd?q=80&w=1600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1516251193007-45ef944ab0c6?q=80&w=1600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1556767576-cf6e6e6c4161?q=80&w=1600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1504384764586-bb4cdc1707b0?q=80&w=1600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1494797710133-75ad8b3d3b22?q=80&w=1600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1504711331083-9c895941bf81?q=80&w=1600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1542228262-3d663b306a56?q=80&w=1600&auto=format&fit=crop',
+    // fallbacks
+    'https://picsum.photos/seed/news1/1600/900',
+    'https://picsum.photos/seed/news2/1600/900',
+    'https://picsum.photos/seed/news3/1600/900',
+    'https://picsum.photos/seed/news4/1600/900'
   ];
 
   const bgRoot = document.getElementById('bgMosaic');
@@ -189,15 +196,26 @@
   grid.className = 'mosaic-grid';
   bgRoot.appendChild(grid);
 
-  // Build 4x4 = 16 tiles
+  // Build 4x4 = 16 tiles with load/error handling
+  function pick(i, attempt=0){
+    return images[(i + attempt) % images.length] + (images[(i + attempt) % images.length].includes('unsplash.com') ? '&auto=format' : '');
+  }
   for (let i = 0; i < 16; i++) {
     const tile = document.createElement('div');
     tile.className = 'tile' + (i % 3 === 0 ? ' slow' : i % 3 === 1 ? ' fast' : '');
     const img = document.createElement('img');
-    img.loading = 'lazy';
-    img.decoding = 'async';
-    img.src = images[i % images.length];
     img.alt = 'News imagery background';
+
+    let attempt = 0;
+    function loadNext(){
+      img.src = pick(i, attempt++);
+    }
+    img.onload = () => img.classList.add('loaded');
+    img.onerror = () => {
+      if (attempt < 4) loadNext(); // try a few alternates
+    };
+    loadNext();
+
     tile.appendChild(img);
     grid.appendChild(tile);
   }
