@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OneMarket News — Writer Dashboard</title>
+  <meta name="description" content="Contributor hub for OneMarket News: submit stories, track status, and review guidelines." />
+  <meta name="theme-color" content="#a3e635" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { --lime: #a3e635; }
+    body { background:#000; color:#fff }
+    .noise { background-image: radial-gradient(1px 1px at 25px 25px, rgba(255,255,255,.9) 1px, transparent 0); opacity:.06 }
+    .glass { background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04)); backdrop-filter: blur(10px) saturate(120%); }
+    @keyframes fadeIn { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)} }
+    .fade-in { animation: fadeIn .6s ease-out .1s both }
+
+    /* Premium input/textarea styling */
+    .field{
+      width:100%;
+      border-radius:14px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      padding:.875rem 1rem;
+      color:#fff;
+      font-size:.95rem;
+      line-height:1.25rem;
+      transition:background .2s ease,border-color .2s ease,box-shadow .2s ease,transform .06s ease;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 0 0 0 rgba(163,230,53,.35);
+    }
+    .field::placeholder{ color:rgba(255,255,255,.48); letter-spacing:.15px; }
+    .field:hover{ background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.22); }
+    .field:focus{
+      outline:none; background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.35);
+      box-shadow:0 0 0 8px rgba(163,230,53,.08), 0 0 0 2px rgba(163,230,53,.35), inset 0 1px 0 rgba(255,255,255,.06);
+      transform:translateY(-1px);
+    }
+    textarea.field{ min-height:3.5rem; resize:vertical; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.35) transparent; }
+    .field:-webkit-autofill{
+      -webkit-text-fill-color:#fff!important;
+      -webkit-box-shadow:0 0 0 30px rgba(255,255,255,.06) inset!important;
+      box-shadow:0 0 0 30px rgba(255,255,255,.06) inset!important;
+    }
+
+    /* Sidebar active state */
+    .nav-item[aria-current="page"]{
+      background: rgba(163,230,53,.12);
+      border-color: rgba(163,230,53,.45);
+      color: #fff;
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+  <!-- Background -->
+  <div class="fixed inset-0 -z-10">
+    <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/25 to-black/80"></div>
+    <div aria-hidden class="noise absolute inset-0 pointer-events-none"></div>
+  </div>
+
+  <!-- Shell -->
+  <div class="mx-auto flex min-h-screen max-w-7xl flex-col md:flex-row">
+
+    <!-- Sidebar -->
+    <aside class="glass md:sticky md:top-0 md:h-screen w-full md:w-64 border-b md:border-b-0 md:border-r border-white/10">
+      <div class="flex items-center justify-between px-4 py-4 md:py-6">
+        <a href="/" class="text-white/80 hover:text-white text-sm inline-flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M10 19a1 1 0 0 1-.7-.29l-7-7a1 1 0 0 1 0-1.42l7-7A1 1 0 0 1 11 4v4h8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-8v4a1 1 0 0 1-1 1z"/></svg>
+          Back
+        </a>
+        <button id="menuBtn" class="md:hidden rounded-lg border border-white/15 px-2 py-1 text-sm text-white/80 hover:text-white">Menu</button>
+      </div>
+
+      <div id="nav" class="px-3 pb-4 md:block hidden">
+        <nav class="space-y-2">
+          <button class="nav-item w-full rounded-xl border border-white/10 px-3 py-2 text-left text-white/80 hover:text-white hover:border-white/25" data-target="home">🏠 Dashboard</button>
+          <button class="nav-item w-full rounded-xl border border-white/10 px-3 py-2 text-left text-white/80 hover:text-white hover:border-white/25" data-target="submit">📝 Submit Story</button>
+          <button class="nav-item w-full rounded-xl border border-white/10 px-3 py-2 text-left text-white/80 hover:text-white hover:border-white/25" data-target="submissions">📂 My Submissions</button>
+          <button class="nav-item w-full rounded-xl border border-white/10 px-3 py-2 text-left text-white/80 hover:text-white hover:border-white/25" data-target="guidelines">📚 Guidelines</button>
+        </nav>
+
+        <div class="mt-6 rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white/70">
+          Logged in as <span class="font-semibold">Contributor</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 p-4 md:p-8 space-y-6">
+
+      <!-- Header -->
+      <header class="fade-in">
+        <span class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs tracking-wider">
+          <span class="h-2 w-2 rounded-full bg-lime-400"></span> Writer Dashboard
+        </span>
+        <h1 class="mt-3 text-4xl font-black">ONE<span class="text-lime-400">MARKET</span> <span class="font-semibold text-white/80">News</span></h1>
+        <p class="text-white/70 mt-2">Submit stories, track review status, and follow sourcing standards — all in one place.</p>
+      </header>
+
+      <!-- Sections -->
+      <section id="home" class="fade-in space-y-4" data-section>
+        <div class="grid gap-4 md:grid-cols-3">
+          <div class="glass rounded-2xl p-5">
+            <p class="text-white/60 text-sm">Stories Submitted</p>
+            <p id="statSubmitted" class="mt-1 text-3xl font-bold">0</p>
+          </div>
+          <div class="glass rounded-2xl p-5">
+            <p class="text-white/60 text-sm">In Review</p>
+            <p id="statReview" class="mt-1 text-3xl font-bold">0</p>
+          </div>
+          <div class="glass rounded-2xl p-5">
+            <p class="text-white/60 text-sm">Published</p>
+            <p id="statPublished" class="mt-1 text-3xl font-bold">0</p>
+          </div>
+        </div>
+
+        <div class="glass rounded-2xl p-6">
+          <h2 class="text-lg font-semibold">Welcome</h2>
+          <p class="mt-2 text-white/80 text-sm">Thanks for contributing to the trust-layer of news. Use <span class="font-medium">Submit Story</span> to send items to editors. You’ll see everything you submit in <span class="font-medium">My Submissions</span>.</p>
+        </div>
+      </section>
+
+      <section id="submit" class="fade-in hidden" data-section>
+        <div class="glass rounded-2xl p-6">
+          <h2 class="text-lg font-semibold">Submit a Story</h2>
+          <p class="text-white/70 text-sm mt-1">Provide a clear title, links to sources, and a short summary. Editors will review and follow up if needed.</p>
+
+          <form id="storyForm" action="https://formspree.io/f/YOUR_FORM_ID" method="POST" class="mt-5 space-y-5">
+            <div>
+              <label for="title" class="mb-1 block text-sm text-white/70">Title</label>
+              <input id="title" name="title" required class="field" placeholder="Concise story headline" />
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+              <div>
+                <label for="primary_url" class="mb-1 block text-sm text-white/70">Primary Source URL</label>
+                <input id="primary_url" name="primary_url" type="url" required class="field" placeholder="https://..." />
+              </div>
+              <div>
+                <label for="secondary_urls" class="mb-1 block text-sm text-white/70">Secondary URLs (optional)</label>
+                <input id="secondary_urls" name="secondary_urls" class="field" placeholder="Comma-separated links" />
+              </div>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+              <div>
+                <label for="beat" class="mb-1 block text-sm text-white/70">Beat / Category</label>
+                <select id="beat" name="beat" class="field">
+                  <option>AI</option>
+                  <option>Chips / Hardware</option>
+                  <option>Energy</option>
+                  <option>Markets</option>
+                  <option>Policy / Regulation</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div>
+                <label for="tags" class="mb-1 block text-sm text-white/70">Tags (comma-separated)</label>
+                <input id="tags" name="tags" class="field" placeholder="e.g., openai, nvidia, earnings" />
+              </div>
+            </div>
+
+            <div>
+              <label for="summary" class="mb-1 block text-sm text-white/70">Summary (2–4 sentences)</label>
+              <textarea id="summary" name="summary" rows="4" class="field" placeholder="Key facts in your own words + what matters and why."></textarea>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <button type="submit" class="inline-flex items-center gap-2 rounded-full bg-lime-400 px-6 py-3 font-semibold text-black shadow-lg shadow-lime-500/20 transition hover:-translate-y-0.5 hover:bg-lime-300 focus:outline-none focus:ring-2 focus:ring-lime-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></svg>
+                Submit Story
+              </button>
+              <span id="storyMsg" class="text-sm text-white/70"></span>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section id="submissions" class="fade-in hidden" data-section>
+        <div class="glass rounded-2xl p-6">
+          <div class="flex items-center justify-between gap-3">
+            <h2 class="text-lg font-semibold">My Submissions</h2>
+            <div class="text-xs text-white/60">Autosaves locally for preview. Final decisions come from editors.</div>
+          </div>
+
+          <div class="mt-4 overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead>
+                <tr class="text-left text-white/60">
+                  <th class="py-2 pr-4">Title</th>
+                  <th class="py-2 pr-4">Beat</th>
+                  <th class="py-2 pr-4">Date</th>
+                  <th class="py-2 pr-4">Status</th>
+                  <th class="py-2 pr-4">Primary URL</th>
+                </tr>
+              </thead>
+              <tbody id="subsTbody">
+                <!-- rows injected -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="guidelines" class="fade-in hidden" data-section>
+        <div class="glass rounded-2xl p-6 space-y-4">
+          <h2 class="text-lg font-semibold">Sourcing & Citation Standards</h2>
+          <ul class="list-disc pl-5 text-sm text-white/80 space-y-2">
+            <li>Link every claim to a high-quality source. Prefer primary docs, filings, official blog posts, or transcripts.</li>
+            <li>Summarize in your own words. Quote sparingly and attribute clearly.</li>
+            <li>Add a **Why it matters** line for context and impact.</li>
+            <li>If a correction is needed, submit an update — corrections are celebrated.</li>
+            <li>Disclose conflicts of interest (holdings, employment, paid relationships) in your submission.</li>
+          </ul>
+
+          <h3 class="mt-4 font-semibold">Story Format</h3>
+          <ol class="list-decimal pl-5 text-sm text-white/80 space-y-2">
+            <li><strong>Headline:</strong> concise and factual.</li>
+            <li><strong>Summary:</strong> 2–4 sentences with the key facts.</li>
+            <li><strong>Sources:</strong> 1+ primary, 1–2 secondary for context.</li>
+            <li><strong>Tags:</strong> 2–5 keywords (company, topic, person).</li>
+          </ol>
+        </div>
+      </section>
+
+      <footer class="pt-6 text-center text-xs text-white/60">
+        © <span id="year"></span> OneMarket News, LLC.
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    // Year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Mobile menu toggle
+    const menuBtn = document.getElementById('menuBtn');
+    const nav = document.getElementById('nav');
+    if (menuBtn) menuBtn.addEventListener('click', () => nav.classList.toggle('hidden'));
+
+    // Section switching
+    const sections = Array.from(document.querySelectorAll('[data-section]'));
+    const buttons = Array.from(document.querySelectorAll('.nav-item'));
+    function showSection(id){
+      sections.forEach(s => s.classList.toggle('hidden', s.id !== id));
+      buttons.forEach(b => b.setAttribute('aria-current', b.dataset.target === id ? 'page' : 'false'));
+      // simple hash routing
+      history.replaceState(null, '', '#' + id);
+    }
+    buttons.forEach(b => b.addEventListener('click', () => showSection(b.dataset.target)));
+    // default section from hash
+    const init = location.hash?.slice(1) || 'home';
+    const initBtn = buttons.find(b => b.dataset.target === init) || buttons[0];
+    (initBtn || buttons[0]).click();
+
+    // Local storage helpers for mock table
+    const KEY = 'onemarket.submissions';
+    const readSubs = () => JSON.parse(localStorage.getItem(KEY) || '[]');
+    const writeSubs = (rows) => localStorage.setItem(KEY, JSON.stringify(rows));
+    const tbody = document.getElementById('subsTbody');
+    const statSubmitted = document.getElementById('statSubmitted');
+    const statReview = document.getElementById('statReview');
+    const statPublished = document.getElementById('statPublished');
+
+    function renderSubs(){
+      const rows = readSubs();
+      tbody.innerHTML = '';
+      rows.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-t border-white/10';
+        tr.innerHTML = `
+          <td class="py-2 pr-4">${escapeHtml(r.title)}</td>
+          <td class="py-2 pr-4 text-white/70">${escapeHtml(r.beat)}</td>
+          <td class="py-2 pr-4 text-white/70">${new Date(r.date).toLocaleDateString()}</td>
+          <td class="py-2 pr-4"><span class="rounded-full bg-white/10 px-2 py-1 text-xs">${r.status}</span></td>
+          <td class="py-2 pr-4"><a class="underline decoration-lime-400/60 underline-offset-2 text-white/80 hover:text-white" href="${escapeAttr(r.primary_url)}" target="_blank" rel="noopener">Open</a></td>
+        `;
+        tbody.appendChild(tr);
+      });
+      statSubmitted.textContent = rows.length;
+      // naive status counters
+      statReview.textContent = rows.filter(r => r.status === 'In Review').length;
+      statPublished.textContent = rows.filter(r => r.status === 'Published').length;
+    }
+    function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+    function escapeAttr(s){ return (s||'').replace(/"/g, '&quot;'); }
+
+    renderSubs();
+
+    // Submit Story (Formspree + local preview)
+    const storyForm = document.getElementById('storyForm');
+    const storyMsg = document.getElementById('storyMsg');
+    storyForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      storyMsg.textContent = 'Submitting…';
+      const fd = new FormData(storyForm);
+      // local preview row
+      const row = {
+        title: fd.get('title'),
+        beat: fd.get('beat'),
+        date: Date.now(),
+        status: 'In Review',
+        primary_url: fd.get('primary_url')
+      };
+      const rows = readSubs();
+      rows.unshift(row);
+      writeSubs(rows);
+      renderSubs();
+
+      // send to Formspree
+      try {
+        const res = await fetch(storyForm.action, { method:'POST', body:fd, headers:{'Accept':'application/json'}});
+        if(res.ok){
+          storyMsg.className = 'text-sm text-lime-300';
+          storyMsg.textContent = 'Received! Editors will review shortly.';
+          storyForm.reset();
+        }else{
+          storyMsg.className = 'text-sm text-red-300';
+          storyMsg.textContent = 'Submission failed. Please try again.';
+        }
+      } catch {
+        storyMsg.className = 'text-sm text-red-300';
+        storyMsg.textContent = 'Network error. Saved locally — try again later.';
+      }
+    });
+  </script>
+</body>
+</html>
