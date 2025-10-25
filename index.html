@@ -96,17 +96,33 @@
     </a>
 
 
-    <!-- Notify Form (mailto for zero‑backend) -->
-    <!-- Formspree: works on GitHub Pages. Replace YOUR_FORM_ID below. -->
-    <form id="notifyForm" action="https://formspree.io/f/YOUR_FORM_ID" method="POST" class="mt-4 flex w-full max-w-md items-center gap-2">
-      <div class="relative w-full">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40"><path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v.4l-10 6.25L2 6.4V6Zm0 2.8v9.2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8.8l-10 6.25L2 8.8Z"/></svg>
-        <input id="email" name="email" type="email" required placeholder="Your email for early access" class="w-full rounded-full border border-white/20 bg-white/10 py-3 pl-10 pr-4 text-sm placeholder:text-white/50 outline-none backdrop-blur focus:border-white/40" />
-      </div>
-      <!-- Optional: add a hidden field to tag the list -->
-      <input type="hidden" name="segment" value="onemarket-prelaunch" />
-      <button type="submit" class="rounded-full border border-white/10 bg-white/90 px-4 py-3 text-sm font-semibold text-black transition hover:bg-white">Notify Me</button>
-    </form>
+    <!-- Notify Form (connected to Formspree) -->
+<form id="notifyForm"
+      name="onemarket-early-access"
+      action="https://formspree.io/f/xjkpbrna"
+      method="POST"
+      class="mt-4 flex w-full max-w-md items-center gap-2">
+
+  <div class="relative w-full">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+         fill="currentColor"
+         class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40">
+      <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v.4l-10 6.25L2 6.4V6Zm0 2.8v9.2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8.8l-10 6.25L2 8.8Z"/>
+    </svg>
+    <input id="email" name="email" type="email" required
+           placeholder="Your email for early access"
+           class="w-full rounded-full border border-white/20 bg-white/10 py-3 pl-10 pr-4 text-sm placeholder:text-white/50 outline-none backdrop-blur focus:border-white/40" />
+  </div>
+
+  <!-- Optional hidden tag -->
+  <input type="hidden" name="segment" value="onemarket-prelaunch" />
+
+  <button type="submit"
+          class="rounded-full border border-white/10 bg-white/90 px-4 py-3 text-sm font-semibold text-black transition hover:bg-white">
+    Notify Me
+  </button>
+</form>
+
 
     <footer class="pointer-events-auto mt-10 text-xs text-white/60">
       <div class="flex items-center justify-center gap-4">
