@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OneMarket News — Story</title>
+  <meta name="description" content="Read full verified stories from OneMarket News — the trust layer for information." />
+  <meta name="theme-color" content="#a3e635" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background:#000; color:#fff }
+    .noise{background-image:radial-gradient(1px 1px at 25px 25px,rgba(255,255,255,.9)1px,transparent 0);opacity:.06}
+    .glass{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));backdrop-filter:blur(10px) saturate(120%)}
+    @keyframes fadeIn { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)} }
+    .fade-in { animation: fadeIn .6s ease-out .2s both }
+  </style>
+</head>
+<body>
+  <!-- Background -->
+  <div class="fixed inset-0 -z-10">
+    <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/25 to-black/80"></div>
+    <div aria-hidden class="noise absolute inset-0"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 backdrop-blur bg-black/30 border-b border-white/10">
+    <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+      <a href="/feed.html" class="flex items-center gap-2 text-white/80 hover:text-white">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+        Back to Feed
+      </a>
+      <a href="/" class="font-black tracking-tight">
+        ONE<span class="text-lime-400">MARKET</span> <span class="font-semibold text-white/80">News</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Story container -->
+  <main class="mx-auto max-w-3xl px-4 py-10 fade-in">
+    <article id="story" class="glass rounded-2xl border border-white/10 p-6 sm:p-10">
+      <header>
+        <h1 id="title" class="text-3xl sm:text-4xl font-bold leading-snug"></h1>
+        <div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-white/60" id="meta"></div>
+      </header>
+
+      <section id="summary" class="mt-6 text-base leading-relaxed text-white/80"></section>
+
+      <section id="sources" class="mt-8 hidden">
+        <h2 class="text-lg font-semibold text-white mb-2">Sources & Citations</h2>
+        <ul id="sourceList" class="list-disc space-y-1 pl-5 text-sm text-lime-300"></ul>
+      </section>
+    </article>
+
+    <!-- Nav between stories -->
+    <nav class="mt-8 flex justify-between text-sm">
+      <button id="prev" class="rounded-full border border-white/20 px-4 py-2 hover:bg-white/10">&larr; Previous</button>
+      <button id="next" class="rounded-full border border-white/20 px-4 py-2 hover:bg-white/10">Next &rarr;</button>
+    </nav>
+
+    <footer class="mt-12 text-center text-xs text-white/60">
+      © <span id="year"></span> OneMarket News, LLC.
+    </footer>
+  </main>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    const KEY = "onemarket.submissions";
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    const storyEl = document.getElementById("story");
+    const titleEl = document.getElementById("title");
+    const metaEl = document.getElementById("meta");
+    const summaryEl = document.getElementById("summary");
+    const sourcesEl = document.getElementById("sources");
+    const sourceListEl = document.getElementById("sourceList");
+    const prevBtn = document.getElementById("prev");
+    const nextBtn = document.getElementById("next");
+
+    const escapeHtml = (s='') => s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    const escapeAttr = (s='') => s.replace(/"/g,'&quot;');
+    const formatDate = ts => { try{return new Date(ts).toLocaleString();}catch{return'';} };
+
+    function readSubs(){ try{return JSON.parse(localStorage.getItem(KEY)||"[]");}catch{return[];} }
+
+    function renderStory(){
+      const all = readSubs().filter(x=>x.status==="Published");
+      const idx = all.findIndex(x=>String(x.id)===String(id));
+      if(idx<0){ storyEl.innerHTML = "<p class='text-center text-white/60'>Story not found.</p>"; return; }
+      const s = all[idx];
+
+      titleEl.textContent = s.title || "(Untitled)";
+      metaEl.innerHTML = `
+        ${s.beat?`<span class='rounded-full bg-white/10 px-2 py-1 text-white/70'>${escapeHtml(s.beat)}</span>`:''}
+        ${s.tags?`<span class='text-white/50'>•</span><span>${escapeHtml(Array.isArray(s.tags)?s.tags.join(', '):s.tags)}</span>`:''}
+        ${s.date?`<span class='text-white/50'>•</span><time datetime="${escapeAttr(new Date(s.date).toISOString())}">${escapeHtml(formatDate(s.date))}</time>`:''}
+      `;
+      summaryEl.textContent = s.summary || "No summary provided.";
+
+      // Sources list
+      const sources = s.sources || [];
+      if(Array.isArray(sources) && sources.length){
+        sourcesEl.classList.remove("hidden");
+        sourceListEl.innerHTML = "";
+        sources.forEach(u=>{
+          const li=document.createElement("li");
+          li.innerHTML=`<a href="${escapeAttr(u)}" target="_blank" rel="noopener" class="underline hover:text-lime-400">${escapeHtml(u)}</a>`;
+          sourceListEl.appendChild(li);
+        });
+      }
+
+      // Prev / Next
+      prevBtn.disabled = idx===0;
+      nextBtn.disabled = idx===all.length-1;
+      prevBtn.onclick = ()=>{ if(idx>0) window.location.href=`story.html?id=${encodeURIComponent(all[idx-1].id)}`; };
+      nextBtn.onclick = ()=>{ if(idx<all.length-1) window.location.href=`story.html?id=${encodeURIComponent(all[idx+1].id)}`; };
+    }
+
+    renderStory();
+  </script>
+</body>
+</html>
