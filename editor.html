@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OneMarket — Editor Review</title>
+  <meta name="theme-color" content="#a3e635" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { --lime:#a3e635; }
+    body{background:#000;color:#fff}
+    .noise{background-image:radial-gradient(1px 1px at 25px 25px,rgba(255,255,255,.9)1px,transparent 0);opacity:.06}
+    .glass{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));backdrop-filter:blur(10px) saturate(120%)}
+    .field{width:100%;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);padding:.7rem .85rem;color:#fff}
+    table td,table th{padding:.6rem .75rem}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    .fade-in{animation:fadeIn .4s ease-out both}
+    /* Modal */
+    .modal-bg{background:linear-gradient(180deg,rgba(0,0,0,.6),rgba(0,0,0,.8))}
+  </style>
+</head>
+<body>
+  <!-- Background -->
+  <div class="fixed inset-0 -z-10">
+    <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/25 to-black/80"></div>
+    <div aria-hidden class="noise absolute inset-0"></div>
+  </div>
+
+  <!-- Password Gate Modal -->
+  <div id="gate" class="fixed inset-0 z-50 flex items-center justify-center modal-bg">
+    <div class="glass w-full max-w-md rounded-2xl border border-white/15 p-6">
+      <div class="flex items-center gap-2 text-white/70 text-xs">
+        <span class="h-2 w-2 rounded-full bg-lime-400"></span> Editor Access
+      </div>
+      <h1 class="mt-2 text-2xl font-black">Enter Passcode</h1>
+      <p class="mt-1 text-white/70 text-sm">This page is for OneMarket editors only.</p>
+
+      <form id="gateForm" class="mt-5 space-y-3">
+        <input id="pass" type="password" placeholder="Editor passcode" class="field" autocomplete="current-password" />
+        <button class="w-full rounded-full bg-lime-400 px-5 py-3 font-semibold text-black hover:bg-lime-300">Unlock</button>
+        <div id="gateMsg" class="text-sm text-red-300"></div>
+      </form>
+      <p class="mt-4 text-center text-xs text-white/50">Tip: change the passcode in the script constant <code>EDITOR_PASS</code>.</p>
+    </div>
+  </div>
+
+  <main id="app" class="mx-auto hidden max-w-7xl p-6 space-y-6">
+    <!-- Header / Actions -->
+    <header class="flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h1 class="text-2xl font-black">Editor Review</h1>
+        <p class="text-white/70 text-sm">Local prototype — reads/writes <code>onemarket.submissions</code> from this browser.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="exportCsv" class="rounded-full bg-lime-400 px-4 py-2 font-semibold text-black hover:bg-lime-300">Export CSV</button>
+        <button id="exportJson" class="rounded-full border border-white/20 px-4 py-2 hover:bg-white/10">Export JSON</button>
+        <label class="rounded-full border border-white/20 px-4 py-2 hover:bg-white/10 cursor-pointer">
+          Import JSON <input id="importJson" type="file" accept="application/json" class="hidden">
+        </label>
+        <button id="lock" class="rounded-full border border-white/20 px-4 py-2 hover:bg-white/10">Lock</button>
+      </div>
+    </header>
+
+    <!-- Stats -->
+    <section class="grid gap-4 sm:grid-cols-3">
+      <div class="glass rounded-2xl p-5">
+        <p class="text-white/60 text-sm">Total Submissions</p>
+        <p id="statTotal" class="mt-1 text-3xl font-bold">0</p>
+      </div>
+      <div class="glass rounded-2xl p-5">
+        <p class="text-white/60 text-sm">In Review</p>
+        <p id="statReview" class="mt-1 text-3xl font-bold">0</p>
+      </div>
+      <div class="glass rounded-2xl p-5">
+        <p class="text-white/60 text-sm">Published</p>
+        <p id="statPublished" class="mt-1 text-3xl font-bold">0</p>
+      </div>
+    </section>
+
+    <!-- Toolbar -->
+    <section class="glass rounded-2xl p-5 fade-in">
+      <div class="flex flex-wrap items-end gap-3">
+        <div>
+          <label class="block text-xs text-white/60 mb-1">Status</label>
+          <select id="fStatus" class="field w-44">
+            <option value="">All</option>
+            <option>In Review</option>
+            <option>Needs Edits</option>
+            <option>Published</option>
+            <option>Rejected</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-white/60 mb-1">Beat</label>
+          <select id="fBeat" class="field w-48">
+            <option value="">All</option>
+            <option>AI</option>
+            <option>Chips / Hardware</option>
+            <option>Energy</option>
+            <option>Markets</option>
+            <option>Policy / Regulation</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="flex-1 min-w-[200px]">
+          <label class="block text-xs text-white/60 mb-1">Search title</label>
+          <input id="fSearch" class="field" placeholder="Type to filter…" />
+        </div>
+        <button id="clearFilters" class="rounded-lg border border-white/20 px-3 py-2 hover:bg-white/10">Clear</button>
+      </div>
+    </section>
+
+    <!-- Table -->
+    <section class="glass rounded-2xl p-5 fade-in">
+      <div class="mt-1 overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead>
+            <tr class="text-left text-white/60 border-b border-white/10">
+              <th>Title</th>
+              <th>Beat</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Primary URL</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /* ====== Config ====== */
+    const EDITOR_PASS = 'onemarket2025'; // <-- change this to your secret
+    const LS_AUTH_KEY = 'onemarket.editor.auth';
+    const LS_SUBS_KEY = 'onemarket.submissions';
+
+    /* ====== Gate Logic ====== */
+    const gate = document.getElementById('gate');
+    const app  = document.getElementById('app');
+    const gateForm = document.getElementById('gateForm');
+    const gateMsg  = document.getElementById('gateMsg');
+    const passInp  = document.getElementById('pass');
+
+    function unlock(){
+      gate.classList.add('hidden');
+      app.classList.remove('hidden');
+      localStorage.setItem(LS_AUTH_KEY, '1');
+      render();
+    }
+    function lock(){
+      localStorage.removeItem(LS_AUTH_KEY);
+      location.reload();
+    }
+
+    if(localStorage.getItem(LS_AUTH_KEY) === '1'){ unlock(); }
+
+    gateForm.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const val = passInp.value.trim();
+      if(val === EDITOR_PASS){ unlock(); }
+      else{
+        gateMsg.textContent = 'Incorrect passcode. Try again.';
+        passInp.value = '';
+        passInp.focus();
+      }
+    });
+
+    document.getElementById('lock').addEventListener('click', lock);
+
+    /* ====== Data Helpers ====== */
+    const read = () => JSON.parse(localStorage.getItem(LS_SUBS_KEY) || '[]');
+    const write = (v) => localStorage.setItem(LS_SUBS_KEY, JSON.stringify(v));
+
+    /* ====== UI Refs ====== */
+    const rowsEl = document.getElementById('rows');
+    const statTotal = document.getElementById('statTotal');
+    const statReview = document.getElementById('statReview');
+    const statPublished = document.getElementById('statPublished');
+
+    const fStatus = document.getElementById('fStatus');
+    const fBeat   = document.getElementById('fBeat');
+    const fSearch = document.getElementById('fSearch');
+
+    document.getElementById('clearFilters').addEventListener('click', ()=>{
+      fStatus.value = '';
+      fBeat.value = '';
+      fSearch.value = '';
+      render();
+    });
+
+    [fStatus, fBeat].forEach(el => el.addEventListener('change', render));
+    fSearch.addEventListener('input', render);
+
+    /* ====== Render ====== */
+    function render(){
+      const data = read();
+
+      // Stats
+      statTotal.textContent = data.length;
+      statReview.textContent = data.filter(r=>r.status==='In Review').length;
+      statPublished.textContent = data.filter(r=>r.status==='Published').length;
+
+      // Filters
+      const s = (fStatus.value||'').toLowerCase();
+      const b = (fBeat.value||'').toLowerCase();
+      const q = (fSearch.value||'').toLowerCase();
+
+      const filtered = data.filter(r=>{
+        const okS = !s || (r.status||'').toLowerCase() === s;
+        const okB = !b || (r.beat||'').toLowerCase() === b;
+        const okQ = !q || (r.title||'').toLowerCase().includes(q);
+        return okS && okB && okQ;
+      });
+
+      // Rows
+      rowsEl.innerHTML = '';
+      filtered.forEach((r, idxFiltered)=>{
+        // Real index in source array for save/delete
+        const i = data.indexOf(r);
+
+        const tr = document.createElement('tr');
+        tr.className = 'border-t border-white/10';
+        tr.innerHTML = `
+          <td class="align-top">${escapeHtml(r.title||'')}</td>
+          <td class="align-top text-white/70">${escapeHtml(r.beat||'')}</td>
+          <td class="align-top text-white/70">${r.date ? new Date(r.date).toLocaleString() : ''}</td>
+          <td class="align-top">
+            <select data-idx="${i}" class="field w-40">
+              ${['In Review','Needs Edits','Published','Rejected'].map(s=>`<option ${r.status===s?'selected':''}>${s}</option>`).join('')}
+            </select>
+          </td>
+          <td class="align-top">
+            ${r.primary_url ? `<a class="underline decoration-lime-400/60 underline-offset-2 text-white/80 hover:text-white" href="${escapeAttr(r.primary_url)}" target="_blank" rel="noopener">Open</a>` : '<span class="text-white/40">—</span>'}
+          </td>
+          <td class="align-top">
+            <div class="flex items-center gap-2">
+              <button data-del="${i}" class="rounded-lg border border-white/20 px-2 py-1 hover:bg-white/10">Delete</button>
+            </div>
+          </td>
+        `;
+        rowsEl.appendChild(tr);
+      });
+
+      // Status change handlers
+      rowsEl.querySelectorAll('select[data-idx]').forEach(sel=>{
+        sel.addEventListener('change', e=>{
+          const idx = +e.target.dataset.idx;
+          const data = read();
+          data[idx].status = e.target.value;
+          write(data); render(); // refresh stats/filters
+        });
+      });
+
+      // Delete handlers
+      rowsEl.querySelectorAll('button[data-del]').forEach(btn=>{
+        btn.addEventListener('click', e=>{
+          const idx = +e.target.dataset.del;
+          const data = read();
+          if(confirm('Delete this submission?')){
+            data.splice(idx,1);
+            write(data); render();
+          }
+        });
+      });
+    }
+
+    function escapeHtml(s){return (s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+    function escapeAttr(s){return (s||'').replace(/"/g,'&quot;')}
+
+    /* ====== Export / Import ====== */
+    document.getElementById('exportCsv').onclick = ()=>{
+      const data = read();
+      const rows = [['Title','Beat','Date','Status','Primary URL']].concat(
+        data.map(r=>[r.title||'', r.beat||'', new Date(r.date||Date.now()).toISOString(), r.status||'', r.primary_url||''])
+      );
+      const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+      downloadBlob('onemarket_submissions.csv', csv, 'text/csv;charset=utf-8;');
+    };
+
+    document.getElementById('exportJson').onclick = ()=>{
+      const data = read();
+      downloadBlob('onemarket_submissions.json', JSON.stringify(data, null, 2), 'application/json');
+    };
+
+    document.getElementById('importJson').addEventListener('change', async (e)=>{
+      const file = e.target.files[0];
+      if(!file) return;
+      try{
+        const text = await file.text();
+        const data = JSON.parse(text);
+        if(!Array.isArray(data)) throw new Error('Invalid JSON format');
+        write(data); render();
+        alert('Imported successfully.');
+      }catch(err){
+        alert('Import failed: ' + err.message);
+      }finally{
+        e.target.value = '';
+      }
+    });
+
+    function downloadBlob(filename, content, type){
+      const blob = new Blob([content], {type});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+  </script>
+</body>
+</html>
