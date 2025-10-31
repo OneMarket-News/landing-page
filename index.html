@@ -1,61 +1,171 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>OneMarket News — Be First In Line</title>
-<meta name="theme-color" content="#0b0f14"/>
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-  body{background:#000;color:#fff}
-  .noise{background-image:radial-gradient(1px 1px at 25px 25px,rgba(255,255,255,.9)1px,transparent 0);opacity:.06}
-  .glass{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));backdrop-filter:blur(10px) saturate(120%)}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OneMarket News — Be First In Line</title>
+  <meta name="description" content="Be first in line for OneMarket News. Curated sources, transparent citations, and real-time community signal — all in one feed." />
+  <meta name="theme-color" content="#a3e635" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background:#000; color:#fff }
+    .noise{background-image:radial-gradient(1px 1px at 25px 25px,rgba(255,255,255,.9)1px,transparent 0);opacity:.06}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .fade-in{animation:fadeIn .9s ease-out .2s both}
+
+    /* Mosaic grid (kept from original) */
+    .mosaic-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);gap:.5rem;height:100%}
+    .tile{position:relative;overflow:hidden;filter:blur(3px);background:#0b121a}
+    .tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.08);opacity:.9}
+    @keyframes drift{0%{transform:scale(1.08) translate3d(0,0,0)}50%{transform:scale(1.12) translate3d(10px,-10px,0)}100%{transform:scale(1.08) translate3d(0,0,0)}}
+    .tile img{animation:drift 24s ease-in-out infinite}
+    .tile img.loaded{opacity:.95;transition:opacity .6s ease}
+    .tile.slow img{animation-duration:28s}
+    .tile.fast img{animation-duration:20s}
+    @media (prefers-reduced-motion:reduce){.tile img{animation:none;transform:scale(1.05)}}
+  </style>
 </head>
 <body class="min-h-screen">
-<header class="sticky top-0 z-40 backdrop-blur bg-black/40 border-b border-white/10">
-  <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
-    <a href="index.html" class="font-black tracking-tight">
-      ONE<span class="text-lime-400">MARKET</span> <span class="font-semibold text-white/80">News</span>
-    </a>
-    <nav class="flex items-center gap-4 text-sm text-white/70">
-      <a data-nav="feed" href="feed.html" class="hover:text-white">Feed</a>
-      <a data-nav="writers" href="register-writer.html" class="hover:text-white">For Writers</a>
-      <a data-nav="admin" href="admin.html" class="hover:text-white">Admin</a>
-    </nav>
-  </div>
-</header>
-
-<main class="relative">
-  <div class="fixed inset-0 -z-10">
-    <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/80"></div>
-    <div aria-hidden class="noise absolute inset-0"></div>
+  <!-- Background (mosaic + dark gradients + noise) -->
+  <div class="fixed inset-0 -z-10 overflow-hidden">
+    <div id="bgMosaic" class="absolute inset-0"></div>
+    <div class="absolute inset-0 bg-black/80"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/70"></div>
+    <div aria-hidden class="noise absolute inset-0 pointer-events-none"></div>
   </div>
 
-  <section class="mx-auto max-w-4xl px-4 py-24 text-center">
-    <span class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs tracking-wider">
-      <span class="h-2 w-2 rounded-full bg-lime-400"></span> Coming Soon
+  <!-- Content -->
+  <main class="fade-in mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center px-4 text-center">
+    <!-- Badge -->
+    <span class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-white/90 backdrop-blur">
+      <span class="h-2 w-2 rounded-full bg-lime-400"></span>
+      Coming Soon
     </span>
-    <h1 class="mt-4 text-5xl font-black">ONE<span class="text-lime-400">MARKET</span> <span class="font-semibold text-white/80">News</span></h1>
-    <p class="mt-3 text-white/80 max-w-2xl mx-auto">The trust-layer of news: verified sources, transparent citations, real-time signal.</p>
 
-    <div class="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
-      <a href="feed.html" class="rounded-full bg-lime-400 text-black font-semibold px-6 py-3 hover:bg-lime-300">View Feed</a>
-      <a href="register-writer.html" class="rounded-full border border-white/15 bg-white/5 px-6 py-3 hover:bg-white/10">Register as Writer</a>
+    <!-- Brand -->
+    <h1 class="mt-4 font-black tracking-tight">
+      <span class="block text-5xl sm:text-6xl md:text-7xl">ONE<span class="text-lime-400">MARKET</span></span>
+      <span class="mt-1 block text-xl font-semibold text-white/70 sm:text-2xl">News</span>
+    </h1>
+
+    <p class="mt-4 mb-6 max-w-2xl text-balance text-base text-white/80 sm:text-lg">
+      Be first in line for the trust-layer of news. Curated sources, transparent citations, and real-time community signal — all in one feed.
+    </p>
+
+    <!-- Primary CTA -->
+    <div class="mt-6 flex flex-col items-center gap-3">
+      <a href="/register-writer.html"
+         class="group inline-flex items-center gap-2 rounded-full bg-lime-400 px-6 py-3 font-semibold text-black shadow-lg shadow-lime-500/20 transition hover:-translate-y-0.5 hover:bg-lime-300 focus:outline-none focus:ring-2 focus:ring-lime-300">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="h-5 w-5">
+          <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm2.92.92l9.19-9.19 1.42 1.42-9.19 9.19H5.92v-1.42zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"/>
+        </svg>
+        <span>Register as Writer</span>
+      </a>
+
+      <!-- Email notify (Formspree) -->
+      <form id="notifyForm"
+            name="onemarket-early-access"
+            action="https://formspree.io/f/xjkpbrna"
+            method="POST"
+            class="mt-3 flex w-full max-w-md items-center gap-2">
+        <div class="relative w-full">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+               fill="currentColor"
+               class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40">
+            <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v.4l-10 6.25L2 6.4V6Zm0 2.8v9.2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8.8l-10 6.25L2 8.8Z"/>
+          </svg>
+          <input id="email" name="email" type="email" required
+                 placeholder="Your email for early access"
+                 class="w-full rounded-full border border-white/20 bg-white/10 py-3 pl-10 pr-4 text-sm placeholder:text-white/50 outline-none backdrop-blur focus:border-white/40" />
+        </div>
+        <input type="hidden" name="segment" value="onemarket-prelaunch" />
+        <button type="submit"
+                class="rounded-full border border-white/10 bg-white/90 px-4 py-3 text-sm font-semibold text-black transition hover:bg-white">
+          Notify Me
+        </button>
+      </form>
     </div>
-  </section>
-</main>
 
-<footer class="mt-10 text-center text-xs text-white/60">
-  <div class="flex items-center justify-center gap-4">
-    <a href="terms.html" class="hover:text-white/90">Terms</a>
-    <a href="privacy.html" class="hover:text-white/90">Privacy</a>
-    <a href="feed.html" class="hover:text-white/90">Feed</a>
-  </div>
-  <p class="mt-2">© <span id="year"></span> OneMarket News, LLC.</p>
-</footer>
-<script>
-  document.getElementById('year').textContent = new Date().getFullYear();
-  (function(){const map={};const f=(location.pathname.split('/').pop()||'index.html').toLowerCase();const k=map[f];if(k)document.querySelector(`[data-nav="${k}"]`)?.classList.add('text-white','underline','underline-offset-4');})();
-</script>
+    <footer class="pointer-events-auto mt-10 text-xs text-white/60">
+      <div class="flex items-center justify-center gap-4">
+        <a href="/terms" class="hover:text-white/90">Terms of Use</a>
+        <a href="/privacy" class="hover:text-white/90">Privacy Policy</a>
+      </div>
+      <p class="mt-2">© <span id="year"></span> OneMarket News, LLC.</p>
+    </footer>
+  </main>
+
+  <script>
+    // year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Formspree AJAX
+    const form = document.getElementById('notifyForm');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      try {
+        const res = await fetch(form.action, { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } });
+        if (res.ok) {
+          const msg = document.createElement('div');
+          msg.className = 'mt-3 text-sm text-lime-300';
+          msg.textContent = "Thanks! You're on the early-access list.";
+          form.insertAdjacentElement('afterend', msg);
+          form.reset();
+        } else {
+          alert('Submission failed. Please try again.');
+        }
+      } catch {
+        alert('Network error. Please try again.');
+      }
+    });
+
+    // --- BACKGROUND MOSAIC (robust on static hosts) ---
+    const images = [
+      'https://images.unsplash.com/photo-1522205408450-add114ad53fe?q=80&w=1600&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=1600&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1522199710521-72d69614c702?q=80&w=1600&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1600&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1518085250887-2f903c200fee?q=80&w=1600&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1581091870627-3f09c06c7f6e?q=80&w=1600&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1517511620798-cec17d428bc0?q=80&w=1600&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1517148815978-75f6acaaf32c?q=80&w=1600&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1600&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1581091215367-59ab6e6c3cdd?q=80&w=1600&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1516251193007-45ef944ab0c6?q=80&w=1600&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1556767576-cf6e6e6c4161?q=80&w=1600&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1504384764586-bb4cdc1707b0?q=80&w=1600&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1494797710133-75ad8b3d3b22?q=80&w=1600&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1504711331083-9c895941bf81?q=80&w=1600&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1542228262-3d663b306a56?q=80&w=1600&auto=format&fit=crop',
+      // fallbacks
+      'https://picsum.photos/seed/news1/1600/900',
+      'https://picsum.photos/seed/news2/1600/900',
+      'https://picsum.photos/seed/news3/1600/900',
+      'https://picsum.photos/seed/news4/1600/900'
+    ];
+    const bgRoot = document.getElementById('bgMosaic');
+    const grid = document.createElement('div');
+    grid.className = 'mosaic-grid';
+    bgRoot.appendChild(grid);
+
+    function pick(i, attempt=0){
+      const url = images[(i + attempt) % images.length];
+      return url + (url.includes('unsplash.com') ? '&auto=format' : '');
+    }
+    for (let i = 0; i < 16; i++) {
+      const tile = document.createElement('div');
+      tile.className = 'tile' + (i % 3 === 0 ? ' slow' : i % 3 === 1 ? ' fast' : '');
+      const img = document.createElement('img');
+      img.alt = 'News imagery background';
+      let attempt = 0;
+      function loadNext(){ img.src = pick(i, attempt++); }
+      img.onload = () => img.classList.add('loaded');
+      img.onerror = () => { if (attempt < 4) loadNext(); };
+      loadNext();
+      tile.appendChild(img);
+      grid.appendChild(tile);
+    }
+  </script>
 </body>
 </html>
