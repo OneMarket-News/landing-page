@@ -9,13 +9,22 @@
   <style>
     body{background:#000;color:#fff}
     .glass{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));backdrop-filter:blur(10px) saturate(120%)}
+    /* Fix native selects/options rendering in dark mode */
+    :root { color-scheme: dark; }
+    select{ background-color:rgba(255,255,255,.05) !important; color:#fff; }
+    option{ background:#0b0b0b; color:#fff; }
+    /* Nice select chevron */
+    .select{ appearance:none; padding-right:2.25rem; background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23cbd5e1" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5"/></svg>'); background-repeat:no-repeat; background-position:right .7rem center; background-size:16px 16px; }
+    .badge{border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06)}
   </style>
 </head>
 <body class="min-h-screen">
+  <!-- Header -->
   <header class="sticky top-0 z-40 backdrop-blur bg-black/40 border-b border-white/10">
     <div class="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
       <a href="/" class="font-black tracking-tight">ONE<span class="text-lime-400">MARKET</span> <span class="font-semibold text-white/80">News</span></a>
-      <nav class="text-sm text-white/70">
+      <nav class="text-sm text-white/70 flex items-center gap-4">
+        <a class="hover:text-white" href="/register-writer.html">Write</a>
         <a class="hover:text-white" href="/admin.html">Admin</a>
       </nav>
     </div>
@@ -24,12 +33,12 @@
   <main class="mx-auto max-w-5xl px-4 py-6">
     <!-- Filters -->
     <div class="mb-4 flex flex-wrap gap-2 items-center">
-      <input id="q" placeholder="Search title or tags…" class="w-full sm:w-64 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm outline-none placeholder:text-white/50">
-      <select id="beat" class="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm outline-none">
+      <input id="q" placeholder="Search title or tags…" class="w-full sm:w-72 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm outline-none placeholder:text-white/50">
+      <select id="beat" class="select rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm outline-none">
         <option value="">All beats</option>
         <option>AI</option><option>Markets</option><option>Energy</option><option>Chips / Hardware</option><option>Policy / Regulation</option><option>Other</option>
       </select>
-      <select id="trust" class="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm outline-none">
+      <select id="trust" class="select rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm outline-none">
         <option value="">All trust</option>
         <option value="green">Green</option>
         <option value="yellow">Yellow</option>
@@ -38,6 +47,7 @@
       <button id="refresh" class="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm hover:bg-white/15">Refresh</button>
     </div>
 
+    <!-- Feed list -->
     <div id="list" class="grid gap-4"></div>
 
     <footer class="mt-10 text-center text-xs text-white/60">© <span id="year"></span> OneMarket News, LLC.</footer>
@@ -46,10 +56,11 @@
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // ===== CONFIG =====
-    // If/when your Worker is live, set API_URL to it and the feed will use it.
-    // Example: const API_URL = "https://<your-worker>.workers.dev/api/submissions?status=Published";
-    const API_URL = ""; // keep empty to use localStorage for now
+    /* ========= CONFIG =========
+       When your Worker/API is ready, set API_URL and the feed will pull from it.
+       Keep empty to use localStorage (demo mode).
+    */
+    const API_URL = ""; // e.g., "https://your-worker.workers.dev/api/submissions?status=Published"
     const KEY = "onemarket.submissions";
 
     const elList = document.getElementById('list');
@@ -59,6 +70,7 @@
     const elRefresh = document.getElementById('refresh');
 
     const esc = s => String(s||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]));
+    const toLocal = ts => { try{return new Date(ts).toLocaleString();}catch{return "";} };
 
     async function load() {
       let items = [];
@@ -83,7 +95,23 @@
                : t.label==='yellow' ? 'bg-yellow-500/20 text-yellow-200'
                : 'bg-red-500/20 text-red-300';
       const s = Math.round(t.score||0);
-      return `<span class="rounded-full px-2 py-1 text-xs ${cls}">Trust ${s}% • ${esc(t.label)}</span>`;
+      return `<span class="rounded-full px-2 py-1 text-[11px] ${cls}">Trust ${s}% • ${esc(t.label)}</span>`;
+    }
+
+    function shareButtons(s) {
+      const url = `${location.origin}/story.html?id=${encodeURIComponent(s.id)}`;
+      const text = encodeURIComponent(s.title || "OneMarket story");
+      const shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(url)}&via=OneMarketNews`;
+      return `
+        <div class="flex items-center gap-2">
+          <a href="${shareUrl}" target="_blank" rel="noopener"
+            class="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs hover:bg-white/15 inline-flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M22 5.8c-.7.3-1.4.5-2.2.6.8-.5 1.4-1.2 1.7-2.1-.8.5-1.7.9-2.6 1.1C18 4.6 17 4 15.9 4c-2.1 0-3.7 1.9-3.2 4-3-.2-5.7-1.6-7.5-3.9-.9 1.5-.5 3.5 1.1 4.5-.6 0-1.2-.2-1.7-.5 0 1.7 1.2 3.2 2.9 3.5-.5.1-1 .2-1.5.1.4 1.4 1.7 2.4 3.2 2.4-1.2.9-2.8 1.4-4.4 1.4H3c1.6 1 3.5 1.6 5.5 1.6 6.6 0 10.3-5.7 10.1-10.8.7-.5 1.4-1.2 1.9-1.9z"/></svg>
+            Share
+          </a>
+          <button data-url="${url}" class="copylink rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs hover:bg-white/15">Copy link</button>
+        </div>
+      `;
     }
 
     function render(items) {
@@ -107,20 +135,37 @@
       elList.innerHTML = filtered.map(s => `
         <article class="glass rounded-2xl border border-white/10 p-5">
           <header class="flex flex-wrap items-center gap-2 text-xs text-white/60">
-            ${s.beat ? `<span class="rounded-full bg-white/10 px-2 py-1 text-white/70">${esc(s.beat)}</span>` : ""}
+            ${s.beat ? `<span class="badge rounded-full px-2 py-1 text-white/70">${esc(s.beat)}</span>` : ""}
             ${Array.isArray(s.tags)&&s.tags.length ? `<span>•</span><span>${esc(s.tags.join(", "))}</span>` : ""}
-            ${s.date ? `<span>•</span><time>${new Date(s.date).toLocaleString()}</time>` : ""}
+            ${s.date ? `<span>•</span><time datetime="${new Date(s.date).toISOString()}">${toLocal(s.date)}</time>` : ""}
             ${s.trust ? `<span>•</span>${trustBadge(s.trust)}` : ""}
           </header>
+
           <h2 class="mt-2 text-xl font-semibold">
             <a class="hover:underline" href="/story.html?id=${encodeURIComponent(s.id)}">${esc(s.title || "(Untitled)")}</a>
           </h2>
+
           <p class="mt-2 text-white/80 text-sm">${esc(s.summary || "")}</p>
-          <div class="mt-3 text-xs text-lime-300">
-            ${(Array.isArray(s.citations)?s.citations:[]).slice(0,2).map(u=>`<a class="underline hover:text-lime-400 mr-3" target="_blank" rel="noopener" href="${esc(u)}">Source</a>`).join("")}
+
+          <div class="mt-3 flex items-center justify-between">
+            <div class="text-xs text-lime-300">
+              ${(Array.isArray(s.citations)?s.citations:[]).slice(0,2).map(u=>`<a class="underline hover:text-lime-400 mr-3" target="_blank" rel="noopener" href="${esc(u)}">Source</a>`).join("")}
+            </div>
+            ${shareButtons(s)}
           </div>
         </article>
       `).join("");
+
+      // wire copy buttons
+      document.querySelectorAll('.copylink').forEach(btn=>{
+        btn.onclick = async () => {
+          try {
+            await navigator.clipboard.writeText(btn.getAttribute('data-url'));
+            btn.textContent = 'Copied!';
+            setTimeout(()=>btn.textContent='Copy link', 1200);
+          } catch {}
+        };
+      });
     }
 
     let cache = [];
