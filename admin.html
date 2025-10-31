@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OneMarket — Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body{background:#000;color:#fff}
+    .glass{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));backdrop-filter:blur(10px) saturate(120%)}
+  </style>
+</head>
+<body class="min-h-screen">
+  <header class="sticky top-0 z-40 backdrop-blur bg-black/40 border-b border-white/10">
+    <div class="mx-auto max-w-4xl px-4 py-3 flex items-center justify-between">
+      <a href="/feed.html" class="text-white/80 hover:text-white">← Back to Feed</a>
+      <div class="font-black tracking-tight">ONE<span class="text-lime-400">MARKET</span> Admin</div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-4xl px-4 py-6 space-y-6">
+    <section class="glass rounded-2xl border border-white/10 p-6">
+      <h1 class="text-xl font-semibold mb-4">Create Sample Post</h1>
+      <form id="f" class="grid gap-3">
+        <input class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" id="title" placeholder="Title" required>
+        <textarea class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" id="summary" rows="4" placeholder="Summary (2–4 sentences)" required></textarea>
+        <textarea class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" id="wim" rows="2" placeholder="Why it matters (1–2 sentences)"></textarea>
+
+        <div class="grid sm:grid-cols-2 gap-3">
+          <input class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" id="citations" placeholder="Citations (comma-separated URLs)">
+          <input class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" id="primary_url" placeholder="Primary URL (optional)">
+        </div>
+
+        <div class="grid sm:grid-cols-3 gap-3">
+          <select id="beat" class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none">
+            <option value="">Beat (optional)</option>
+            <option>AI</option><option>Markets</option><option>Energy</option><option>Chips / Hardware</option><option>Policy / Regulation</option><option>Other</option>
+          </select>
+          <input id="tags" class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" placeholder="Tags (comma-separated)">
+          <select id="status" class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none">
+            <option>Published</option>
+            <option>In Review</option>
+          </select>
+        </div>
+
+        <div class="grid sm:grid-cols-3 gap-3">
+          <select id="trustLabel" class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none">
+            <option value="green">Trust: Green</option>
+            <option value="yellow">Trust: Yellow</option>
+            <option value="red">Trust: Red</option>
+          </select>
+          <input id="trustScore" type="number" min="0" max="100" value="95" class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" placeholder="Trust score (0–100)">
+          <button class="rounded-full bg-lime-400 text-black font-semibold px-4 py-2 hover:bg-lime-300" type="submit">Save Post</button>
+        </div>
+      </form>
+      <p id="msg" class="mt-3 text-sm text-white/70"></p>
+    </section>
+
+    <section class="glass rounded-2xl border border-white/10 p-6">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-lg font-semibold">Existing Posts</h2>
+        <div class="space-x-2">
+          <button id="seed" class="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-sm hover:bg-white/15">Add 2 demo posts</button>
+          <button id="clear" class="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-sm hover:bg-white/15">Clear ALL</button>
+        </div>
+      </div>
+      <div id="list" class="space-y-2 text-sm"></div>
+    </section>
+  </main>
+
+  <script>
+    const KEY = "onemarket.submissions";
+    const $ = (id)=>document.getElementById(id);
+    const msg = $("msg"), list = $("list");
+
+    function read(){ try{return JSON.parse(localStorage.getItem(KEY)||"[]");}catch{return[];} }
+    function write(arr){ localStorage.setItem(KEY, JSON.stringify(arr)); }
+    function id(){ return "m_" + Math.random().toString(36).slice(2,10); }
+
+    function render(){
+      const all = read().sort((a,b)=>(b.date||0)-(a.date||0));
+      if(!all.length){ list.innerHTML = `<div class="text-white/60">No posts yet.</div>`; return; }
+      list.innerHTML = all.map(s => `
+        <div class="rounded-lg border border-white/10 bg-white/5 p-3 flex items-center justify-between">
+          <div>
+            <div class="font-semibold">${s.title || "(Untitled)"} <span class="text-xs text-white/50">• ${s.status}</span></div>
+            <div class="text-white/60">${(s.beat||"")}${s.tags && s.tags.length ? " • "+s.tags.join(", ") : ""}</div>
+          </div>
+          <div class="space-x-2">
+            <a class="underline text-lime-300" href="/story.html?id=${encodeURIComponent(s.id)}" target="_blank">View</a>
+            <button data-id="${s.id}" class="del underline text-red-300">Delete</button>
+          </div>
+        </div>
+      `).join("");
+      [...document.querySelectorAll(".del")].forEach(btn=>{
+        btn.onclick = ()=>{
+          const id = btn.getAttribute("data-id");
+          const next = read().filter(x=>String(x.id)!==String(id));
+          write(next); render();
+        };
+      });
+    }
+
+    $("f").addEventListener("submit", (e)=>{
+      e.preventDefault();
+      const post = {
+        id: id(),
+        title: $("title").value.trim(),
+        summary: $("summary").value.trim(),
+        why_it_matters: $("wim").value.trim(),
+        citations: $("citations").value.trim() ? $("citations").value.split(",").map(s=>s.trim()) : [],
+        primary_url: $("primary_url").value.trim() || "",
+        beat: $("beat").value || "Other",
+        tags: $("tags").value.trim() ? $("tags").value.split(",").map(s=>s.trim()) : [],
+        status: $("status").value,
+        date: Date.now(),
+        trust: { label: $("trustLabel").value, score: Number($("trustScore").value||0) }
+      };
+      const all = read();
+      all.unshift(post); write(all);
+      msg.textContent = "Saved. Open the Feed to see it.";
+      (e.target).reset(); render();
+    });
+
+    $("seed").onclick = ()=>{
+      const demo = [
+        { title:"NVIDIA announces new inference stack", summary:"NVIDIA introduced updates to its inference stack targeting throughput and latency improvements for enterprise workloads.", citations:["https://nvidianews.nvidia.com/newsreleases?"], beat:"Chips / Hardware", tags:["NVDA","AI"], status:"Published", trust:{label:"green",score:95} },
+        { title:"FTC files complaint on ad-tech merger", summary:"The FTC initiated a complaint to block a proposed ad-tech acquisition on competition grounds.", citations:["https://www.ftc.gov/feeds/press-release.xml"], beat:"Policy / Regulation", tags:["FTC","Antitrust"], status:"Published", trust:{label:"yellow",score:82} }
+      ].map(d => ({ id:id(), date:Date.now(), why_it_matters:"Implications for the ecosystem.", primary_url:d.citations[0], ...d }));
+      const all = read(); write([...demo, ...all]); render();
+    };
+
+    $("clear").onclick = ()=>{
+      if(confirm("Delete ALL posts?")){ write([]); render(); }
+    };
+
+    render();
+  </script>
+</body>
+</html>
