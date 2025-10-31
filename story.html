@@ -5,59 +5,59 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>OneMarket News — Story</title>
   <meta name="description" content="Read full verified stories from OneMarket News — the trust layer for information." />
-  <meta name="theme-color" content="#a3e635" />
+  <meta name="theme-color" content="#000" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { background:#000; color:#fff }
-    .noise{background-image:radial-gradient(1px 1px at 25px 25px,rgba(255,255,255,.9)1px,transparent 0);opacity:.06}
-    .glass{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));backdrop-filter:blur(10px) saturate(120%)}
-    @keyframes fadeIn { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)} }
-    .fade-in { animation: fadeIn .6s ease-out .2s both }
+    body{ background:#000; color:#fff }
+    .glass{ background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04)); backdrop-filter:blur(10px) saturate(120%) }
+    .badge{ border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06) }
+    .muted{ color:rgba(255,255,255,.7) }
   </style>
 </head>
 <body>
-  <!-- Background -->
-  <div class="fixed inset-0 -z-10">
-    <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/25 to-black/80"></div>
-    <div aria-hidden class="noise absolute inset-0"></div>
-  </div>
-
   <!-- Header -->
-  <header class="sticky top-0 z-40 backdrop-blur bg-black/30 border-b border-white/10">
+  <header class="sticky top-0 z-40 backdrop-blur bg-black/40 border-b border-white/10">
     <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
       <a href="/feed.html" class="flex items-center gap-2 text-white/80 hover:text-white">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 19 8 12l7-7"/></svg>
         Back to Feed
       </a>
-      <a href="/" class="font-black tracking-tight">
-        ONE<span class="text-lime-400">MARKET</span> <span class="font-semibold text-white/80">News</span>
-      </a>
+      <a href="/" class="font-black tracking-tight">ONE<span class="text-lime-400">MARKET</span> <span class="font-semibold text-white/80">News</span></a>
     </div>
   </header>
 
   <!-- Story container -->
-  <main class="mx-auto max-w-3xl px-4 py-10 fade-in">
-    <article id="story" class="glass rounded-2xl border border-white/10 p-6 sm:p-10">
-      <header>
-        <h1 id="title" class="text-3xl sm:text-4xl font-bold leading-snug"></h1>
-        <div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-white/60" id="meta"></div>
+  <main class="mx-auto max-w-3xl px-4 py-8">
+    <article id="storyCard" class="glass rounded-2xl border border-white/10 p-6 sm:p-8">
+      <header class="">
+        <div id="metaTop" class="flex flex-wrap items-center gap-2 text-xs text-white/60"></div>
+        <h1 id="title" class="mt-2 text-3xl sm:text-4xl font-bold leading-snug"></h1>
+        <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
+          <div id="metaBottom" class="flex flex-wrap items-center gap-2 text-xs text-white/60"></div>
+          <div id="share" class="flex items-center gap-2"></div>
+        </div>
       </header>
 
-      <section id="summary" class="mt-6 text-base leading-relaxed text-white/80"></section>
+      <section id="summary" class="mt-6 text-base leading-relaxed text-white/85"></section>
+
+      <section id="wimWrap" class="mt-6 hidden">
+        <h2 class="text-lg font-semibold">Why it matters</h2>
+        <p id="wim" class="mt-2 text-white/80"></p>
+      </section>
 
       <section id="sources" class="mt-8 hidden">
-        <h2 class="text-lg font-semibold text-white mb-2">Sources & Citations</h2>
-        <ul id="sourceList" class="list-disc space-y-1 pl-5 text-sm text-lime-300"></ul>
+        <h2 class="text-lg font-semibold">Sources & Citations</h2>
+        <ul id="sourceList" class="mt-2 list-disc space-y-1 pl-5 text-sm text-lime-300"></ul>
       </section>
     </article>
 
     <!-- Nav between stories -->
-    <nav class="mt-8 flex justify-between text-sm">
-      <button id="prev" class="rounded-full border border-white/20 px-4 py-2 hover:bg-white/10">&larr; Previous</button>
-      <button id="next" class="rounded-full border border-white/20 px-4 py-2 hover:bg-white/10">Next &rarr;</button>
+    <nav class="mt-6 flex justify-between text-sm">
+      <button id="prev" class="rounded-full border border-white/20 px-4 py-2 hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed">&larr; Previous</button>
+      <button id="next" class="rounded-full border border-white/20 px-4 py-2 hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed">Next &rarr;</button>
     </nav>
 
-    <footer class="mt-12 text-center text-xs text-white/60">
+    <footer class="mt-10 text-center text-xs text-white/60">
       © <span id="year"></span> OneMarket News, LLC.
     </footer>
   </main>
@@ -65,55 +65,136 @@
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
 
+    // ---- Storage / helpers ----
     const KEY = "onemarket.submissions";
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(location.search);
     const id = params.get("id");
-    const storyEl = document.getElementById("story");
-    const titleEl = document.getElementById("title");
-    const metaEl = document.getElementById("meta");
-    const summaryEl = document.getElementById("summary");
-    const sourcesEl = document.getElementById("sources");
-    const sourceListEl = document.getElementById("sourceList");
-    const prevBtn = document.getElementById("prev");
-    const nextBtn = document.getElementById("next");
 
-    const escapeHtml = (s='') => s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-    const escapeAttr = (s='') => s.replace(/"/g,'&quot;');
-    const formatDate = ts => { try{return new Date(ts).toLocaleString();}catch{return'';} };
+    const $ = id => document.getElementById(id);
+    const titleEl = $("title");
+    const metaTopEl = $("metaTop");
+    const metaBottomEl = $("metaBottom");
+    const summaryEl = $("summary");
+    const wimWrapEl = $("wimWrap");
+    const wimEl = $("wim");
+    const sourcesEl = $("sources");
+    const sourceListEl = $("sourceList");
+    const prevBtn = $("prev");
+    const nextBtn = $("next");
+    const shareEl = $("share");
+    const storyCard = $("storyCard");
 
-    function readSubs(){ try{return JSON.parse(localStorage.getItem(KEY)||"[]");}catch{return[];} }
+    const esc = (s="") => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    const toLocal = ts => { try { return new Date(ts).toLocaleString(); } catch { return ""; } };
 
-    function renderStory(){
-      const all = readSubs().filter(x=>x.status==="Published");
-      const idx = all.findIndex(x=>String(x.id)===String(id));
-      if(idx<0){ storyEl.innerHTML = "<p class='text-center text-white/60'>Story not found.</p>"; return; }
-      const s = all[idx];
+    function readSubs() {
+      try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
+      catch { return []; }
+    }
 
-      titleEl.textContent = s.title || "(Untitled)";
-      metaEl.innerHTML = `
-        ${s.beat?`<span class='rounded-full bg-white/10 px-2 py-1 text-white/70'>${escapeHtml(s.beat)}</span>`:''}
-        ${s.tags?`<span class='text-white/50'>•</span><span>${escapeHtml(Array.isArray(s.tags)?s.tags.join(', '):s.tags)}</span>`:''}
-        ${s.date?`<span class='text-white/50'>•</span><time datetime="${escapeAttr(new Date(s.date).toISOString())}">${escapeHtml(formatDate(s.date))}</time>`:''}
+    function trustBadge(t) {
+      if (!t) return "";
+      const cls = t.label==='green' ? 'bg-green-500/20 text-green-300'
+               : t.label==='yellow' ? 'bg-yellow-500/20 text-yellow-200'
+               : 'bg-red-500/20 text-red-300';
+      const s = Math.round(t.score||0);
+      return `<span class="rounded-full px-2 py-1 text-[11px] ${cls}">Trust ${s}% • ${esc(t.label)}</span>`;
+    }
+
+    function renderShare(s) {
+      const url = `${location.origin}/story.html?id=${encodeURIComponent(s.id)}`;
+      const text = encodeURIComponent(s.title || "OneMarket story");
+      const shareUrl = `https://x.com/intent/tweet?text=${text}&url=${encodeURIComponent(url)}&via=OneMarketNews`;
+      shareEl.innerHTML = `
+        <a href="${shareUrl}" target="_blank" rel="noopener" aria-label="Share on X"
+           class="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs hover:bg-white/15 inline-flex items-center gap-1.5">
+          <!-- Modern X icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M20.945 3H17.3l-4.01 5.05L8.19 3H3l7.01 9.26L3.3 21h3.65l4.22-5.31L15.82 21H21l-7.28-9.62L20.945 3zM16.52 19.5l-7.2-9.47 1.17-1.48 7.38 9.63-1.35 1.32zm-9.93-15h.96l7.02 9.16-.96 1.2L6.59 4.5z"/>
+          </svg>
+          Share
+        </a>
+        <button id="copy" class="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs hover:bg-white/15">Copy link</button>
       `;
-      summaryEl.textContent = s.summary || "No summary provided.";
+      $("copy").onclick = async () => {
+        try { await navigator.clipboard.writeText(url); $("copy").textContent = "Copied!"; setTimeout(()=>$("copy").textContent="Copy link", 1200); } catch {}
+      };
+    }
 
-      // Sources list
-      const sources = s.sources || [];
-      if(Array.isArray(sources) && sources.length){
-        sourcesEl.classList.remove("hidden");
-        sourceListEl.innerHTML = "";
-        sources.forEach(u=>{
-          const li=document.createElement("li");
-          li.innerHTML=`<a href="${escapeAttr(u)}" target="_blank" rel="noopener" class="underline hover:text-lime-400">${escapeHtml(u)}</a>`;
-          sourceListEl.appendChild(li);
-        });
+    function renderStory() {
+      const allPub = readSubs().filter(x => x.status === "Published");
+      const idx = allPub.findIndex(x => String(x.id) === String(id));
+
+      if (idx < 0) {
+        storyCard.innerHTML = `
+          <div class="text-center">
+            <h1 class="text-2xl font-semibold">Story not found</h1>
+            <p class="mt-2 text-white/70">It may have been removed or unpublished.</p>
+            <a class="mt-4 inline-block underline text-lime-300" href="/feed.html">Back to Feed</a>
+          </div>`;
+        prevBtn.disabled = true; nextBtn.disabled = true;
+        document.title = "OneMarket News — Story not found";
+        return;
       }
 
+      const s = allPub[idx];
+      document.title = `${s.title || "Story"} — OneMarket News`;
+
+      // Meta (top)
+      metaTopEl.innerHTML = `
+        ${s.beat ? `<span class="badge rounded-full px-2 py-1 text-white/70">${esc(s.beat)}</span>` : ""}
+        ${Array.isArray(s.tags)&&s.tags.length ? `<span>•</span><span>${esc(s.tags.join(", "))}</span>` : ""}
+        ${s.date ? `<span>•</span><time datetime="${new Date(s.date).toISOString()}">${toLocal(s.date)}</time>` : ""}
+        ${s.trust ? `<span>•</span>${trustBadge(s.trust)}` : ""}
+      `;
+
+      // Title
+      titleEl.textContent = s.title || "(Untitled)";
+
+      // Meta (bottom) — primary link if present
+      metaBottomEl.innerHTML = `
+        ${s.primary_url ? `<a class="underline text-lime-300 hover:text-lime-400" target="_blank" rel="noopener" href="${esc(s.primary_url)}">Primary source</a>` : `<span class="muted">Primary source: —</span>`}
+      `;
+
+      // Summary
+      summaryEl.textContent = s.summary || "No summary provided.";
+
+      // Why it matters
+      if (s.why_it_matters) {
+        wimEl.textContent = s.why_it_matters;
+        wimWrapEl.classList.remove("hidden");
+      } else {
+        wimWrapEl.classList.add("hidden");
+      }
+
+      // Sources list
+      const sources = Array.isArray(s.citations) ? s.citations : [];
+      if (sources.length) {
+        sourcesEl.classList.remove("hidden");
+        sourceListEl.innerHTML = "";
+        sources.forEach(u => {
+          const li = document.createElement("li");
+          li.innerHTML = `<a href="${esc(u)}" target="_blank" rel="noopener" class="underline hover:text-lime-400">${esc(u)}</a>`;
+          sourceListEl.appendChild(li);
+        });
+      } else {
+        sourcesEl.classList.add("hidden");
+      }
+
+      // Share
+      renderShare(s);
+
       // Prev / Next
-      prevBtn.disabled = idx===0;
-      nextBtn.disabled = idx===all.length-1;
-      prevBtn.onclick = ()=>{ if(idx>0) window.location.href=`story.html?id=${encodeURIComponent(all[idx-1].id)}`; };
-      nextBtn.onclick = ()=>{ if(idx<all.length-1) window.location.href=`story.html?id=${encodeURIComponent(all[idx+1].id)}`; };
+      prevBtn.disabled = (idx === 0);
+      nextBtn.disabled = (idx === allPub.length - 1);
+      prevBtn.onclick = () => { if (idx > 0) location.href = `story.html?id=${encodeURIComponent(allPub[idx-1].id)}`; };
+      nextBtn.onclick = () => { if (idx < allPub.length-1) location.href = `story.html?id=${encodeURIComponent(allPub[idx+1].id)}`; };
+
+      // Keyboard nav: ← →
+      window.onkeydown = (e) => {
+        if (e.key === "ArrowLeft" && !prevBtn.disabled) prevBtn.click();
+        if (e.key === "ArrowRight" && !nextBtn.disabled) nextBtn.click();
+      };
     }
 
     renderStory();
