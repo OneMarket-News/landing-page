@@ -11,63 +11,72 @@
   </style>
 </head>
 <body class="min-h-screen">
-  <header class="sticky top-0 z-40 backdrop-blur bg-black/40 border-b border-white/10">
-    <div class="mx-auto max-w-4xl px-4 py-3 flex items-center justify-between">
-      <a href="/feed.html" class="text-white/80 hover:text-white">← Back to Feed</a>
-      <div class="font-black tracking-tight">ONE<span class="text-lime-400">MARKET</span> Admin</div>
-    </div>
-  </header>
 
-  <main class="mx-auto max-w-4xl px-4 py-6 space-y-6">
-    <section class="glass rounded-2xl border border-white/10 p-6">
-      <h1 class="text-xl font-semibold mb-4">Create Sample Post</h1>
-      <form id="f" class="grid gap-3">
-        <input class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" id="title" placeholder="Title" required>
-        <textarea class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" id="summary" rows="4" placeholder="Summary (2–4 sentences)" required></textarea>
-        <textarea class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" id="wim" rows="2" placeholder="Why it matters (1–2 sentences)"></textarea>
+  <!-- 🔐 AUTH OVERLAY MOUNT -->
+  <div id="auth-root"></div>
 
-        <div class="grid sm:grid-cols-2 gap-3">
-          <input class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" id="citations" placeholder="Citations (comma-separated URLs)">
-          <input class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" id="primary_url" placeholder="Primary URL (optional)">
-        </div>
-
-        <div class="grid sm:grid-cols-3 gap-3">
-          <select id="beat" class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none">
-            <option value="">Beat (optional)</option>
-            <option>AI</option><option>Markets</option><option>Energy</option><option>Chips / Hardware</option><option>Policy / Regulation</option><option>Other</option>
-          </select>
-          <input id="tags" class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" placeholder="Tags (comma-separated)">
-          <select id="status" class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none">
-            <option>Published</option>
-            <option>In Review</option>
-          </select>
-        </div>
-
-        <div class="grid sm:grid-cols-3 gap-3">
-          <select id="trustLabel" class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none">
-            <option value="green">Trust: Green</option>
-            <option value="yellow">Trust: Yellow</option>
-            <option value="red">Trust: Red</option>
-          </select>
-          <input id="trustScore" type="number" min="0" max="100" value="95" class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" placeholder="Trust score (0–100)">
-          <button class="rounded-full bg-lime-400 text-black font-semibold px-4 py-2 hover:bg-lime-300" type="submit">Save Post</button>
-        </div>
-      </form>
-      <p id="msg" class="mt-3 text-sm text-white/70"></p>
-    </section>
-
-    <section class="glass rounded-2xl border border-white/10 p-6">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="text-lg font-semibold">Existing Posts</h2>
-        <div class="space-x-2">
-          <button id="seed" class="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-sm hover:bg-white/15">Add 2 demo posts</button>
-          <button id="clear" class="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-sm hover:bg-white/15">Clear ALL</button>
-        </div>
+  <!-- 🧠 PROTECTED APP CONTENT -->
+  <div id="app" hidden>
+    <header class="sticky top-0 z-40 backdrop-blur bg-black/40 border-b border-white/10">
+      <div class="mx-auto max-w-4xl px-4 py-3 flex items-center justify-between">
+        <a href="/feed.html" class="text-white/80 hover:text-white">← Back to Feed</a>
+        <div class="font-black tracking-tight">ONE<span class="text-lime-400">MARKET</span> Admin</div>
+        <button onclick="omLogout()" class="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs hover:bg-white/15">Logout</button>
       </div>
-      <div id="list" class="space-y-2 text-sm"></div>
-    </section>
-  </main>
+    </header>
 
+    <main class="mx-auto max-w-4xl px-4 py-6 space-y-6">
+      <section class="glass rounded-2xl border border-white/10 p-6">
+        <h1 class="text-xl font-semibold mb-4">Create Sample Post</h1>
+        <form id="f" class="grid gap-3">
+          <input class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" id="title" placeholder="Title" required>
+          <textarea class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" id="summary" rows="4" placeholder="Summary (2–4 sentences)" required></textarea>
+          <textarea class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" id="wim" rows="2" placeholder="Why it matters (1–2 sentences)"></textarea>
+
+          <div class="grid sm:grid-cols-2 gap-3">
+            <input class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" id="citations" placeholder="Citations (comma-separated URLs)">
+            <input class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" id="primary_url" placeholder="Primary URL (optional)">
+          </div>
+
+          <div class="grid sm:grid-cols-3 gap-3">
+            <select id="beat" class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none">
+              <option value="">Beat (optional)</option>
+              <option>AI</option><option>Markets</option><option>Energy</option><option>Chips / Hardware</option><option>Policy / Regulation</option><option>Other</option>
+            </select>
+            <input id="tags" class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" placeholder="Tags (comma-separated)">
+            <select id="status" class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none">
+              <option>Published</option>
+              <option>In Review</option>
+            </select>
+          </div>
+
+          <div class="grid sm:grid-cols-3 gap-3">
+            <select id="trustLabel" class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none">
+              <option value="green">Trust: Green</option>
+              <option value="yellow">Trust: Yellow</option>
+              <option value="red">Trust: Red</option>
+            </select>
+            <input id="trustScore" type="number" min="0" max="100" value="95" class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" placeholder="Trust score (0–100)">
+            <button class="rounded-full bg-lime-400 text-black font-semibold px-4 py-2 hover:bg-lime-300" type="submit">Save Post</button>
+          </div>
+        </form>
+        <p id="msg" class="mt-3 text-sm text-white/70"></p>
+      </section>
+
+      <section class="glass rounded-2xl border border-white/10 p-6">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-lg font-semibold">Existing Posts</h2>
+          <div class="space-x-2">
+            <button id="seed" class="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-sm hover:bg-white/15">Add 2 demo posts</button>
+            <button id="clear" class="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-sm hover:bg-white/15">Clear ALL</button>
+          </div>
+        </div>
+        <div id="list" class="space-y-2 text-sm"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- 📦 LOCAL POST LOGIC -->
   <script>
     const KEY = "onemarket.submissions";
     const $ = (id)=>document.getElementById(id);
@@ -135,6 +144,97 @@
     };
 
     render();
+  </script>
+
+  <!-- 🔐 PASSWORD GATE -->
+  <script>
+    // MVP password gate — static-site friendly.
+    const AUTH_CONFIG = {
+      realm: "onemarket-admin",
+      // Your SHA-256 hex (from your generator):
+      passHashHex: "e32b3109ef525b451510a3d957623ea1b735c06bd43b1a392185d7eec4823967",
+      sessionHours: 12,
+      maxAttempts: 5
+    };
+
+    const $app = document.getElementById("app");
+    const $root = document.getElementById("auth-root");
+    const STORE_KEY = `om.auth.${AUTH_CONFIG.realm}`;
+    let attempts = 0;
+
+    const hex = (buf)=>Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+    const sha256Hex = async (s)=>hex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)));
+    const now = ()=>Date.now();
+
+    function setSession(){
+      const exp = now() + AUTH_CONFIG.sessionHours * 3600 * 1000;
+      localStorage.setItem(STORE_KEY, JSON.stringify({ h: AUTH_CONFIG.passHashHex, exp }));
+    }
+    function hasSession(){
+      try{
+        const raw = localStorage.getItem(STORE_KEY);
+        if(!raw) return false;
+        const { h, exp } = JSON.parse(raw);
+        if(h !== AUTH_CONFIG.passHashHex) return false;
+        if(!exp || exp < now()){ localStorage.removeItem(STORE_KEY); return false; }
+        return true;
+      }catch{ return false; }
+    }
+    window.omLogout = function(){ localStorage.removeItem(STORE_KEY); location.reload(); };
+
+    function renderGate(message=""){
+      $root.innerHTML = `
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur p-4">
+          <div class="w-full max-w-sm rounded-2xl border border-white/15 bg-[#0b0f14] p-5 text-white shadow-xl">
+            <div class="mb-2 text-xs text-white/60">Protected • ${AUTH_CONFIG.realm}</div>
+            <h1 class="text-lg font-semibold">Enter Password</h1>
+            ${message ? `<p class="mt-2 text-xs text-red-300">${message}</p>` : ""}
+            <form id="authForm" class="mt-4 space-y-3">
+              <input id="pw" type="password" autocomplete="current-password"
+                     class="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none"
+                     placeholder="Password" required />
+              <div class="flex items-center justify-between">
+                <button class="rounded-full bg-lime-400 px-4 py-2 text-sm font-semibold text-black hover:bg-lime-300" type="submit">Unlock</button>
+                <a href="/" class="text-xs text-white/60 hover:text-white/80">Cancel</a>
+              </div>
+            </form>
+            <div class="mt-3 text-[11px] text-white/40">Locked after ${AUTH_CONFIG.maxAttempts} attempts. Reload to retry.</div>
+          </div>
+        </div>
+      `;
+      const f = document.getElementById("authForm");
+      const pw = document.getElementById("pw");
+      f.onsubmit = async (e)=>{
+        e.preventDefault();
+        if(attempts >= AUTH_CONFIG.maxAttempts){
+          renderGate("Locked. Reload this page to try again.");
+          return;
+        }
+        const inputHash = await sha256Hex(pw.value);
+        if(inputHash === AUTH_CONFIG.passHashHex){
+          setSession();
+          $root.innerHTML = "";
+          $app.hidden = false;
+        }else{
+          attempts++;
+          renderGate(`Incorrect password (${attempts}/${AUTH_CONFIG.maxAttempts}).`);
+        }
+      };
+    }
+
+    (function boot(){
+      if(hasSession()){
+        $app.hidden = false;
+        // Optional floating logout chip (comment out if you don't want it)
+        const chip = document.createElement("button");
+        chip.className = "fixed bottom-4 right-4 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs text-white/70 hover:bg-white/15";
+        chip.textContent = "Logout";
+        chip.onclick = window.omLogout;
+        document.body.appendChild(chip);
+      }else{
+        renderGate();
+      }
+    })();
   </script>
 </body>
 </html>
