@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>OneMarket — SHA-256 Hash Generator (Local)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background:#0b0f14; color:#fff; }
+    .card { background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.06); backdrop-filter: blur(6px); }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; letter-spacing: .02em; }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-6">
+  <main class="w-full max-w-xl">
+    <div class="card rounded-2xl p-6 shadow-lg">
+      <h1 class="text-2xl font-bold">SHA-256 Hash Generator</h1>
+      <p class="mt-2 text-sm text-white/70">Enter a password (locally) and get its SHA-256 hex. This page runs <strong>entirely in your browser</strong> — nothing is sent anywhere.</p>
+
+      <label class="block mt-5 text-xs text-white/60">Password</label>
+      <div class="mt-1 flex gap-2">
+        <input id="pw" type="password" autocomplete="new-password" placeholder="Type your admin password"
+               class="flex-1 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm outline-none" />
+        <button id="gen" class="rounded-full bg-lime-400 px-4 py-2 text-black font-semibold hover:bg-lime-300">Generate</button>
+      </div>
+
+      <label class="block mt-4 text-xs text-white/60">SHA-256 (hex)</label>
+      <div class="mt-1 flex gap-2 items-center">
+        <input id="out" class="mono rounded-lg border border-white/10 bg-black/10 px-3 py-2 text-sm outline-none" readonly />
+        <button id="copy" class="rounded-full border border-white/10 px-3 py-2 text-sm hover:bg-white/5">Copy</button>
+      </div>
+
+      <div class="mt-4 text-xs text-white/60">
+        <strong>Usage:</strong> paste the 64-character hex string into your `admin.html` file at the `passHashHex` location.
+      </div>
+
+      <div class="mt-4 text-xs text-white/50">
+        <strong>Security note:</strong> This tool runs locally in your browser. For best security, generate the hash on a private device and delete this file when done.
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // local-only SHA-256 hex generator
+    const pw = document.getElementById('pw');
+    const out = document.getElementById('out');
+    const gen = document.getElementById('gen');
+    const copyBtn = document.getElementById('copy');
+
+    async function sha256Hex(str){
+      const enc = new TextEncoder().encode(String(str));
+      const buf = await crypto.subtle.digest('SHA-256', enc);
+      return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    }
+
+    gen.addEventListener('click', async ()=>{
+      const v = pw.value || '';
+      if(!v){
+        out.value = '';
+        pw.focus();
+        return;
+      }
+      gen.disabled = true;
+      gen.textContent = 'Working…';
+      try {
+        const h = await sha256Hex(v);
+        out.value = h;
+      } catch (e) {
+        out.value = 'Error — see console';
+        console.error(e);
+      } finally {
+        gen.disabled = false;
+        gen.textContent = 'Generate';
+      }
+    });
+
+    copyBtn.addEventListener('click', async ()=>{
+      if(!out.value) return;
+      try {
+        await navigator.clipboard.writeText(out.value);
+        copyBtn.textContent = 'Copied';
+        setTimeout(()=>copyBtn.textContent = 'Copy', 1500);
+      } catch {
+        // fallback
+        out.select();
+        document.execCommand('copy');
+        copyBtn.textContent = 'Copied';
+        setTimeout(()=>copyBtn.textContent = 'Copy', 1500);
+      }
+    });
+
+    // optional: press Enter in password field to generate
+    pw.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); gen.click(); }});
+  </script>
+</body>
+</html>
