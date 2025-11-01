@@ -74,10 +74,11 @@
         ONE<span class="text-lime-400">MARKET</span> <span class="font-semibold text-white/80">News</span>
       </a>
       <nav class="text-sm text-white/70 flex items-center gap-4">
-        <a class="hover:text-white" href="/feed.html">Feed</a>
-        <a class="hover:text-white" href="/admin.html">Admin</a>
-        <a class="hover:text-white" href="/editor.html">Editor</a>
-        <a class="hover:text-white inline-flex items-center gap-1" href="/settings.html">
+        <a class="hover:text-white" href="./feed.html">Feed</a>
+        <a class="hover:text-white" href="./admin.html">Admin</a>
+        <a class="hover:text-white" href="./editor.html">Editor</a>
+        <a class="hover:text-white" href="./dashboard.html">Dashboard</a>
+        <a class="hover:text-white inline-flex items-center gap-1" href="./settings.html">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm9 3.5c0-.5-.04-.98-.12-1.45l2.02-1.57-1.9-3.29-2.4.84a8.9 8.9 0 0 0-2.5-1.45l-.38-2.54H9.28l-.38 2.54a8.9 8.9 0 0 0-2.5 1.45l-2.4-.84-1.9 3.29L4.12 10C4.04 10.47 4 10.95 4 11.45c0 .5.04.98.12 1.45l-2.02 1.57 1.9 3.29 2.4-.84a8.9 8.9 0 0 0 2.5 1.45l.38 2.54h3.44l.38-2.54a8.9 8.9 0 0 0 2.5-1.45l2.4.84 1.9-3.29-2.02-1.57c.08-.47.12-.95.12-1.45Z"/></svg>
           Settings
         </a>
@@ -91,7 +92,7 @@
     <!-- Sidebar -->
     <aside class="glass md:sticky md:top-[56px] md:h-[calc(100vh-56px)] w-full md:w-64 border-b md:border-b-0 md:border-r border-white/10">
       <div class="flex items-center justify-between px-4 py-4 md:py-6">
-        <a href="/feed.html" class="text-white/80 hover:text-white text-sm inline-flex items-center gap-2">
+        <a href="./feed.html" class="text-white/80 hover:text-white text-sm inline-flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M10 19a1 1 0 0 1-.7-.29l-7-7a1 1 0 0 1 0-1.42l7-7A1 1 0 0 1 11 4v4h8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-8v4a1 1 0 0 1-1 1z"/></svg>
           Back to Feed
         </a>
@@ -353,6 +354,19 @@
         storyMsg.textContent = 'Network error. Saved locally — try again later.';
       }
     });
+
+    /* ✅ Active navigation highlight (global) */
+    (function highlightActiveNav() {
+      const here = new URL(location.href);
+      const normalize = (p) => p.replace(/\/$/, "/index.html");
+      const current = normalize(here.pathname);
+      document.querySelectorAll("header nav a[href]").forEach(a => {
+        const dest = new URL(a.getAttribute("href"), here).pathname;
+        if (normalize(dest) === current) {
+          a.classList.add("text-lime-300","bg-white/5","rounded-lg","ring-2","ring-lime-300/40");
+        }
+      });
+    })();
   </script>
 </body>
 </html>
