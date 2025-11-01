@@ -37,7 +37,7 @@
         <a class="hover:text-white" href="/admin.html">Admin</a>
         <a class="hover:text-white" href="/editor.html">Editor</a>
 
-        <!-- ✅ Dashboard tab added -->
+        <!-- ✅ Dashboard tab -->
         <a class="hover:text-white" href="./dashboard.html">Dashboard</a>
 
         <a class="hover:text-white" href="/settings.html">Settings</a>
@@ -209,6 +209,26 @@
     elTrust.onchange = persistFilters;
 
     boot();
+
+    /* ✅ Active navigation highlight */
+    (function highlightActiveNav() {
+      const here = new URL(location.href);
+      const normalize = (p) => p.replace(/\/$/, "/index.html");
+
+      const current = normalize(here.pathname);
+      document.querySelectorAll("header nav a[href]").forEach(a => {
+        const dest = new URL(a.getAttribute("href"), here).pathname;
+        if (normalize(dest) === current) {
+          a.classList.add(
+            "text-lime-300",
+            "bg-white/5",
+            "rounded-lg",
+            "ring-2",
+            "ring-lime-300/40"
+          );
+        }
+      });
+    })();
   </script>
 </body>
 </html>
