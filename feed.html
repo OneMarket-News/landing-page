@@ -36,6 +36,10 @@
       <nav class="text-sm text-white/70 flex items-center gap-4">
         <a class="hover:text-white" href="/admin.html">Admin</a>
         <a class="hover:text-white" href="/editor.html">Editor</a>
+
+        <!-- ✅ Dashboard tab added -->
+        <a class="hover:text-white" href="/writer.html">Dashboard</a>
+
         <a class="hover:text-white" href="/settings.html">Settings</a>
       </nav>
     </div>
@@ -68,8 +72,7 @@
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // ===== CONFIG =====
-    const API_URL = ""; // If you deploy a Worker API, set it here to switch from localStorage.
+    const API_URL = "";
     const KEY_SUBS = "onemarket.submissions";
     const KEY_PREFS = "onemarket.user.prefs";
     const KEY_FEED_BEAT = "feed.beat";
@@ -85,7 +88,6 @@
 
     const esc = s => String(s||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]));
 
-    // Load items from API or local
     async function load() {
       let items = [];
       if (API_URL) {
@@ -132,8 +134,7 @@
               ${(Array.isArray(s.citations)?s.citations:[]).slice(0,2).map(u=>`<a class="underline hover:text-lime-400 mr-3" target="_blank" rel="noopener" href="${esc(u)}">Source</a>`).join("")}
             </div>
             <a class="inline-flex items-center gap-1 text-white/70 hover:text-white" href="${xUrl}" target="_blank" rel="noopener" aria-label="Share on X">
-              <!-- X logo -->
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2H21l-6.51 7.44L22 22h-6.93l-4.81-6.26L4.8 22H2l7.02-8.03L2 2h6.93l4.47 5.82L18.244 2Zm-1.22 18h2.1L7.06 4H4.96L17.024 20Z"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2H21l-6.51 7.44L22 22h-6.93l-4.81-6.26L4.8 22H2l7.02-8.03L2 2h6.93l4.47 5.82L18.244 2Zm-1.22 18h2.1L7.06 4H4.96L17.024 20Z"/></svg>
               Share
             </a>
           </div>
@@ -154,17 +155,12 @@
         return hay.includes(q);
       });
 
-      if (!filtered.length) {
-        elList.innerHTML = `<div class="text-white/60 text-sm">No stories yet. Try adding one in <a class="underline" href="/admin.html">Admin</a>.</div>`;
-        return;
-      }
-
-      elList.innerHTML = filtered.map(card).join("");
+      elList.innerHTML = filtered.length
+        ? filtered.map(card).join("")
+        : `<div class="text-white/60 text-sm">No stories yet. Try adding one in <a class="underline" href="/admin.html">Admin</a>.</div>`;
     }
 
-    // === Filter persistence + Settings defaults ===
     function applySavedFiltersOrPrefs(){
-      // Previously chosen feed filters (if any)
       const savedBeat  = localStorage.getItem(KEY_FEED_BEAT);
       const savedTrust = localStorage.getItem(KEY_FEED_TRUST);
       const savedQ     = localStorage.getItem(KEY_FEED_Q);
@@ -173,7 +169,6 @@
       if (savedTrust !== null) elTrust.value = savedTrust;
       if (savedQ !== null)     elQ.value     = savedQ;
 
-      // If user never set feed filters, fall back to Settings defaults
       if (savedBeat === null || savedTrust === null) {
         try {
           const prefs = JSON.parse(localStorage.getItem(KEY_PREFS) || "{}");
@@ -190,7 +185,6 @@
       render(cache);
     }
 
-    // Clear filters (and persistence), but keep Settings defaults next load
     function clearFilters(){
       localStorage.removeItem(KEY_FEED_BEAT);
       localStorage.removeItem(KEY_FEED_TRUST);
@@ -208,7 +202,6 @@
       render(cache);
     }
 
-    // Events
     elRefresh.onclick = boot;
     elClear.onclick = clearFilters;
     elQ.oninput = persistFilters;
