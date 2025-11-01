@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>OneMarket News — Writer Dashboard</title>
   <meta name="description" content="Contributor hub for OneMarket News: submit stories, track status, and review guidelines." />
-  <meta name="theme-color" content="#a3e635" />
+  <meta name="theme-color" content="#000" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    :root { --lime: #a3e635; }
+    :root { --lime:#a3e635; color-scheme: dark; }
     body { background:#000; color:#fff }
-    .noise { background-image: radial-gradient(1px 1px at 25px 25px, rgba(255,255,255,.9) 1px, transparent 0); opacity:.06 }
-    .glass { background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04)); backdrop-filter: blur(10px) saturate(120%); }
+    .noise { background-image: radial-gradient(1px 1px at 25px 25px,rgba(255,255,255,.9)1px,transparent 0); opacity:.06 }
+    .glass { background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04)); backdrop-filter:blur(10px) saturate(120%) }
     @keyframes fadeIn { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)} }
     .fade-in { animation: fadeIn .6s ease-out .1s both }
 
-    /* Premium input/textarea styling */
+    /* Premium inputs */
     .field{
       width:100%;
       border-radius:14px;
@@ -25,22 +25,26 @@
       color:#fff;
       font-size:.95rem;
       line-height:1.25rem;
-      transition:background .2s ease,border-color .2s ease,box-shadow .2s ease,transform .06s ease;
+      transition:background .2s,border-color .2s,box-shadow .2s,transform .06s;
       box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 0 0 0 rgba(163,230,53,.35);
+      outline:none;
     }
     .field::placeholder{ color:rgba(255,255,255,.48); letter-spacing:.15px; }
     .field:hover{ background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.22); }
     .field:focus{
-      outline:none; background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.35);
+      background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.35);
       box-shadow:0 0 0 8px rgba(163,230,53,.08), 0 0 0 2px rgba(163,230,53,.35), inset 0 1px 0 rgba(255,255,255,.06);
       transform:translateY(-1px);
     }
     textarea.field{ min-height:3.5rem; resize:vertical; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.35) transparent; }
-    .field:-webkit-autofill{
-      -webkit-text-fill-color:#fff!important;
-      -webkit-box-shadow:0 0 0 30px rgba(255,255,255,.06) inset!important;
-      box-shadow:0 0 0 30px rgba(255,255,255,.06) inset!important;
+
+    /* Dark-friendly native selects */
+    select.field{
+      appearance:none; padding-right:2.25rem;
+      background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23cbd5e1" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5"/></svg>');
+      background-repeat:no-repeat; background-position:right .9rem center; background-size:16px 16px;
     }
+    option{ background:#0b0b0b; color:#fff; }
 
     /* Sidebar active state */
     .nav-item[aria-current="page"]{
@@ -48,6 +52,12 @@
       border-color: rgba(163,230,53,.45);
       color: #fff;
     }
+
+    /* Buttons */
+    .btn{border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.07); border-radius:9999px; padding:.55rem .9rem; font-size:.9rem}
+    .btn:hover{background:rgba(255,255,255,.12)}
+    .btn-primary{background:var(--lime); color:#000; border-color:transparent}
+    .btn-primary:hover{background:#c3f36a}
   </style>
 </head>
 <body class="min-h-screen">
@@ -57,15 +67,33 @@
     <div aria-hidden class="noise absolute inset-0 pointer-events-none"></div>
   </div>
 
+  <!-- Global header (consistent across app) -->
+  <header class="sticky top-0 z-40 backdrop-blur bg-black/40 border-b border-white/10">
+    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
+      <a href="/" class="font-black tracking-tight">
+        ONE<span class="text-lime-400">MARKET</span> <span class="font-semibold text-white/80">News</span>
+      </a>
+      <nav class="text-sm text-white/70 flex items-center gap-4">
+        <a class="hover:text-white" href="/feed.html">Feed</a>
+        <a class="hover:text-white" href="/admin.html">Admin</a>
+        <a class="hover:text-white" href="/editor.html">Editor</a>
+        <a class="hover:text-white inline-flex items-center gap-1" href="/settings.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm9 3.5c0-.5-.04-.98-.12-1.45l2.02-1.57-1.9-3.29-2.4.84a8.9 8.9 0 0 0-2.5-1.45l-.38-2.54H9.28l-.38 2.54a8.9 8.9 0 0 0-2.5 1.45l-2.4-.84-1.9 3.29L4.12 10C4.04 10.47 4 10.95 4 11.45c0 .5.04.98.12 1.45l-2.02 1.57 1.9 3.29 2.4-.84a8.9 8.9 0 0 0 2.5 1.45l.38 2.54h3.44l.38-2.54a8.9 8.9 0 0 0 2.5-1.45l2.4.84 1.9-3.29-2.02-1.57c.08-.47.12-.95.12-1.45Z"/></svg>
+          Settings
+        </a>
+      </nav>
+    </div>
+  </header>
+
   <!-- Shell -->
-  <div class="mx-auto flex min-h-screen max-w-7xl flex-col md:flex-row">
+  <div class="mx-auto flex max-w-7xl flex-col md:flex-row">
 
     <!-- Sidebar -->
-    <aside class="glass md:sticky md:top-0 md:h-screen w-full md:w-64 border-b md:border-b-0 md:border-r border-white/10">
+    <aside class="glass md:sticky md:top-[56px] md:h-[calc(100vh-56px)] w-full md:w-64 border-b md:border-b-0 md:border-r border-white/10">
       <div class="flex items-center justify-between px-4 py-4 md:py-6">
-        <a href="/" class="text-white/80 hover:text-white text-sm inline-flex items-center gap-2">
+        <a href="/feed.html" class="text-white/80 hover:text-white text-sm inline-flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M10 19a1 1 0 0 1-.7-.29l-7-7a1 1 0 0 1 0-1.42l7-7A1 1 0 0 1 11 4v4h8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-8v4a1 1 0 0 1-1 1z"/></svg>
-          Back
+          Back to Feed
         </a>
         <button id="menuBtn" class="md:hidden rounded-lg border border-white/15 px-2 py-1 text-sm text-white/80 hover:text-white">Menu</button>
       </div>
@@ -193,9 +221,7 @@
                   <th class="py-2 pr-4">Primary URL</th>
                 </tr>
               </thead>
-              <tbody id="subsTbody">
-                <!-- rows injected -->
-              </tbody>
+              <tbody id="subsTbody"></tbody>
             </table>
           </div>
         </div>
@@ -207,7 +233,7 @@
           <ul class="list-disc pl-5 text-sm text-white/80 space-y-2">
             <li>Link every claim to a high-quality source. Prefer primary docs, filings, official blog posts, or transcripts.</li>
             <li>Summarize in your own words. Quote sparingly and attribute clearly.</li>
-            <li>Add a **Why it matters** line for context and impact.</li>
+            <li>Add a <strong>Why it matters</strong> line for context and impact.</li>
             <li>If a correction is needed, submit an update — corrections are celebrated.</li>
             <li>Disclose conflicts of interest (holdings, employment, paid relationships) in your submission.</li>
           </ul>
@@ -222,7 +248,7 @@
         </div>
       </section>
 
-      <footer class="pt-6 text-center text-xs text-white/60">
+      <footer class="pt-2 pb-8 text-center text-xs text-white/60">
         © <span id="year"></span> OneMarket News, LLC.
       </footer>
     </main>
@@ -232,34 +258,34 @@
     // Year
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // Mobile menu toggle
+    // Mobile menu toggle (sidebar)
     const menuBtn = document.getElementById('menuBtn');
     const nav = document.getElementById('nav');
     if (menuBtn) menuBtn.addEventListener('click', () => nav.classList.toggle('hidden'));
 
-    // Section switching
+    // Section switching + hash routing
     const sections = Array.from(document.querySelectorAll('[data-section]'));
     const buttons = Array.from(document.querySelectorAll('.nav-item'));
     function showSection(id){
       sections.forEach(s => s.classList.toggle('hidden', s.id !== id));
       buttons.forEach(b => b.setAttribute('aria-current', b.dataset.target === id ? 'page' : 'false'));
-      // simple hash routing
       history.replaceState(null, '', '#' + id);
     }
     buttons.forEach(b => b.addEventListener('click', () => showSection(b.dataset.target)));
-    // default section from hash
     const init = location.hash?.slice(1) || 'home';
-    const initBtn = buttons.find(b => b.dataset.target === init) || buttons[0];
-    (initBtn || buttons[0]).click();
+    (buttons.find(b => b.dataset.target === init) || buttons[0]).click();
 
     // Local storage helpers for mock table
     const KEY = 'onemarket.submissions';
-    const readSubs = () => JSON.parse(localStorage.getItem(KEY) || '[]');
+    const readSubs = () => { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; } };
     const writeSubs = (rows) => localStorage.setItem(KEY, JSON.stringify(rows));
     const tbody = document.getElementById('subsTbody');
     const statSubmitted = document.getElementById('statSubmitted');
     const statReview = document.getElementById('statReview');
     const statPublished = document.getElementById('statPublished');
+
+    function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+    function escapeAttr(s){ return (s||'').replace(/"/g, '&quot;'); }
 
     function renderSubs(){
       const rows = readSubs();
@@ -268,22 +294,22 @@
         const tr = document.createElement('tr');
         tr.className = 'border-t border-white/10';
         tr.innerHTML = `
-          <td class="py-2 pr-4">${escapeHtml(r.title)}</td>
-          <td class="py-2 pr-4 text-white/70">${escapeHtml(r.beat)}</td>
-          <td class="py-2 pr-4 text-white/70">${new Date(r.date).toLocaleDateString()}</td>
-          <td class="py-2 pr-4"><span class="rounded-full bg-white/10 px-2 py-1 text-xs">${r.status}</span></td>
-          <td class="py-2 pr-4"><a class="underline decoration-lime-400/60 underline-offset-2 text-white/80 hover:text-white" href="${escapeAttr(r.primary_url)}" target="_blank" rel="noopener">Open</a></td>
+          <td class="py-2 pr-4">${escapeHtml(r.title||'')}</td>
+          <td class="py-2 pr-4 text-white/70">${escapeHtml(r.beat||'')}</td>
+          <td class="py-2 pr-4 text-white/70">${r.date ? new Date(r.date).toLocaleDateString() : ''}</td>
+          <td class="py-2 pr-4"><span class="rounded-full bg-white/10 px-2 py-1 text-xs">${escapeHtml(r.status||'In Review')}</span></td>
+          <td class="py-2 pr-4">${
+            r.primary_url
+              ? `<a class="underline decoration-lime-400/60 underline-offset-2 text-white/80 hover:text-white" href="${escapeAttr(r.primary_url)}" target="_blank" rel="noopener">Open</a>`
+              : '<span class="text-white/40">—</span>'
+          }</td>
         `;
         tbody.appendChild(tr);
       });
       statSubmitted.textContent = rows.length;
-      // naive status counters
       statReview.textContent = rows.filter(r => r.status === 'In Review').length;
       statPublished.textContent = rows.filter(r => r.status === 'Published').length;
     }
-    function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-    function escapeAttr(s){ return (s||'').replace(/"/g, '&quot;'); }
-
     renderSubs();
 
     // Submit Story (Formspree + local preview)
@@ -293,13 +319,18 @@
       e.preventDefault();
       storyMsg.textContent = 'Submitting…';
       const fd = new FormData(storyForm);
+
       // local preview row
       const row = {
+        id: 'm_' + Math.random().toString(36).slice(2,10),
         title: fd.get('title'),
         beat: fd.get('beat'),
+        tags: (fd.get('tags')||'').split(',').map(s=>s.trim()).filter(Boolean),
         date: Date.now(),
         status: 'In Review',
-        primary_url: fd.get('primary_url')
+        primary_url: fd.get('primary_url'),
+        summary: fd.get('summary') || '',
+        citations: (fd.get('secondary_urls')||'').split(',').map(s=>s.trim()).filter(Boolean)
       };
       const rows = readSubs();
       rows.unshift(row);
@@ -308,7 +339,7 @@
 
       // send to Formspree
       try {
-        const res = await fetch(storyForm.action, { method:'POST', body:fd, headers:{'Accept':'application/json'}});
+        const res = await fetch(storyForm.action, { method:'POST', body:fd, headers:{'Accept':'application/json'} });
         if(res.ok){
           storyMsg.className = 'text-sm text-lime-300';
           storyMsg.textContent = 'Received! Editors will review shortly.';
