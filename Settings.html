@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OneMarket — Settings</title>
+  <meta name="theme-color" content="#000" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { --lime:#a3e635; color-scheme: dark; }
+    body{background:#000;color:#fff}
+    .glass{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));backdrop-filter:blur(10px) saturate(120%)}
+    .noise{background-image:radial-gradient(1px 1px at 25px 25px,rgba(255,255,255,.9)1px,transparent 0);opacity:.06}
+    .field{width:100%;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);padding:.7rem .85rem;color:#fff;outline:none}
+    select.field{ appearance:none; padding-right:2.25rem;
+      background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23cbd5e1" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5"/></svg>');
+      background-repeat:no-repeat; background-position:right .7rem center; background-size:16px 16px;
+    }
+    option{ background:#0b0b0b; color:#fff; }
+    .btn{border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.07); border-radius:9999px; padding:.55rem .9rem; font-size:.9rem}
+    .btn:hover{background:rgba(255,255,255,.12)}
+    .btn-primary{background:var(--lime); color:#000; border-color:transparent}
+    .btn-primary:hover{background:#c3f36a}
+  </style>
+</head>
+<body>
+  <!-- Background -->
+  <div class="fixed inset-0 -z-10">
+    <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/25 to-black/80"></div>
+    <div aria-hidden class="noise absolute inset-0"></div>
+  </div>
+
+  <header class="sticky top-0 z-40 backdrop-blur bg-black/40 border-b border-white/10">
+    <div class="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
+      <a href="/feed.html" class="text-white/80 hover:text-white">← Back to Feed</a>
+      <a href="/" class="font-black tracking-tight">ONE<span class="text-lime-400">MARKET</span> <span class="font-semibold text-white/80">News</span></a>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-5xl p-4 sm:p-6 space-y-6">
+    <!-- Profile -->
+    <section class="glass rounded-2xl border border-white/10 p-6">
+      <h1 class="text-2xl font-black">Profile</h1>
+      <p class="text-white/70 text-sm mt-1">Stored locally in your browser. (No sign-in server yet.)</p>
+      <form id="profileForm" class="mt-4 grid gap-3 sm:grid-cols-2">
+        <div>
+          <label class="block text-xs text-white/60 mb-1">Display name</label>
+          <input id="name" class="field" placeholder="Your name">
+        </div>
+        <div>
+          <label class="block text-xs text-white/60 mb-1">Email</label>
+          <input id="email" class="field" type="email" placeholder="you@domain.com">
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-xs text-white/60 mb-1">Bio (optional)</label>
+          <textarea id="bio" class="field" rows="3" placeholder="Short bio..."></textarea>
+        </div>
+        <div class="sm:col-span-2 flex items-center gap-2">
+          <button class="btn btn-primary" type="submit">Save Profile</button>
+          <span id="pmsg" class="text-white/70 text-sm"></span>
+        </div>
+      </form>
+    </section>
+
+    <!-- Preferences -->
+    <section class="glass rounded-2xl border border-white/10 p-6">
+      <h2 class="text-xl font-semibold">Preferences</h2>
+      <form id="prefsForm" class="mt-4 grid gap-3 sm:grid-cols-3">
+        <div>
+          <label class="block text-xs text-white/60 mb-1">Default beat filter</label>
+          <select id="prefBeat" class="field">
+            <option value="">(None)</option>
+            <option>AI</option><option>Markets</option><option>Energy</option>
+            <option>Chips / Hardware</option><option>Policy / Regulation</option><option>Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-white/60 mb-1">Default trust filter</label>
+          <select id="prefTrust" class="field">
+            <option value="">(None)</option>
+            <option value="green">Green</option>
+            <option value="yellow">Yellow</option>
+            <option value="red">Red</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-white/60 mb-1">Email updates</label>
+          <select id="prefEmail" class="field">
+            <option value="off">(Off)</option>
+            <option value="daily">Daily digest</option>
+            <option value="immediate">Immediately (highlights)</option>
+          </select>
+        </div>
+        <div class="sm:col-span-3 flex items-center gap-2 mt-1">
+          <button class="btn btn-primary" type="submit">Save Preferences</button>
+          <span id="prefsMsg" class="text-white/70 text-sm"></span>
+        </div>
+      </form>
+      <p class="text-white/50 text-xs mt-3">Feed can read these to pre-set filters on load.</p>
+    </section>
+
+    <!-- Data -->
+    <section class="glass rounded-2xl border border-white/10 p-6">
+      <h2 class="text-xl font-semibold">Your Data</h2>
+      <div class="mt-3 flex flex-wrap gap-2">
+        <button id="exportBtn" class="btn">Export (JSON)</button>
+        <label class="btn cursor-pointer">Import (JSON)
+          <input id="importInput" type="file" accept="application/json" class="hidden">
+        </label>
+        <button id="resetBtn" class="btn" style="border-color:rgba(239,68,68,.4)">Reset local app data</button>
+      </div>
+      <p class="text-white/60 text-sm mt-2">Export/Import includes profile, preferences, and locally saved submissions (if any).</p>
+    </section>
+
+    <!-- Session -->
+    <section class="glass rounded-2xl border border-white/10 p-6">
+      <h2 class="text-xl font-semibold">Session</h2>
+      <div class="mt-3 flex flex-wrap gap-2">
+        <a href="/feed.html" class="btn">Go to Feed</a>
+        <a href="/admin.html" class="btn">Open Admin</a>
+        <a href="/editor.html" class="btn">Open Editor</a>
+        <button id="logoutBtn" class="btn">Logout (clear editor/admin passes)</button>
+      </div>
+      <p class="text-white/60 text-sm mt-2">Logout clears editor/admin access flags without erasing your posts.</p>
+    </section>
+
+    <footer class="text-center text-xs text-white/60 mt-8">© <span id="year"></span> OneMarket News, LLC.</footer>
+  </main>
+
+  <script>
+    // Keys used across app
+    const K_PROFILE = 'onemarket.user.profile';
+    const K_PREFS   = 'onemarket.user.prefs';
+    const K_SUBS    = 'onemarket.submissions';
+    const K_AUTH_ADMIN  = 'onemarket.admin.auth';
+    const K_AUTH_EDITOR = 'onemarket.editor.auth';
+
+    // Year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Helpers
+    const $ = (id)=>document.getElementById(id);
+    const read = (k, fallback=null)=>{ try{ return JSON.parse(localStorage.getItem(k) || (fallback===null?'null':JSON.stringify(fallback))); } catch { return fallback; } };
+    const write = (k,v)=>localStorage.setItem(k, JSON.stringify(v));
+
+    // Load Profile
+    const prof = read(K_PROFILE, {name:'', email:'', bio:''});
+    $('name').value  = prof.name || '';
+    $('email').value = prof.email || '';
+    $('bio').value   = prof.bio || '';
+
+    $('profileForm').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      write(K_PROFILE, { name:$('name').value.trim(), email:$('email').value.trim(), bio:$('bio').value.trim() });
+      $('pmsg').textContent = 'Saved!';
+      setTimeout(()=> $('pmsg').textContent='', 1200);
+    });
+
+    // Load Prefs
+    const prefs = read(K_PREFS, { beat:'', trust:'', email:'off' });
+    $('prefBeat').value  = prefs.beat || '';
+    $('prefTrust').value = prefs.trust || '';
+    $('prefEmail').value = prefs.email || 'off';
+
+    $('prefsForm').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      write(K_PREFS, {
+        beat: $('prefBeat').value,
+        trust: $('prefTrust').value,
+        email: $('prefEmail').value
+      });
+      $('prefsMsg').textContent = 'Saved!';
+      setTimeout(()=> $('prefsMsg').textContent='', 1200);
+    });
+
+    // Export (profile + prefs + submissions)
+    $('exportBtn').addEventListener('click', ()=>{
+      const payload = {
+        exported_at: new Date().toISOString(),
+        profile: read(K_PROFILE, {}),
+        prefs: read(K_PREFS, {}),
+        submissions: read(K_SUBS, []),
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'onemarket_backup.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    // Import
+    $('importInput').addEventListener('change', async (e)=>{
+      const f = e.target.files[0]; if(!f) return;
+      try{
+        const text = await f.text();
+        const j = JSON.parse(text);
+        if (j.profile) write(K_PROFILE, j.profile);
+        if (j.prefs) write(K_PREFS, j.prefs);
+        if (Array.isArray(j.submissions)) write(K_SUBS, j.submissions);
+        alert('Imported. Reloading settings…');
+        location.reload();
+      }catch(err){
+        alert('Import failed: ' + err.message);
+      } finally { e.target.value = '';}
+    });
+
+    // Reset local app data (keeps nothing)
+    $('resetBtn').addEventListener('click', ()=>{
+      if(!confirm('This will erase profile, prefs, and local submissions. Continue?')) return;
+      localStorage.removeItem(K_PROFILE);
+      localStorage.removeItem(K_PREFS);
+      localStorage.removeItem(K_SUBS);
+      alert('Data cleared.');
+      location.reload();
+    });
+
+    // Logout (clear admin/editor gates only)
+    $('logoutBtn').addEventListener('click', ()=>{
+      localStorage.removeItem(K_AUTH_ADMIN);
+      localStorage.removeItem(K_AUTH_EDITOR);
+      alert('Logged out of admin/editor.');
+    });
+  </script>
+</body>
+</html>
