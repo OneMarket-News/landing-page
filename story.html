@@ -2,19 +2,48 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>OneMarket News — Story</title>
   <meta name="description" content="Read full verified stories from OneMarket News — the trust layer for information." />
   <meta name="theme-color" content="#000" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    :root { color-scheme: dark; }
     body{ background:#000; color:#fff }
     .glass{ background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04)); backdrop-filter:blur(10px) saturate(120%) }
     .badge{ border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06) }
     .muted{ color:rgba(255,255,255,.7) }
+    .prose { line-height:1.7; }
+    .prose p + p { margin-top: 1rem; }
+    /* scroll progress */
+    #prog { position:fixed; top:0; left:0; height:3px; width:0; background:#a3e635; z-index:50; box-shadow:0 0 12px rgba(163,230,53,.6) }
+    /* trust ribbon */
+    .ribbon { position:absolute; top:12px; right:-40px; transform:rotate(45deg); padding:.35rem 3rem; font-size:.7rem; font-weight:700; letter-spacing:.02em }
+    .r-green{ background:rgba(34,197,94,.2); color:#86efac; border:1px solid rgba(34,197,94,.45) }
+    .r-yellow{ background:rgba(234,179,8,.2); color:#fde68a; border:1px solid rgba(234,179,8,.45) }
+    .r-red{ background:rgba(239,68,68,.2); color:#fca5a5; border:1px solid rgba(239,68,68,.45) }
+    /* sticky meta bar */
+    .metabar { position:sticky; top:56px; z-index:30; backdrop-filter:blur(8px); background:rgba(0,0,0,.45); border-bottom:1px solid rgba(255,255,255,.08) }
+    /* citation pills */
+    .pill { border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.06); border-radius:9999px; padding:.25rem .6rem; font-size:.75rem }
+    /* code-safe link underline */
+    .u { text-decoration: underline; text-underline-offset: 2px; }
   </style>
+
+  <!-- Social (static fallbacks; URL+title set at runtime if available) -->
+  <meta property="og:site_name" content="OneMarket News" />
+  <meta property="og:title" content="OneMarket — Story" />
+  <meta property="og:description" content="Verified story with sources and trust score." />
+  <meta property="og:type" content="article" />
+  <meta property="og:image" content="/og-default.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
 </head>
 <body>
+  <!-- scroll progress -->
+  <div id="prog"></div>
+
   <!-- Header -->
   <header class="sticky top-0 z-40 backdrop-blur bg-black/40 border-b border-white/10">
     <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
@@ -26,25 +55,69 @@
     </div>
   </header>
 
+  <!-- Sticky meta bar (appears after title enters viewport) -->
+  <div id="metaBar" class="metabar hidden">
+    <div class="mx-auto max-w-5xl px-4 py-2 flex items-center justify-between gap-3 text-xs">
+      <div class="truncate" id="mbTitle"></div>
+      <div class="flex items-center gap-2">
+        <span id="mbTrust"></span>
+        <button id="mbShare" class="rounded-full border border-white/15 bg-white/10 px-3 py-1 hover:bg-white/15">Share</button>
+        <button id="mbCopy" class="rounded-full border border-white/15 bg-white/10 px-3 py-1 hover:bg-white/15">Copy</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Story container -->
   <main class="mx-auto max-w-3xl px-4 py-8">
-    <article id="storyCard" class="glass rounded-2xl border border-white/10 p-6 sm:p-8">
-      <header class="">
+    <article id="storyCard" class="relative glass rounded-2xl border border-white/10 p-6 sm:p-8 overflow-hidden">
+      <div id="ribbon" class="ribbon hidden"></div>
+
+      <header>
         <div id="metaTop" class="flex flex-wrap items-center gap-2 text-xs text-white/60"></div>
         <h1 id="title" class="mt-2 text-3xl sm:text-4xl font-bold leading-snug"></h1>
+
         <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
           <div id="metaBottom" class="flex flex-wrap items-center gap-2 text-xs text-white/60"></div>
           <div id="share" class="flex items-center gap-2"></div>
         </div>
       </header>
 
-      <section id="summary" class="mt-6 text-base leading-relaxed text-white/85"></section>
+      <!-- optional hero (if s.image exists later) -->
+      <div id="heroWrap" class="mt-5 hidden">
+        <img id="hero" alt="" class="w-full rounded-xl border border-white/10 object-cover max-h-[360px]" />
+        <div id="heroCap" class="mt-2 text-[12px] text-white/60"></div>
+      </div>
 
+      <!-- Read time + quick actions -->
+      <div class="mt-4 flex flex-wrap items-center gap-3 text-xs text-white/60">
+        <span id="readTime">~2 min read</span>
+        <span class="hidden sm:inline">•</span>
+        <button id="printBtn" class="pill hover:bg-white/10">Print</button>
+        <button id="openAll" class="pill hover:bg-white/10">Open all sources</button>
+      </div>
+
+      <!-- Body -->
+      <section id="body" class="prose mt-6 text-[1.05rem]"></section>
+
+      <!-- Summary fallback (if no body) -->
+      <section id="summaryWrap" class="mt-6 hidden">
+        <h2 class="text-lg font-semibold">Summary</h2>
+        <p id="summary" class="mt-2 text-white/85"></p>
+      </section>
+
+      <!-- Why it matters -->
       <section id="wimWrap" class="mt-6 hidden">
         <h2 class="text-lg font-semibold">Why it matters</h2>
         <p id="wim" class="mt-2 text-white/80"></p>
       </section>
 
+      <!-- Inline citations (chips) -->
+      <section id="chips" class="mt-6 hidden">
+        <div class="text-xs text-white/60 mb-2">Citations</div>
+        <div id="chipList" class="flex flex-wrap gap-2"></div>
+      </section>
+
+      <!-- Sources list -->
       <section id="sources" class="mt-8 hidden">
         <h2 class="text-lg font-semibold">Sources & Citations</h2>
         <ul id="sourceList" class="mt-2 list-disc space-y-1 pl-5 text-sm text-lime-300"></ul>
@@ -74,31 +147,71 @@
     const titleEl = $("title");
     const metaTopEl = $("metaTop");
     const metaBottomEl = $("metaBottom");
+    const bodyEl = $("body");
+    const summaryWrapEl = $("summaryWrap");
     const summaryEl = $("summary");
     const wimWrapEl = $("wimWrap");
     const wimEl = $("wim");
+    const chipsEl = $("chips");
+    const chipListEl = $("chipList");
     const sourcesEl = $("sources");
     const sourceListEl = $("sourceList");
     const prevBtn = $("prev");
     const nextBtn = $("next");
     const shareEl = $("share");
     const storyCard = $("storyCard");
+    const ribbonEl = $("ribbon");
+    const heroWrap = $("heroWrap");
+    const heroEl = $("hero");
+    const heroCap = $("heroCap");
+    const readTimeEl = $("readTime");
+    const openAllBtn = $("openAll");
+    const printBtn = $("printBtn");
+    const metaBar = $("metaBar");
+    const mbTitle = $("mbTitle");
+    const mbTrust = $("mbTrust");
+    const mbShare = $("mbShare");
+    const mbCopy = $("mbCopy");
+    const prog = $("prog");
 
     const esc = (s="") => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     const toLocal = ts => { try { return new Date(ts).toLocaleString(); } catch { return ""; } };
+    const readSubs = () => { try { return JSON.parse(localStorage.getItem(KEY) || "[]"); } catch { return []; } };
 
-    function readSubs() {
-      try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
-      catch { return []; }
-    }
-
-    function trustBadge(t) {
+    function trustBadge(t, tiny=false) {
       if (!t) return "";
       const cls = t.label==='green' ? 'bg-green-500/20 text-green-300'
                : t.label==='yellow' ? 'bg-yellow-500/20 text-yellow-200'
                : 'bg-red-500/20 text-red-300';
       const s = Math.round(t.score||0);
-      return `<span class="rounded-full px-2 py-1 text-[11px] ${cls}">Trust ${s}% • ${esc(t.label)}</span>`;
+      return `<span class="rounded-full px-2 py-1 ${tiny?'text-[11px]':'text-xs'} ${cls}">Trust ${s}% • ${esc(t.label)}</span>`;
+    }
+    function trustRibbonClass(t){
+      if(!t) return 'hidden';
+      if(t.label==='green') return 'r-green';
+      if(t.label==='yellow') return 'r-yellow';
+      return 'r-red';
+    }
+
+    function estimateReadTime(text) {
+      const words = (text||'').trim().split(/\s+/).filter(Boolean).length;
+      const minutes = Math.max(1, Math.round(words / 220));
+      return `~${minutes} min read`;
+    }
+
+    function setSocialMeta(s){
+      try{
+        const ttl = (s.title||'OneMarket — Story');
+        document.title = `${ttl} — OneMarket News`;
+        const u = `${location.origin}/story.html?id=${encodeURIComponent(s.id)}`;
+        const set = (p,content) => {
+          let el = document.querySelector(`meta[property="${p}"]`) || document.querySelector(`meta[name="${p}"]`);
+          if(el) el.setAttribute('content', content);
+        };
+        set('og:title', ttl);
+        set('og:description', s.summary || 'Verified story with sources and trust score.');
+        set('twitter:card', 'summary_large_image');
+      }catch{}
     }
 
     function renderShare(s) {
@@ -108,7 +221,6 @@
       shareEl.innerHTML = `
         <a href="${shareUrl}" target="_blank" rel="noopener" aria-label="Share on X"
            class="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs hover:bg-white/15 inline-flex items-center gap-1.5">
-          <!-- Modern X icon -->
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M20.945 3H17.3l-4.01 5.05L8.19 3H3l7.01 9.26L3.3 21h3.65l4.22-5.31L15.82 21H21l-7.28-9.62L20.945 3zM16.52 19.5l-7.2-9.47 1.17-1.48 7.38 9.63-1.35 1.32zm-9.93-15h.96l7.02 9.16-.96 1.2L6.59 4.5z"/>
           </svg>
@@ -119,6 +231,21 @@
       $("copy").onclick = async () => {
         try { await navigator.clipboard.writeText(url); $("copy").textContent = "Copied!"; setTimeout(()=>$("copy").textContent="Copy link", 1200); } catch {}
       };
+
+      // sticky bar actions
+      mbTitle.textContent = s.title || '(Untitled)';
+      mbTrust.innerHTML = s.trust ? trustBadge(s.trust,true) : '';
+      mbShare.onclick = ()=> window.open(shareUrl, "_blank","noopener");
+      mbCopy.onclick = async ()=> {
+        try { await navigator.clipboard.writeText(url); mbCopy.textContent='Copied!'; setTimeout(()=>mbCopy.textContent='Copy',1000);} catch {}
+      };
+    }
+
+    function applyRibbon(t){
+      if(!t){ ribbonEl.classList.add('hidden'); return; }
+      ribbonEl.className = `ribbon ${trustRibbonClass(t)}`;
+      ribbonEl.textContent = (t.label||'').toUpperCase();
+      ribbonEl.classList.remove('hidden');
     }
 
     function renderStory() {
@@ -138,7 +265,7 @@
       }
 
       const s = allPub[idx];
-      document.title = `${s.title || "Story"} — OneMarket News`;
+      setSocialMeta(s);
 
       // Meta (top)
       metaTopEl.innerHTML = `
@@ -151,13 +278,35 @@
       // Title
       titleEl.textContent = s.title || "(Untitled)";
 
+      // Hero (optional)
+      if (s.image) {
+        heroEl.src = s.image;
+        heroEl.alt = s.image_alt || 'Story image';
+        heroCap.textContent = s.image_caption || '';
+        heroWrap.classList.remove('hidden');
+      } else {
+        heroWrap.classList.add('hidden');
+      }
+
       // Meta (bottom) — primary link if present
       metaBottomEl.innerHTML = `
-        ${s.primary_url ? `<a class="underline text-lime-300 hover:text-lime-400" target="_blank" rel="noopener" href="${esc(s.primary_url)}">Primary source</a>` : `<span class="muted">Primary source: —</span>`}
+        ${s.primary_url ? `<a class="u text-lime-300 hover:text-lime-400" target="_blank" rel="noopener" href="${esc(s.primary_url)}">Primary source</a>` : `<span class="muted">Primary source: —</span>`}
       `;
 
-      // Summary
-      summaryEl.textContent = s.summary || "No summary provided.";
+      // Body vs Summary
+      const body = (s.body && String(s.body).trim()) || '';
+      if (body) {
+        // very light sanitization of angle brackets for safety (body assumed pre-sanitized if you use a CMS)
+        const safe = String(body).replace(/<script/gi,'&lt;script');
+        bodyEl.innerHTML = safe;
+        summaryWrapEl.classList.add("hidden");
+        readTimeEl.textContent = estimateReadTime(body.replace(/<[^>]+>/g,' '));
+      } else {
+        bodyEl.innerHTML = '';
+        summaryEl.textContent = s.summary || "No summary provided.";
+        summaryWrapEl.classList.remove("hidden");
+        readTimeEl.textContent = estimateReadTime(s.summary||'');
+      }
 
       // Why it matters
       if (s.why_it_matters) {
@@ -167,22 +316,29 @@
         wimWrapEl.classList.add("hidden");
       }
 
-      // Sources list
+      // Citation chips + list
       const sources = Array.isArray(s.citations) ? s.citations : [];
       if (sources.length) {
+        chipsEl.classList.remove("hidden");
+        chipListEl.innerHTML = sources.slice(0,6).map((u,i)=>`<a class="pill hover:bg-white/10" href="${esc(u)}" target="_blank" rel="noopener">Source ${i+1}</a>`).join("");
         sourcesEl.classList.remove("hidden");
         sourceListEl.innerHTML = "";
         sources.forEach(u => {
           const li = document.createElement("li");
-          li.innerHTML = `<a href="${esc(u)}" target="_blank" rel="noopener" class="underline hover:text-lime-400">${esc(u)}</a>`;
+          li.innerHTML = `<a href="${esc(u)}" target="_blank" rel="noopener" class="u hover:text-lime-400">${esc(u)}</a>`;
           sourceListEl.appendChild(li);
         });
+        openAllBtn.onclick = () => sources.forEach(u=> window.open(u, "_blank", "noopener"));
+        openAllBtn.disabled = false;
       } else {
+        chipsEl.classList.add("hidden");
         sourcesEl.classList.add("hidden");
+        openAllBtn.disabled = true;
       }
 
-      // Share
+      // Share + ribbon
       renderShare(s);
+      applyRibbon(s.trust);
 
       // Prev / Next
       prevBtn.disabled = (idx === 0);
@@ -190,12 +346,33 @@
       prevBtn.onclick = () => { if (idx > 0) location.href = `story.html?id=${encodeURIComponent(allPub[idx-1].id)}`; };
       nextBtn.onclick = () => { if (idx < allPub.length-1) location.href = `story.html?id=${encodeURIComponent(allPub[idx+1].id)}`; };
 
-      // Keyboard nav: ← →
+      // Keyboard nav: ← →, print (p), copy (c)
       window.onkeydown = (e) => {
         if (e.key === "ArrowLeft" && !prevBtn.disabled) prevBtn.click();
         if (e.key === "ArrowRight" && !nextBtn.disabled) nextBtn.click();
+        if ((e.key==='p' || e.key==='P') && (e.ctrlKey||e.metaKey)) { e.preventDefault(); window.print(); }
       };
+
+      // Print
+      printBtn.onclick = () => window.print();
     }
+
+    // Sticky meta toggle via observer
+    const obs = new IntersectionObserver(entries=>{
+      entries.forEach(entry=>{
+        metaBar.classList.toggle('hidden', entry.isIntersecting);
+      });
+    }, { threshold: 0.01 });
+    obs.observe(document.body);
+
+    // Scroll progress
+    function updateProg(){
+      const h = document.documentElement;
+      const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight);
+      prog.style.width = (scrolled * 100) + '%';
+    }
+    document.addEventListener('scroll', updateProg, { passive:true });
+    updateProg();
 
     renderStory();
   </script>
