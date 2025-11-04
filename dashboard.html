@@ -10,67 +10,44 @@
   <style>
     :root { --lime:#a3e635; color-scheme: dark; }
     body { background:#000; color:#fff }
-    .noise { background-image: radial-gradient(1px 1px at 25px 25px,rgba(255,255,255,.9)1px,transparent 0); opacity:.06 }
     .glass { background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04)); backdrop-filter:blur(10px) saturate(120%) }
-    @keyframes fadeIn { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)} }
-    .fade-in { animation: fadeIn .6s ease-out .1s both }
-
-    /* Premium inputs */
-    .field{
-      width:100%;
-      border-radius:14px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.14);
-      padding:.875rem 1rem;
-      color:#fff;
-      font-size:.95rem;
-      line-height:1.25rem;
-      transition:background .2s,border-color .2s,box-shadow .2s,transform .06s;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 0 0 0 rgba(163,230,53,.35);
-      outline:none;
-    }
-    .field::placeholder{ color:rgba(255,255,255,.48); letter-spacing:.15px; }
-    .field:hover{ background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.22); }
-    .field:focus{
-      background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.35);
-      box-shadow:0 0 0 8px rgba(163,230,53,.08), 0 0 0 2px rgba(163,230,53,.35), inset 0 1px 0 rgba(255,255,255,.06);
-      transform:translateY(-1px);
-    }
-    textarea.field{ min-height:3.5rem; resize:vertical; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.35) transparent; }
-
-    /* Dark-friendly native selects */
-    select.field{
-      appearance:none; padding-right:2.25rem;
-      background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23cbd5e1" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5"/></svg>');
-      background-repeat:no-repeat; background-position:right .9rem center; background-size:16px 16px;
-    }
-    option{ background:#0b0b0b; color:#fff; }
-
-    /* Sidebar active state */
-    .nav-item[aria-current="page"]{
-      background: rgba(163,230,53,.12);
-      border-color: rgba(163,230,53,.45);
-      color: #fff;
-    }
-
-    /* Buttons */
+    .field{width:100%;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);padding:.875rem 1rem;color:#fff;font-size:.95rem;line-height:1.25rem;outline:none}
+    .field::placeholder{color:rgba(255,255,255,.48)}
     .btn{border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.07); border-radius:9999px; padding:.55rem .9rem; font-size:.9rem}
     .btn:hover{background:rgba(255,255,255,.12)}
     .btn-primary{background:var(--lime); color:#000; border-color:transparent}
     .btn-primary:hover{background:#c3f36a}
+
+    /* Pulse sweep bar */
+    .pulse-wrap{position:relative;overflow:hidden}
+    .pulse-line{
+      position:absolute;left:-30%;top:0;height:2px;width:30%;
+      background:linear-gradient(90deg,transparent,rgba(163,230,53,.9),transparent);
+      filter:drop-shadow(0 0 6px rgba(163,230,53,.5));
+      opacity:0;animation:pulseSweep 18s infinite ease-in-out;
+    }
+    @keyframes pulseSweep{0%{transform:translateX(0);opacity:0}3%{opacity:.95}6%{transform:translateX(440%);opacity:.2}8%{opacity:0}100%{transform:translateX(440%);opacity:0}}
+
+    /* Snackbar */
+    .snackbar{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:#0b0f14;border:1px solid rgba(255,255,255,.15);padding:.6rem .9rem;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.35);z-index:60;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s}
+    .snackbar.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(-2px)}
+
+    /* Table cells */
+    .td{padding:.6rem .75rem;border-top:1px solid rgba(255,255,255,.08)}
+    .th{padding:.4rem .75rem;color:rgba(255,255,255,.6);font-size:.8rem}
+
+    /* Badges */
+    .badge{border-radius:9999px;background:rgba(255,255,255,.1);padding:.15rem .5rem}
+    .s-green{color:#bbf7d0;background:rgba(34,197,94,.18)}
+    .s-yellow{color:#fde68a;background:rgba(234,179,8,.18)}
+    .s-red{color:#fecaca;background:rgba(239,68,68,.18)}
   </style>
 </head>
 <body class="min-h-screen">
-  <!-- Background -->
-  <div class="fixed inset-0 -z-10">
-    <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/25 to-black/80"></div>
-    <div aria-hidden class="noise absolute inset-0 pointer-events-none"></div>
-  </div>
-
-  <!-- Global header (consistent across app) -->
-  <header class="sticky top-0 z-40 backdrop-blur bg-black/40 border-b border-white/10">
+  <!-- Header -->
+  <header class="pulse-wrap sticky top-0 z-40 backdrop-blur bg-black/40 border-b border-white/10">
     <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
-      <a href="/" class="font-black tracking-tight">
+      <a href="./index.html" class="font-black tracking-tight">
         ONE<span class="text-lime-400">MARKET</span> <span class="font-semibold text-white/80">News</span>
       </a>
       <nav class="text-sm text-white/70 flex items-center gap-4">
@@ -78,295 +55,344 @@
         <a class="hover:text-white" href="./admin.html">Admin</a>
         <a class="hover:text-white" href="./editor.html">Editor</a>
         <a class="hover:text-white" href="./dashboard.html">Dashboard</a>
-        <a class="hover:text-white inline-flex items-center gap-1" href="./settings.html">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm9 3.5c0-.5-.04-.98-.12-1.45l2.02-1.57-1.9-3.29-2.4.84a8.9 8.9 0 0 0-2.5-1.45l-.38-2.54H9.28l-.38 2.54a8.9 8.9 0 0 0-2.5 1.45l-2.4-.84-1.9 3.29L4.12 10C4.04 10.47 4 10.95 4 11.45c0 .5.04.98.12 1.45l-2.02 1.57 1.9 3.29 2.4-.84a8.9 8.9 0 0 0 2.5 1.45l.38 2.54h3.44l.38-2.54a8.9 8.9 0 0 0 2.5-1.45l2.4.84 1.9-3.29-2.02-1.57c.08-.47.12-.95.12-1.45Z"/></svg>
-          Settings
-        </a>
+        <a class="hover:text-white" href="./settings.html">Settings</a>
       </nav>
     </div>
+    <div class="pulse-line"></div>
   </header>
 
-  <!-- Shell -->
-  <div class="mx-auto flex max-w-7xl flex-col md:flex-row">
-
-    <!-- Sidebar -->
-    <aside class="glass md:sticky md:top-[56px] md:h-[calc(100vh-56px)] w-full md:w-64 border-b md:border-b-0 md:border-r border-white/10">
-      <div class="flex items-center justify-between px-4 py-4 md:py-6">
-        <a href="./feed.html" class="text-white/80 hover:text-white text-sm inline-flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M10 19a1 1 0 0 1-.7-.29l-7-7a1 1 0 0 1 0-1.42l7-7A1 1 0 0 1 11 4v4h8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-8v4a1 1 0 0 1-1 1z"/></svg>
-          Back to Feed
-        </a>
-        <button id="menuBtn" class="md:hidden rounded-lg border border-white/15 px-2 py-1 text-sm text-white/80 hover:text-white">Menu</button>
-      </div>
-
-      <div id="nav" class="px-3 pb-4 md:block hidden">
-        <nav class="space-y-2">
-          <button class="nav-item w-full rounded-xl border border-white/10 px-3 py-2 text-left text-white/80 hover:text-white hover:border-white/25" data-target="home">🏠 Dashboard</button>
-          <button class="nav-item w-full rounded-xl border border-white/10 px-3 py-2 text-left text-white/80 hover:text-white hover:border-white/25" data-target="submit">📝 Submit Story</button>
-          <button class="nav-item w-full rounded-xl border border-white/10 px-3 py-2 text-left text-white/80 hover:text-white hover:border-white/25" data-target="submissions">📂 My Submissions</button>
-          <button class="nav-item w-full rounded-xl border border-white/10 px-3 py-2 text-left text-white/80 hover:text-white hover:border-white/25" data-target="guidelines">📚 Guidelines</button>
-        </nav>
-
-        <div class="mt-6 rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white/70">
-          Logged in as <span class="font-semibold">Contributor</span>
+  <!-- Main -->
+  <main class="mx-auto max-w-7xl px-4 py-6 space-y-6">
+    <!-- Top strip: stats + actions -->
+    <section class="glass rounded-2xl border border-white/10 p-5">
+      <div class="flex flex-wrap items-center gap-3">
+        <button id="newDraft" class="btn-primary px-4 py-2 rounded-full font-semibold">New Quick Draft</button>
+        <button id="openShortcuts" class="btn px-4 py-2 rounded-full">⌘/ Show Shortcuts</button>
+        <div class="ml-auto grid grid-cols-3 gap-3 w-full sm:w-auto">
+          <div class="glass rounded-xl border border-white/10 p-3">
+            <div class="text-xs text-white/60">Submitted</div>
+            <div id="mSubmitted" class="text-2xl font-bold">0</div>
+          </div>
+          <div class="glass rounded-xl border border-white/10 p-3">
+            <div class="text-xs text-white/60">In Review</div>
+            <div id="mReview" class="text-2xl font-bold">0</div>
+          </div>
+          <div class="glass rounded-xl border border-white/10 p-3">
+            <div class="text-xs text-white/60">Published</div>
+            <div id="mPublished" class="text-2xl font-bold">0</div>
+          </div>
         </div>
       </div>
-    </aside>
+    </section>
 
-    <!-- Main -->
-    <main class="flex-1 p-4 md:p-8 space-y-6">
-
-      <!-- Header -->
-      <header class="fade-in">
-        <span class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs tracking-wider">
-          <span class="h-2 w-2 rounded-full bg-lime-400"></span> Writer Dashboard
-        </span>
-        <h1 class="mt-3 text-4xl font-black">ONE<span class="text-lime-400">MARKET</span> <span class="font-semibold text-white/80">News</span></h1>
-        <p class="text-white/70 mt-2">Submit stories, track review status, and follow sourcing standards — all in one place.</p>
-      </header>
-
-      <!-- Sections -->
-      <section id="home" class="fade-in space-y-4" data-section>
-        <div class="grid gap-4 md:grid-cols-3">
-          <div class="glass rounded-2xl p-5">
-            <p class="text-white/60 text-sm">Stories Submitted</p>
-            <p id="statSubmitted" class="mt-1 text-3xl font-bold">0</p>
+    <!-- Quick Draft + Checklist -->
+    <section class="grid gap-6 lg:grid-cols-3">
+      <div class="lg:col-span-2 glass rounded-2xl border border-white/10 p-6">
+        <h2 class="text-lg font-semibold flex items-center justify-between">
+          Quick Draft
+          <span id="draftSaved" class="text-xs text-white/50"></span>
+        </h2>
+        <p class="text-white/70 text-sm mt-1">Capture a lead fast. Autosaves locally; you can submit when ready.</p>
+        <div class="mt-4 grid gap-3">
+          <input id="qd_title" class="field" placeholder="Headline (concise, factual)">
+          <div class="grid sm:grid-cols-2 gap-3">
+            <input id="qd_primary" class="field" placeholder="Primary source URL (required to submit)">
+            <input id="qd_secondary" class="field" placeholder="Secondary URLs (comma-separated)">
           </div>
-          <div class="glass rounded-2xl p-5">
-            <p class="text-white/60 text-sm">In Review</p>
-            <p id="statReview" class="mt-1 text-3xl font-bold">0</p>
+          <div class="grid sm:grid-cols-2 gap-3">
+            <select id="qd_beat" class="field">
+              <option>AI</option><option>Chips / Hardware</option><option>Energy</option>
+              <option>Markets</option><option>Policy / Regulation</option><option>Other</option>
+            </select>
+            <input id="qd_tags" class="field" placeholder="Tags (comma-separated)">
           </div>
-          <div class="glass rounded-2xl p-5">
-            <p class="text-white/60 text-sm">Published</p>
-            <p id="statPublished" class="mt-1 text-3xl font-bold">0</p>
-          </div>
-        </div>
-
-        <div class="glass rounded-2xl p-6">
-          <h2 class="text-lg font-semibold">Welcome</h2>
-          <p class="mt-2 text-white/80 text-sm">Thanks for contributing to the trust-layer of news. Use <span class="font-medium">Submit Story</span> to send items to editors. You’ll see everything you submit in <span class="font-medium">My Submissions</span>.</p>
-        </div>
-      </section>
-
-      <section id="submit" class="fade-in hidden" data-section>
-        <div class="glass rounded-2xl p-6">
-          <h2 class="text-lg font-semibold">Submit a Story</h2>
-          <p class="text-white/70 text-sm mt-1">Provide a clear title, links to sources, and a short summary. Editors will review and follow up if needed.</p>
-
-          <form id="storyForm" action="https://formspree.io/f/YOUR_FORM_ID" method="POST" class="mt-5 space-y-5">
-            <div>
-              <label for="title" class="mb-1 block text-sm text-white/70">Title</label>
-              <input id="title" name="title" required class="field" placeholder="Concise story headline" />
-            </div>
-
-            <div class="grid gap-4 md:grid-cols-2">
-              <div>
-                <label for="primary_url" class="mb-1 block text-sm text-white/70">Primary Source URL</label>
-                <input id="primary_url" name="primary_url" type="url" required class="field" placeholder="https://..." />
-              </div>
-              <div>
-                <label for="secondary_urls" class="mb-1 block text-sm text-white/70">Secondary URLs (optional)</label>
-                <input id="secondary_urls" name="secondary_urls" class="field" placeholder="Comma-separated links" />
-              </div>
-            </div>
-
-            <div class="grid gap-4 md:grid-cols-2">
-              <div>
-                <label for="beat" class="mb-1 block text-sm text-white/70">Beat / Category</label>
-                <select id="beat" name="beat" class="field">
-                  <option>AI</option>
-                  <option>Chips / Hardware</option>
-                  <option>Energy</option>
-                  <option>Markets</option>
-                  <option>Policy / Regulation</option>
-                  <option>Other</option>
-                </select>
-              </div>
-              <div>
-                <label for="tags" class="mb-1 block text-sm text-white/70">Tags (comma-separated)</label>
-                <input id="tags" name="tags" class="field" placeholder="e.g., openai, nvidia, earnings" />
-              </div>
-            </div>
-
-            <div>
-              <label for="summary" class="mb-1 block text-sm text-white/70">Summary (2–4 sentences)</label>
-              <textarea id="summary" name="summary" rows="4" class="field" placeholder="Key facts in your own words + what matters and why."></textarea>
-            </div>
-
-            <div class="flex items-center gap-3">
-              <button type="submit" class="inline-flex items-center gap-2 rounded-full bg-lime-400 px-6 py-3 font-semibold text-black shadow-lg shadow-lime-500/20 transition hover:-translate-y-0.5 hover:bg-lime-300 focus:outline-none focus:ring-2 focus:ring-lime-300">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></svg>
-                Submit Story
-              </button>
-              <span id="storyMsg" class="text-sm text-white/70"></span>
-            </div>
-          </form>
-        </div>
-      </section>
-
-      <section id="submissions" class="fade-in hidden" data-section>
-        <div class="glass rounded-2xl p-6">
-          <div class="flex items-center justify-between gap-3">
-            <h2 class="text-lg font-semibold">My Submissions</h2>
-            <div class="text-xs text-white/60">Autosaves locally for preview. Final decisions come from editors.</div>
-          </div>
-
-          <div class="mt-4 overflow-x-auto">
-            <table class="min-w-full text-sm">
-              <thead>
-                <tr class="text-left text-white/60">
-                  <th class="py-2 pr-4">Title</th>
-                  <th class="py-2 pr-4">Beat</th>
-                  <th class="py-2 pr-4">Date</th>
-                  <th class="py-2 pr-4">Status</th>
-                  <th class="py-2 pr-4">Primary URL</th>
-                </tr>
-              </thead>
-              <tbody id="subsTbody"></tbody>
-            </table>
+          <textarea id="qd_summary" class="field" rows="4" placeholder="2–4 sentence summary (your words) + why it matters."></textarea>
+          <div class="flex items-center gap-2">
+            <button id="qd_submit" class="btn-primary px-5 py-3 rounded-full font-semibold">Submit to Editors</button>
+            <button id="qd_clear" class="btn px-5 py-3 rounded-full">Clear Draft</button>
+            <span id="qd_msg" class="text-sm text-white/70"></span>
           </div>
         </div>
-      </section>
+      </div>
 
-      <section id="guidelines" class="fade-in hidden" data-section>
-        <div class="glass rounded-2xl p-6 space-y-4">
-          <h2 class="text-lg font-semibold">Sourcing & Citation Standards</h2>
-          <ul class="list-disc pl-5 text-sm text-white/80 space-y-2">
-            <li>Link every claim to a high-quality source. Prefer primary docs, filings, official blog posts, or transcripts.</li>
-            <li>Summarize in your own words. Quote sparingly and attribute clearly.</li>
-            <li>Add a <strong>Why it matters</strong> line for context and impact.</li>
-            <li>If a correction is needed, submit an update — corrections are celebrated.</li>
-            <li>Disclose conflicts of interest (holdings, employment, paid relationships) in your submission.</li>
-          </ul>
+      <aside class="glass rounded-2xl border border-white/10 p-6">
+        <h3 class="text-lg font-semibold">Pre-Submit Checklist</h3>
+        <ul class="mt-3 space-y-2 text-sm text-white/80">
+          <li><input type="checkbox" class="mr-2" id="c1"> Headline is concise & factual</li>
+          <li><input type="checkbox" class="mr-2" id="c2"> Primary source is authoritative</li>
+          <li><input type="checkbox" class="mr-2" id="c3"> Summary is in my own words</li>
+          <li><input type="checkbox" class="mr-2" id="c4"> “Why it matters” is clear</li>
+          <li><input type="checkbox" class="mr-2" id="c5"> Conflicts of interest disclosed</li>
+        </ul>
+        <p class="text-xs text-white/50 mt-3">Tip: publish-ready items usually include 1 primary + 1–2 secondary links.</p>
+      </aside>
+    </section>
 
-          <h3 class="mt-4 font-semibold">Story Format</h3>
-          <ol class="list-decimal pl-5 text-sm text-white/80 space-y-2">
-            <li><strong>Headline:</strong> concise and factual.</li>
-            <li><strong>Summary:</strong> 2–4 sentences with the key facts.</li>
-            <li><strong>Sources:</strong> 1+ primary, 1–2 secondary for context.</li>
-            <li><strong>Tags:</strong> 2–5 keywords (company, topic, person).</li>
-          </ol>
+    <!-- My Submissions -->
+    <section class="glass rounded-2xl border border-white/10 p-6">
+      <div class="flex flex-wrap items-center gap-2">
+        <h2 class="text-lg font-semibold">My Submissions</h2>
+        <div class="ml-auto flex flex-wrap gap-2">
+          <input id="f_q" class="field w-64" placeholder="Search title or tags…">
+          <select id="f_beat" class="field">
+            <option value="">All beats</option>
+            <option>AI</option><option>Chips / Hardware</option><option>Energy</option>
+            <option>Markets</option><option>Policy / Regulation</option><option>Other</option>
+          </select>
+          <select id="f_status" class="field">
+            <option value="">All status</option>
+            <option>In Review</option><option>Published</option>
+          </select>
+          <select id="f_sort" class="field">
+            <option value="date_desc">Newest</option>
+            <option value="date_asc">Oldest</option>
+            <option value="title_asc">Title (A→Z)</option>
+            <option value="title_desc">Title (Z→A)</option>
+          </select>
         </div>
-      </section>
+      </div>
 
-      <footer class="pt-2 pb-8 text-center text-xs text-white/60">
-        © <span id="year"></span> OneMarket News, LLC.
-      </footer>
-    </main>
+      <div class="mt-4 overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead><tr>
+            <th class="th text-left">Title</th>
+            <th class="th text-left">Beat</th>
+            <th class="th text-left">Date</th>
+            <th class="th text-left">Status</th>
+            <th class="th text-left">Primary URL</th>
+            <th class="th text-right">Actions</th>
+          </tr></thead>
+          <tbody id="subsTbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="text-center text-xs text-white/60">© <span id="year"></span> OneMarket News, LLC.</footer>
+  </main>
+
+  <!-- Shortcuts modal -->
+  <div id="shortcuts" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/60"></div>
+    <div class="relative mx-auto mt-20 w-[min(92vw,560px)] glass rounded-2xl border border-white/10 p-6">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Keyboard Shortcuts</h3>
+        <button id="closeShortcuts" class="btn px-3 py-1">Close</button>
+      </div>
+      <ul class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-white/80">
+        <li><span class="font-mono bg-white/10 px-2 py-1 rounded">⌘/</span> Toggle shortcuts</li>
+        <li><span class="font-mono bg-white/10 px-2 py-1 rounded">⌘N</span> New quick draft</li>
+        <li><span class="font-mono bg-white/10 px-2 py-1 rounded">⌘S</span> Save quick draft</li>
+        <li><span class="font-mono bg-white/10 px-2 py-1 rounded">⌘Enter</span> Submit quick draft</li>
+      </ul>
+    </div>
   </div>
 
+  <!-- Snackbar -->
+  <div id="snack" class="snackbar">Saved</div>
+
   <script>
+    /* ---------- Utilities ---------- */
+    const $ = (id)=>document.getElementById(id);
+    const snackEl = $('snack');
+    const snack = (t='Saved')=>{ snackEl.textContent=t; snackEl.classList.add('show'); setTimeout(()=>snackEl.classList.remove('show'), 1200); }
+    const escHtml = s => String(s||'').replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]) );
+
+    // Keys
+    const K_SUBS = 'onemarket.submissions';
+    const K_QDRAFT = 'onemarket.quickdraft';
+
+    const read = (k, fb) => { try{ return JSON.parse(localStorage.getItem(k) ?? JSON.stringify(fb)); }catch{ return fb; } };
+    const write = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+
     // Year
-    document.getElementById('year').textContent = new Date().getFullYear();
+    $('year').textContent = new Date().getFullYear();
 
-    // Mobile menu toggle (sidebar)
-    const menuBtn = document.getElementById('menuBtn');
-    const nav = document.getElementById('nav');
-    if (menuBtn) menuBtn.addEventListener('click', () => nav.classList.toggle('hidden'));
+    /* ---------- Stats / Submissions ---------- */
+    const mSubmitted = $('mSubmitted'), mReview = $('mReview'), mPublished = $('mPublished');
+    const tbody = $('subsTbody');
+    const f_q = $('f_q'), f_beat = $('f_beat'), f_status = $('f_status'), f_sort = $('f_sort');
 
-    // Section switching + hash routing
-    const sections = Array.from(document.querySelectorAll('[data-section]'));
-    const buttons = Array.from(document.querySelectorAll('.nav-item'));
-    function showSection(id){
-      sections.forEach(s => s.classList.toggle('hidden', s.id !== id));
-      buttons.forEach(b => b.setAttribute('aria-current', b.dataset.target === id ? 'page' : 'false'));
-      history.replaceState(null, '', '#' + id);
+    function getSubs(){ return read(K_SUBS, []); }
+    function setSubs(rows){ write(K_SUBS, rows); }
+    function updateStats(rows){
+      mSubmitted.textContent = rows.length;
+      mReview.textContent = rows.filter(r=>r.status==='In Review').length;
+      mPublished.textContent = rows.filter(r=>r.status==='Published').length;
     }
-    buttons.forEach(b => b.addEventListener('click', () => showSection(b.dataset.target)));
-    const init = location.hash?.slice(1) || 'home';
-    (buttons.find(b => b.dataset.target === init) || buttons[0]).click();
 
-    // Local storage helpers for mock table
-    const KEY = 'onemarket.submissions';
-    const readSubs = () => { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; } };
-    const writeSubs = (rows) => localStorage.setItem(KEY, JSON.stringify(rows));
-    const tbody = document.getElementById('subsTbody');
-    const statSubmitted = document.getElementById('statSubmitted');
-    const statReview = document.getElementById('statReview');
-    const statPublished = document.getElementById('statPublished');
-
-    function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-    function escapeAttr(s){ return (s||'').replace(/"/g, '&quot;'); }
-
-    function renderSubs(){
-      const rows = readSubs();
-      tbody.innerHTML = '';
-      rows.forEach(r => {
-        const tr = document.createElement('tr');
-        tr.className = 'border-t border-white/10';
-        tr.innerHTML = `
-          <td class="py-2 pr-4">${escapeHtml(r.title||'')}</td>
-          <td class="py-2 pr-4 text-white/70">${escapeHtml(r.beat||'')}</td>
-          <td class="py-2 pr-4 text-white/70">${r.date ? new Date(r.date).toLocaleDateString() : ''}</td>
-          <td class="py-2 pr-4"><span class="rounded-full bg-white/10 px-2 py-1 text-xs">${escapeHtml(r.status||'In Review')}</span></td>
-          <td class="py-2 pr-4">${
-            r.primary_url
-              ? `<a class="underline decoration-lime-400/60 underline-offset-2 text-white/80 hover:text-white" href="${escapeAttr(r.primary_url)}" target="_blank" rel="noopener">Open</a>`
-              : '<span class="text-white/40">—</span>'
-          }</td>
-        `;
-        tbody.appendChild(tr);
-      });
-      statSubmitted.textContent = rows.length;
-      statReview.textContent = rows.filter(r => r.status === 'In Review').length;
-      statPublished.textContent = rows.filter(r => r.status === 'Published').length;
+    function rowHtml(r){
+      const badge = r.status==='Published' ? 's-green' : 's-yellow';
+      return `<tr>
+        <td class="td">${escHtml(r.title||'')}</td>
+        <td class="td text-white/70">${escHtml(r.beat||'')}</td>
+        <td class="td text-white/70">${r.date? new Date(r.date).toLocaleString():''}</td>
+        <td class="td"><span class="badge ${badge}">${escHtml(r.status||'In Review')}</span></td>
+        <td class="td">
+          ${r.primary_url? `<a class="underline decoration-lime-400/60 underline-offset-2 text-white/80 hover:text-white" href="${escHtml(r.primary_url)}" target="_blank" rel="noopener">Open</a>` : '<span class="text-white/40">—</span>'}
+        </td>
+        <td class="td text-right">
+          <button class="btn px-3 py-1 text-xs" data-act="toReview" data-id="${escHtml(r.id)}">Mark Review</button>
+          <button class="btn px-3 py-1 text-xs" data-act="toPub" data-id="${escHtml(r.id)}">Publish</button>
+          <button class="btn px-3 py-1 text-xs" data-act="del" data-id="${escHtml(r.id)}">Delete</button>
+        </td>
+      </tr>`;
     }
-    renderSubs();
 
-    // Submit Story (Formspree + local preview)
-    const storyForm = document.getElementById('storyForm');
-    const storyMsg = document.getElementById('storyMsg');
-    storyForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      storyMsg.textContent = 'Submitting…';
-      const fd = new FormData(storyForm);
+    function applyFilters(rows){
+      let out = rows.slice();
+      const q = (f_q.value||'').toLowerCase().trim();
+      const beat = f_beat.value;
+      const st = f_status.value;
 
-      // local preview row
+      if (q) out = out.filter(r => ((r.title||'') + ' ' + (Array.isArray(r.tags)?r.tags.join(','):r.tags||'')).toLowerCase().includes(q));
+      if (beat) out = out.filter(r => r.beat === beat);
+      if (st) out = out.filter(r => r.status === st);
+
+      switch (f_sort.value){
+        case 'date_asc': out.sort((a,b)=> (a.date||0)-(b.date||0)); break;
+        case 'title_asc': out.sort((a,b)=> (a.title||'').localeCompare(b.title||'')); break;
+        case 'title_desc': out.sort((a,b)=> (b.title||'').localeCompare(a.title||'')); break;
+        default: out.sort((a,b)=> (b.date||0)-(a.date||0));
+      }
+      return out;
+    }
+
+    function renderTable(){
+      const rows = getSubs();
+      updateStats(rows);
+      const view = applyFilters(rows);
+      tbody.innerHTML = view.map(rowHtml).join('') || `<tr><td class="td text-white/60" colspan="6">No submissions yet.</td></tr>`;
+    }
+
+    [f_q, f_beat, f_status, f_sort].forEach(el => {
+      el.addEventListener('input', renderTable);
+      el.addEventListener('change', renderTable);
+    });
+
+    tbody.addEventListener('click', (e)=>{
+      const btn = e.target.closest('button[data-act]'); if(!btn) return;
+      const id = btn.getAttribute('data-id'); const act = btn.getAttribute('data-act');
+      const rows = getSubs(); const i = rows.findIndex(r=>String(r.id)===String(id)); if(i<0) return;
+      if (act==='del'){ rows.splice(i,1); setSubs(rows); snack('Deleted'); renderTable(); return; }
+      if (act==='toReview'){ rows[i].status='In Review'; rows[i].date=Date.now(); setSubs(rows); snack('Moved to Review'); renderTable(); return; }
+      if (act==='toPub'){ rows[i].status='Published'; rows[i].date=Date.now(); setSubs(rows); snack('Published'); renderTable(); return; }
+    });
+
+    /* ---------- Quick Draft ---------- */
+    const qd = {
+      title:$('qd_title'), primary:$('qd_primary'), secondary:$('qd_secondary'),
+      beat:$('qd_beat'), tags:$('qd_tags'), summary:$('qd_summary'),
+      submit:$('qd_submit'), clear:$('qd_clear'), saved:$('draftSaved'), msg:$('qd_msg')
+    };
+
+    // Load draft
+    (function loadDraft(){
+      const d = read(K_QDRAFT, null);
+      if(!d) return;
+      qd.title.value = d.title||''; qd.primary.value = d.primary||'';
+      qd.secondary.value = d.secondary||''; qd.beat.value = d.beat||'AI';
+      qd.tags.value = d.tags||''; qd.summary.value = d.summary||'';
+      qd.saved.textContent = 'Autosaved • ' + new Date(d._ts||Date.now()).toLocaleTimeString();
+    })();
+
+    // Autosave
+    const saveDraft = ()=>{
+      const d = {
+        title: qd.title.value.trim(),
+        primary: qd.primary.value.trim(),
+        secondary: qd.secondary.value.trim(),
+        beat: qd.beat.value,
+        tags: qd.tags.value.trim(),
+        summary: qd.summary.value.trim(),
+        _ts: Date.now()
+      };
+      write(K_QDRAFT, d);
+      qd.saved.textContent = 'Autosaved • ' + new Date(d._ts).toLocaleTimeString();
+    };
+    [qd.title, qd.primary, qd.secondary, qd.beat, qd.tags, qd.summary].forEach(el=>{
+      el.addEventListener('input', saveDraft);
+      el.addEventListener('change', saveDraft);
+    });
+
+    // Submit to editors (Formspree or pipeline). Replace YOUR_FORM_ID.
+    qd.submit.addEventListener('click', async ()=>{
+      qd.msg.className = 'text-sm text-white/70';
+      qd.msg.textContent = 'Submitting…';
+
+      const primary = qd.primary.value.trim();
+      if(!primary){ qd.msg.className='text-sm text-red-300'; qd.msg.textContent='Primary source URL required.'; return; }
+
+      // Create local submission row
       const row = {
         id: 'm_' + Math.random().toString(36).slice(2,10),
-        title: fd.get('title'),
-        beat: fd.get('beat'),
-        tags: (fd.get('tags')||'').split(',').map(s=>s.trim()).filter(Boolean),
+        title: qd.title.value.trim() || '(Untitled)',
+        beat: qd.beat.value,
+        tags: (qd.tags.value||'').split(',').map(s=>s.trim()).filter(Boolean),
         date: Date.now(),
         status: 'In Review',
-        primary_url: fd.get('primary_url'),
-        summary: fd.get('summary') || '',
-        citations: (fd.get('secondary_urls')||'').split(',').map(s=>s.trim()).filter(Boolean)
+        primary_url: primary,
+        summary: qd.summary.value.trim(),
+        citations: (qd.secondary.value||'').split(',').map(s=>s.trim()).filter(Boolean)
       };
-      const rows = readSubs();
-      rows.unshift(row);
-      writeSubs(rows);
-      renderSubs();
+      const rows = getSubs(); rows.unshift(row); setSubs(rows); renderTable();
 
-      // send to Formspree
-      try {
-        const res = await fetch(storyForm.action, { method:'POST', body:fd, headers:{'Accept':'application/json'} });
+      // Send to Formspree
+      try{
+        const fd = new FormData();
+        fd.set('title', row.title);
+        fd.set('beat', row.beat);
+        fd.set('tags', row.tags.join(', '));
+        fd.set('primary_url', row.primary_url);
+        fd.set('secondary_urls', (qd.secondary.value||''));
+        fd.set('summary', row.summary);
+        const res = await fetch('https://formspree.io/f/YOUR_FORM_ID', { method:'POST', body:fd, headers:{'Accept':'application/json'} });
         if(res.ok){
-          storyMsg.className = 'text-sm text-lime-300';
-          storyMsg.textContent = 'Received! Editors will review shortly.';
-          storyForm.reset();
+          qd.msg.className='text-sm text-lime-300';
+          qd.msg.textContent='Received! Editors will review shortly.';
+          snack('Submitted');
+          // Keep draft but clear fields?
+          // If you want to clear: uncomment next 3 lines
+          // qd.title.value = qd.primary.value = qd.secondary.value = qd.tags.value = qd.summary.value = '';
+          // qd.beat.value = 'AI';
+          // saveDraft();
         }else{
-          storyMsg.className = 'text-sm text-red-300';
-          storyMsg.textContent = 'Submission failed. Please try again.';
+          qd.msg.className='text-sm text-red-300'; qd.msg.textContent='Submission failed. Saved locally — try again.';
         }
-      } catch {
-        storyMsg.className = 'text-sm text-red-300';
-        storyMsg.textContent = 'Network error. Saved locally — try again later.';
+      }catch{
+        qd.msg.className='text-sm text-red-300'; qd.msg.textContent='Network error. Saved locally — try again later.';
       }
     });
 
-    /* ✅ Active navigation highlight (global) */
-    (function highlightActiveNav() {
-      const here = new URL(location.href);
-      const normalize = (p) => p.replace(/\/$/, "/index.html");
-      const current = normalize(here.pathname);
-      document.querySelectorAll("header nav a[href]").forEach(a => {
-        const dest = new URL(a.getAttribute("href"), here).pathname;
-        if (normalize(dest) === current) {
-          a.classList.add("text-lime-300","bg-white/5","rounded-lg","ring-2","ring-lime-300/40");
-        }
-      });
-    })();
+    // Clear draft
+    qd.clear.addEventListener('click', ()=>{
+      if(!confirm('Clear the quick draft?')) return;
+      write(K_QDRAFT, {});
+      qd.title.value = qd.primary.value = qd.secondary.value = qd.tags.value = qd.summary.value = '';
+      qd.beat.value = 'AI'; qd.saved.textContent = '';
+      snack('Draft cleared');
+    });
+
+    // New draft shortcut button
+    $('newDraft').addEventListener('click', ()=>{
+      qd.title.focus();
+      snack('Ready for a new draft');
+    });
+
+    /* ---------- Shortcuts ---------- */
+    const shortcuts = $('shortcuts'), openShort = $('openShortcuts'), closeShort = $('closeShortcuts');
+    openShort.addEventListener('click', ()=> shortcuts.classList.remove('hidden'));
+    closeShort.addEventListener('click', ()=> shortcuts.classList.add('hidden'));
+    document.addEventListener('keydown', (e)=>{
+      const isMac = navigator.platform.toUpperCase().includes('MAC');
+      const mod = isMac ? e.metaKey : e.ctrlKey;
+      if(mod && e.key === '/'){ e.preventDefault(); shortcuts.classList.toggle('hidden'); }
+      if(mod && (e.key==='n' || e.key==='N')){ e.preventDefault(); $('newDraft').click(); }
+      if(mod && (e.key==='s' || e.key==='S')){ e.preventDefault(); saveDraft(); snack('Draft saved'); }
+      if(mod && e.key === 'Enter'){ e.preventDefault(); qd.submit.click(); }
+    });
+
+    // Initial render
+    renderTable();
   </script>
 </body>
 </html>
