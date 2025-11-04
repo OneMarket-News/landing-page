@@ -2,9 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>OneMarket News — Story</title>
   <meta name="description" content="Read full verified stories from OneMarket News — the trust layer for information." />
   <meta name="theme-color" content="#000" />
@@ -17,22 +15,17 @@
     .muted{ color:rgba(255,255,255,.7) }
     .prose { line-height:1.7; }
     .prose p + p { margin-top: 1rem; }
-    /* scroll progress */
     #prog { position:fixed; top:0; left:0; height:3px; width:0; background:#a3e635; z-index:50; box-shadow:0 0 12px rgba(163,230,53,.6) }
-    /* trust ribbon */
     .ribbon { position:absolute; top:12px; right:-40px; transform:rotate(45deg); padding:.35rem 3rem; font-size:.7rem; font-weight:700; letter-spacing:.02em }
     .r-green{ background:rgba(34,197,94,.2); color:#86efac; border:1px solid rgba(34,197,94,.45) }
     .r-yellow{ background:rgba(234,179,8,.2); color:#fde68a; border:1px solid rgba(234,179,8,.45) }
     .r-red{ background:rgba(239,68,68,.2); color:#fca5a5; border:1px solid rgba(239,68,68,.45) }
-    /* sticky meta bar */
     .metabar { position:sticky; top:56px; z-index:30; backdrop-filter:blur(8px); background:rgba(0,0,0,.45); border-bottom:1px solid rgba(255,255,255,.08) }
-    /* citation pills */
     .pill { border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.06); border-radius:9999px; padding:.25rem .6rem; font-size:.75rem }
-    /* code-safe link underline */
     .u { text-decoration: underline; text-underline-offset: 2px; }
   </style>
 
-  <!-- Social (static fallbacks; URL+title set at runtime if available) -->
+  <!-- Social fallbacks -->
   <meta property="og:site_name" content="OneMarket News" />
   <meta property="og:title" content="OneMarket — Story" />
   <meta property="og:description" content="Verified story with sources and trust score." />
@@ -41,10 +34,8 @@
   <meta name="twitter:card" content="summary_large_image" />
 </head>
 <body>
-  <!-- scroll progress -->
   <div id="prog"></div>
 
-  <!-- Header -->
   <header class="sticky top-0 z-40 backdrop-blur bg-black/40 border-b border-white/10">
     <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
       <a href="/feed.html" class="flex items-center gap-2 text-white/80 hover:text-white">
@@ -55,7 +46,6 @@
     </div>
   </header>
 
-  <!-- Sticky meta bar (appears after title enters viewport) -->
   <div id="metaBar" class="metabar hidden">
     <div class="mx-auto max-w-5xl px-4 py-2 flex items-center justify-between gap-3 text-xs">
       <div class="truncate" id="mbTitle"></div>
@@ -67,7 +57,6 @@
     </div>
   </div>
 
-  <!-- Story container -->
   <main class="mx-auto max-w-3xl px-4 py-8">
     <article id="storyCard" class="relative glass rounded-2xl border border-white/10 p-6 sm:p-8 overflow-hidden">
       <div id="ribbon" class="ribbon hidden"></div>
@@ -82,13 +71,11 @@
         </div>
       </header>
 
-      <!-- optional hero (if s.image exists later) -->
       <div id="heroWrap" class="mt-5 hidden">
         <img id="hero" alt="" class="w-full rounded-xl border border-white/10 object-cover max-h-[360px]" />
         <div id="heroCap" class="mt-2 text-[12px] text-white/60"></div>
       </div>
 
-      <!-- Read time + quick actions -->
       <div class="mt-4 flex flex-wrap items-center gap-3 text-xs text-white/60">
         <span id="readTime">~2 min read</span>
         <span class="hidden sm:inline">•</span>
@@ -96,35 +83,29 @@
         <button id="openAll" class="pill hover:bg-white/10">Open all sources</button>
       </div>
 
-      <!-- Body -->
       <section id="body" class="prose mt-6 text-[1.05rem]"></section>
 
-      <!-- Summary fallback (if no body) -->
       <section id="summaryWrap" class="mt-6 hidden">
         <h2 class="text-lg font-semibold">Summary</h2>
         <p id="summary" class="mt-2 text-white/85"></p>
       </section>
 
-      <!-- Why it matters -->
       <section id="wimWrap" class="mt-6 hidden">
         <h2 class="text-lg font-semibold">Why it matters</h2>
         <p id="wim" class="mt-2 text-white/80"></p>
       </section>
 
-      <!-- Inline citations (chips) -->
       <section id="chips" class="mt-6 hidden">
         <div class="text-xs text-white/60 mb-2">Citations</div>
         <div id="chipList" class="flex flex-wrap gap-2"></div>
       </section>
 
-      <!-- Sources list -->
       <section id="sources" class="mt-8 hidden">
         <h2 class="text-lg font-semibold">Sources & Citations</h2>
         <ul id="sourceList" class="mt-2 list-disc space-y-1 pl-5 text-sm text-lime-300"></ul>
       </section>
     </article>
 
-    <!-- Nav between stories -->
     <nav class="mt-6 flex justify-between text-sm">
       <button id="prev" class="rounded-full border border-white/20 px-4 py-2 hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed">&larr; Previous</button>
       <button id="next" class="rounded-full border border-white/20 px-4 py-2 hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed">Next &rarr;</button>
@@ -135,15 +116,21 @@
     </footer>
   </main>
 
-  <script>
+  <!-- Supabase-powered logic -->
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    // 🔐 Supabase (anon) — ok for public read
+    const SUPABASE_URL  = "https://fdwjzdvdqskcdidiervv.supabase.co";
+    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZkd2p6ZHZkcXNrY2RpZGllcnZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMDk0MDgsImV4cCI6MjA3Nzc4NTQwOH0.iCEfiC1EH4Ec0GZB7y437yTA-ylyszIdhMJu-UimbCQ";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    // ---- DOM helpers ----
     document.getElementById("year").textContent = new Date().getFullYear();
-
-    // ---- Storage / helpers ----
-    const KEY = "onemarket.submissions";
-    const params = new URLSearchParams(location.search);
-    const id = params.get("id");
-
     const $ = id => document.getElementById(id);
+    const params = new URLSearchParams(location.search);
+    const storyId = params.get("id");
+
     const titleEl = $("title");
     const metaTopEl = $("metaTop");
     const metaBottomEl = $("metaBottom");
@@ -176,28 +163,17 @@
 
     const esc = (s="") => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     const toLocal = ts => { try { return new Date(ts).toLocaleString(); } catch { return ""; } };
-    const readSubs = () => { try { return JSON.parse(localStorage.getItem(KEY) || "[]"); } catch { return []; } };
+    const estimateReadTime = (text) => `~${Math.max(1, Math.round((text||"").trim().split(/\s+/).filter(Boolean).length/220))} min read`;
 
-    function trustBadge(t, tiny=false) {
+    const trustBadge = (t, tiny=false) => {
       if (!t) return "";
       const cls = t.label==='green' ? 'bg-green-500/20 text-green-300'
                : t.label==='yellow' ? 'bg-yellow-500/20 text-yellow-200'
                : 'bg-red-500/20 text-red-300';
       const s = Math.round(t.score||0);
       return `<span class="rounded-full px-2 py-1 ${tiny?'text-[11px]':'text-xs'} ${cls}">Trust ${s}% • ${esc(t.label)}</span>`;
-    }
-    function trustRibbonClass(t){
-      if(!t) return 'hidden';
-      if(t.label==='green') return 'r-green';
-      if(t.label==='yellow') return 'r-yellow';
-      return 'r-red';
-    }
-
-    function estimateReadTime(text) {
-      const words = (text||'').trim().split(/\s+/).filter(Boolean).length;
-      const minutes = Math.max(1, Math.round(words / 220));
-      return `~${minutes} min read`;
-    }
+    };
+    const trustRibbonClass = (t) => !t ? 'hidden' : (t.label==='green' ? 'r-green' : t.label==='yellow' ? 'r-yellow' : 'r-red');
 
     function setSocialMeta(s){
       try{
@@ -219,11 +195,9 @@
       const text = encodeURIComponent(s.title || "OneMarket story");
       const shareUrl = `https://x.com/intent/tweet?text=${text}&url=${encodeURIComponent(url)}&via=OneMarketNews`;
       shareEl.innerHTML = `
-        <a href="${shareUrl}" target="_blank" rel="noopener" aria-label="Share on X"
+        <a href="${shareUrl}" target="_blank" rel="noopener"
            class="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs hover:bg-white/15 inline-flex items-center gap-1.5">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M20.945 3H17.3l-4.01 5.05L8.19 3H3l7.01 9.26L3.3 21h3.65l4.22-5.31L15.82 21H21l-7.28-9.62L20.945 3zM16.52 19.5l-7.2-9.47 1.17-1.48 7.38 9.63-1.35 1.32zm-9.93-15h.96l7.02 9.16-.96 1.2L6.59 4.5z"/>
-          </svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.945 3H17.3l-4.01 5.05L8.19 3H3l7.01 9.26L3.3 21h3.65l4.22-5.31L15.82 21H21l-7.28-9.62L20.945 3z"/></svg>
           Share
         </a>
         <button id="copy" class="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs hover:bg-white/15">Copy link</button>
@@ -231,8 +205,6 @@
       $("copy").onclick = async () => {
         try { await navigator.clipboard.writeText(url); $("copy").textContent = "Copied!"; setTimeout(()=>$("copy").textContent="Copy link", 1200); } catch {}
       };
-
-      // sticky bar actions
       mbTitle.textContent = s.title || '(Untitled)';
       mbTrust.innerHTML = s.trust ? trustBadge(s.trust,true) : '';
       mbShare.onclick = ()=> window.open(shareUrl, "_blank","noopener");
@@ -248,26 +220,65 @@
       ribbonEl.classList.remove('hidden');
     }
 
-    function renderStory() {
-      const allPub = readSubs().filter(x => x.status === "Published");
-      const idx = allPub.findIndex(x => String(x.id) === String(id));
+    function notFound(){
+      $("prev").disabled = true; $("next").disabled = true;
+      storyCard.innerHTML = `
+        <div class="text-center">
+          <h1 class="text-2xl font-semibold">Story not found</h1>
+          <p class="mt-2 text-white/70">It may have been removed or unpublished.</p>
+          <a class="mt-4 inline-block underline text-lime-300" href="/feed.html">Back to Feed</a>
+        </div>`;
+      document.title = "OneMarket News — Story not found";
+    }
 
-      if (idx < 0) {
-        storyCard.innerHTML = `
-          <div class="text-center">
-            <h1 class="text-2xl font-semibold">Story not found</h1>
-            <p class="mt-2 text-white/70">It may have been removed or unpublished.</p>
-            <a class="mt-4 inline-block underline text-lime-300" href="/feed.html">Back to Feed</a>
-          </div>`;
-        prevBtn.disabled = true; nextBtn.disabled = true;
-        document.title = "OneMarket News — Story not found";
-        return;
-      }
+    async function fetchStoryAndNeighbors(id){
+      // single story (Published only)
+      const one = supabase
+        .from('posts')
+        .select('*')
+        .eq('id', id)
+        .eq('status','Published')
+        .single();
 
-      const s = allPub[idx];
+      // all published ids for prev/next
+      const list = supabase
+        .from('posts')
+        .select('id,date')
+        .eq('status','Published')
+        .order('date', { ascending:false });
+
+      const [{ data:story, error:e1 }, { data:rows, error:e2 }] = await Promise.all([one, list]);
+      return { story, rows, error: e1 || e2 };
+    }
+
+    function normalize(row){
+      // Build a normalized object the renderer expects
+      const trust = row.trust || (row.trust_label || row.trust_score != null
+        ? { label: row.trust_label || 'green', score: row.trust_score||0 } : null);
+
+      return {
+        id: row.id,
+        title: row.title,
+        summary: row.summary,
+        beat: row.beat,
+        tags: Array.isArray(row.tags) ? row.tags : (row.tags ? [row.tags] : []),
+        status: row.status,
+        date: row.date,
+        primary_url: row.primary_url,
+        citations: Array.isArray(row.citations) ? row.citations : (row.citations ? [row.citations] : []),
+        body: row.body || "",
+        why_it_matters: row.why_it_matters || "",
+        image: row.image || "",
+        image_alt: row.image_alt || "",
+        image_caption: row.image_caption || "",
+        trust
+      };
+    }
+
+    function render(s, all){
       setSocialMeta(s);
 
-      // Meta (top)
+      // top meta
       metaTopEl.innerHTML = `
         ${s.beat ? `<span class="badge rounded-full px-2 py-1 text-white/70">${esc(s.beat)}</span>` : ""}
         ${Array.isArray(s.tags)&&s.tags.length ? `<span>•</span><span>${esc(s.tags.join(", "))}</span>` : ""}
@@ -275,30 +286,28 @@
         ${s.trust ? `<span>•</span>${trustBadge(s.trust)}` : ""}
       `;
 
-      // Title
+      // title
       titleEl.textContent = s.title || "(Untitled)";
 
-      // Hero (optional)
+      // hero
       if (s.image) {
         heroEl.src = s.image;
         heroEl.alt = s.image_alt || 'Story image';
         heroCap.textContent = s.image_caption || '';
-        heroWrap.classList.remove('hidden');
+        heroWrap.classList.remove("hidden");
       } else {
-        heroWrap.classList.add('hidden');
+        heroWrap.classList.add("hidden");
       }
 
-      // Meta (bottom) — primary link if present
-      metaBottomEl.innerHTML = `
-        ${s.primary_url ? `<a class="u text-lime-300 hover:text-lime-400" target="_blank" rel="noopener" href="${esc(s.primary_url)}">Primary source</a>` : `<span class="muted">Primary source: —</span>`}
-      `;
+      // primary link
+      metaBottomEl.innerHTML =
+        s.primary_url ? `<a class="u text-lime-300 hover:text-lime-400" target="_blank" rel="noopener" href="${esc(s.primary_url)}">Primary source</a>`
+                      : `<span class="muted">Primary source: —</span>`;
 
-      // Body vs Summary
+      // body / summary
       const body = (s.body && String(s.body).trim()) || '';
       if (body) {
-        // very light sanitization of angle brackets for safety (body assumed pre-sanitized if you use a CMS)
-        const safe = String(body).replace(/<script/gi,'&lt;script');
-        bodyEl.innerHTML = safe;
+        bodyEl.innerHTML = String(body).replace(/<script/gi,'&lt;script'); // light safety
         summaryWrapEl.classList.add("hidden");
         readTimeEl.textContent = estimateReadTime(body.replace(/<[^>]+>/g,' '));
       } else {
@@ -308,26 +317,17 @@
         readTimeEl.textContent = estimateReadTime(s.summary||'');
       }
 
-      // Why it matters
-      if (s.why_it_matters) {
-        wimEl.textContent = s.why_it_matters;
-        wimWrapEl.classList.remove("hidden");
-      } else {
-        wimWrapEl.classList.add("hidden");
-      }
+      // WIM
+      if (s.why_it_matters) { wimEl.textContent = s.why_it_matters; wimWrapEl.classList.remove("hidden"); }
+      else { wimWrapEl.classList.add("hidden"); }
 
-      // Citation chips + list
+      // citations
       const sources = Array.isArray(s.citations) ? s.citations : [];
       if (sources.length) {
         chipsEl.classList.remove("hidden");
         chipListEl.innerHTML = sources.slice(0,6).map((u,i)=>`<a class="pill hover:bg-white/10" href="${esc(u)}" target="_blank" rel="noopener">Source ${i+1}</a>`).join("");
         sourcesEl.classList.remove("hidden");
-        sourceListEl.innerHTML = "";
-        sources.forEach(u => {
-          const li = document.createElement("li");
-          li.innerHTML = `<a href="${esc(u)}" target="_blank" rel="noopener" class="u hover:text-lime-400">${esc(u)}</a>`;
-          sourceListEl.appendChild(li);
-        });
+        sourceListEl.innerHTML = sources.map(u => `<li><a href="${esc(u)}" target="_blank" rel="noopener" class="u hover:text-lime-400">${esc(u)}</a></li>`).join("");
         openAllBtn.onclick = () => sources.forEach(u=> window.open(u, "_blank", "noopener"));
         openAllBtn.disabled = false;
       } else {
@@ -336,36 +336,33 @@
         openAllBtn.disabled = true;
       }
 
-      // Share + ribbon
+      // share + ribbon
       renderShare(s);
       applyRibbon(s.trust);
 
-      // Prev / Next
-      prevBtn.disabled = (idx === 0);
-      nextBtn.disabled = (idx === allPub.length - 1);
-      prevBtn.onclick = () => { if (idx > 0) location.href = `story.html?id=${encodeURIComponent(allPub[idx-1].id)}`; };
-      nextBtn.onclick = () => { if (idx < allPub.length-1) location.href = `story.html?id=${encodeURIComponent(allPub[idx+1].id)}`; };
+      // prev/next
+      const idx = all.findIndex(r => String(r.id) === String(s.id));
+      prevBtn.disabled = (idx <= 0);
+      nextBtn.disabled = (idx < 0 || idx >= all.length-1);
+      prevBtn.onclick = () => { if (idx > 0) location.href = `story.html?id=${encodeURIComponent(all[idx-1].id)}`; };
+      nextBtn.onclick = () => { if (idx >= 0 && idx < all.length-1) location.href = `story.html?id=${encodeURIComponent(all[idx+1].id)}`; };
 
-      // Keyboard nav: ← →, print (p), copy (c)
+      // keyboard + print
       window.onkeydown = (e) => {
         if (e.key === "ArrowLeft" && !prevBtn.disabled) prevBtn.click();
         if (e.key === "ArrowRight" && !nextBtn.disabled) nextBtn.click();
         if ((e.key==='p' || e.key==='P') && (e.ctrlKey||e.metaKey)) { e.preventDefault(); window.print(); }
       };
-
-      // Print
       printBtn.onclick = () => window.print();
     }
 
-    // Sticky meta toggle via observer
+    // Sticky meta show/hide near top
     const obs = new IntersectionObserver(entries=>{
-      entries.forEach(entry=>{
-        metaBar.classList.toggle('hidden', entry.isIntersecting);
-      });
+      entries.forEach(entry=> metaBar.classList.toggle('hidden', entry.isIntersecting));
     }, { threshold: 0.01 });
     obs.observe(document.body);
 
-    // Scroll progress
+    // Progress bar
     function updateProg(){
       const h = document.documentElement;
       const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight);
@@ -374,7 +371,17 @@
     document.addEventListener('scroll', updateProg, { passive:true });
     updateProg();
 
-    renderStory();
+    // ---- Boot
+    if (!storyId) { notFound(); }
+    else {
+      const { story, rows, error } = await fetchStoryAndNeighbors(storyId);
+      if (error || !story) { notFound(); }
+      else {
+        const s = normalize(story);
+        const all = (rows||[]).map(normalize);
+        render(s, all);
+      }
+    }
   </script>
 </body>
 </html>
