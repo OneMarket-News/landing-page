@@ -6,6 +6,7 @@
   <title>OneMarket — Feed</title>
   <meta name="theme-color" content="#000" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root { color-scheme: dark; --lime:#a3e635; }
     body{background:#000;color:#fff}
@@ -16,53 +17,21 @@
       background-repeat:no-repeat;background-position:right .7rem center;background-size:16px 16px;
     }
     option{ background:#0b0b0b; color:#fff; }
-
-    /* ===== Pulse line (signature sweep) ===== */
     .pulse-wrap{position:relative;overflow:hidden}
-    .pulse-line{
-      position:absolute;left:-30%;top:0;height:2px;width:30%;
+    .pulse-line{position:absolute;left:-30%;top:0;height:2px;width:30%;
       background:linear-gradient(90deg,transparent,rgba(163,230,53,.9),transparent);
-      filter:drop-shadow(0 0 6px rgba(163,230,53,.5));
-      opacity:.0;
-      animation:pulseSweep 18s infinite ease-in-out;
-    }
-    @keyframes pulseSweep{
-      0%{transform:translateX(0);opacity:0}
-      3%{opacity:.95}
-      6%{transform:translateX(440%);opacity:.2}
-      8%{opacity:0}
-      100%{transform:translateX(440%);opacity:0}
-    }
-
-    /* Subtle ‘system breath’ on sweep */
-    .breath{transition:opacity .3s ease}
-    .breath.dim{opacity:.97}
-
-    /* Card micro-interactions */
+      filter:drop-shadow(0 0 6px rgba(163,230,53,.5));opacity:.0;animation:pulseSweep 18s infinite ease-in-out;}
+    @keyframes pulseSweep{0%{transform:translateX(0);opacity:0}3%{opacity:.95}6%{transform:translateX(440%);opacity:.2}8%{opacity:0}100%{transform:translateX(440%);opacity:0}}
+    .breath{transition:opacity .3s ease}.breath.dim{opacity:.97}
     .card{transition:transform .15s ease, box-shadow .2s ease, background .2s ease}
     .card:hover{transform:translateY(-2px)}
-    .glint{
-      background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);
-      position:absolute;inset:auto 0 0 0;height:1px;opacity:.0;transition:opacity .2s ease;
-    }
+    .glint{background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);position:absolute;inset:auto 0 0 0;height:1px;opacity:.0;transition:opacity .2s ease;}
     .card:hover .glint{opacity:1}
-
-    /* Primary Confidence Indicator (PCI) — trust bar */
     .pci{height:6px;border-radius:9999px;background:rgba(255,255,255,.08);overflow:hidden}
     .pci > i{display:block;height:100%;background:linear-gradient(90deg,rgba(163,230,53,.85),rgba(163,230,53,.55));}
-
-    /* Active selection (keyboard scan) */
     .is-selected{outline:2px solid rgba(163,230,53,.6); outline-offset:2px; background:rgba(255,255,255,.06)}
-
-    /* Spotlight hero image fallback */
-    .hero{
-      background:radial-gradient(1200px 240px at 50% 0, rgba(163,230,53,.08), transparent 55%),
-                 linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-    }
-
-    /* Tiny badges */
+    .hero{background:radial-gradient(1200px 240px at 50% 0, rgba(163,230,53,.08), transparent 55%),linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));}
     .badge{border-radius:9999px;background:rgba(255,255,255,.1);padding:.15rem .5rem}
-
   </style>
 
   <!-- Social previews -->
@@ -109,7 +78,6 @@
       <button id="refresh" class="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm hover:bg-white/15">Refresh</button>
       <button id="clearFilters" class="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm hover:bg-white/15">Clear</button>
 
-      <!-- Fast taps -->
       <div class="ml-auto flex flex-wrap gap-2 text-xs">
         <button data-quick="AI" class="rounded-full border border-white/15 px-3 py-1 bg-white/5 hover:bg-white/10">AI</button>
         <button data-quick="Markets" class="rounded-full border border-white/15 px-3 py-1 bg-white/5 hover:bg-white/10">Markets</button>
@@ -149,13 +117,10 @@
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    /* ===== CONFIG / KEYS ===== */
-    const API_URL = ""; // optional remote source
-    const KEY_SUBS = "onemarket.submissions";
-    const KEY_PREFS = "onemarket.user.prefs";
-    const KEY_FEED_BEAT = "feed.beat";
-    const KEY_FEED_TRUST = "feed.trust";
-    const KEY_FEED_Q = "feed.q";
+    /* ===== SUPABASE CONFIG ===== */
+    const SUPABASE_URL = 'https://fdwjzdvdqskcdidiervv.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZkd2p6ZHZkcXNrY2RpZGllcnZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMDk0MDgsImV4cCI6MjA3Nzc4NTQwOH0.iCEfiC1EH4Ec0GZB7y437yTA-ylyszIdhMJu-UimbCQ';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     /* ===== DOM ===== */
     const elList = document.getElementById('list');
@@ -166,25 +131,39 @@
     const elClear = document.getElementById('clearFilters');
     const root = document.getElementById('root');
 
+    /* ===== Helpers ===== */
     const esc = s => String(s||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]));
+    const toArr = (v) => {
+      if (!v) return [];
+      if (Array.isArray(v)) return v;
+      try { const j = JSON.parse(v); return Array.isArray(j) ? j : String(v).split(',').map(s=>s.trim()).filter(Boolean); }
+      catch { return String(v).split(',').map(s=>s.trim()).filter(Boolean); }
+    };
 
-    /* ===== LOAD ITEMS ===== */
+    /* ===== LOAD ITEMS (Supabase) ===== */
     async function load() {
-      let items = [];
-      if (API_URL) {
-        try {
-          const r = await fetch(API_URL, { cache:"no-store" });
-          if (r.ok) items = await r.json();
-        } catch {}
-      }
-      if (!items.length) {
-        try {
-          const local = JSON.parse(localStorage.getItem(KEY_SUBS) || "[]");
-          items = local.filter(x => x.status === "Published");
-        } catch { items = []; }
-      }
-      // sort by recency, then trust score
-      return items.sort((a,b)=> ((b.date||0)-(a.date||0)) || ((b?.trust?.score||0) - (a?.trust?.score||0)));
+      const { data, error } = await supabase
+        .from('posts')
+        .select('id,title,summary,beat,tags,status,date,primary_url,citations,trust_label,trust_score')
+        .eq('status','Published')
+        .order('date',{ ascending:false })
+        .limit(200);
+
+      if (error) { console.error(error); return []; }
+
+      // Normalize to the shape the UI expects
+      return (data || []).map(r => ({
+        id: r.id,
+        title: r.title,
+        summary: r.summary,
+        beat: r.beat,
+        tags: toArr(r.tags),
+        date: r.date ? new Date(r.date).getTime() : null,
+        primary_url: r.primary_url,
+        citations: toArr(r.citations),
+        trust: (r.trust_label || r.trust_score != null) ? { label: r.trust_label || 'green', score: Number(r.trust_score||0) } : null,
+        status: 'Published'
+      }));
     }
 
     /* ===== BADGES ===== */
@@ -240,7 +219,6 @@
     function renderSpotlight(items){
       const sp = document.getElementById('spotlight');
       if(!items.length){ sp.classList.add('hidden'); return; }
-      // Pick top by trust.score among latest 24h; fallback first item
       const dayAgo = Date.now() - (24*3600*1000);
       let top = items.filter(x => (x.date||0) > dayAgo)
                      .sort((a,b)=>( (b?.trust?.score||0)-(a?.trust?.score||0)) )[0] || items[0];
@@ -258,7 +236,7 @@
       spTime.textContent = top.date ? new Date(top.date).toLocaleString() : '';
       if(top.trust){
         spTrustWrap.classList.remove('hidden');
-        spTrust.innerHTML = `Trust ${Math.round(top.trust.score||0)}% • ${esc(top.trust.label||'')}`;
+        spTrust.textContent = `Trust ${Math.round(top.trust.score||0)}% • ${top.trust.label||''}`;
         spTrust.className = 'badge ' + (top.trust.label==='green' ? 'text-green-300 bg-green-500/20' :
                         top.trust.label==='yellow' ? 'text-yellow-200 bg-yellow-500/20' : 'text-red-300 bg-red-500/20');
       }else{
@@ -266,9 +244,8 @@
       }
       spTitle.innerHTML = `<a class="hover:underline" href="/story.html?id=${encodeURIComponent(top.id)}">${esc(top.title||'(Untitled)')}</a>`;
       spSummary.textContent = top.summary || '';
-      const cites = (Array.isArray(top.citations)?top.citations:[]).slice(0,3)
+      spCitations.innerHTML = (top.citations||[]).slice(0,3)
         .map(u=>`<a class="underline hover:text-lime-400 mr-3" target="_blank" rel="noopener" href="${esc(u)}">Source</a>`).join('');
-      spCitations.innerHTML = cites;
       spShare.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(top.title||'Check this out')}&url=${encodeURIComponent(location.origin+'/story.html?id='+top.id)}&via=OneMarketNews`;
 
       sp.classList.remove('hidden');
@@ -293,13 +270,17 @@
       const listHtml = filtered.map((s, i)=> card(s, i)).join("");
       elList.innerHTML = listHtml || `<div class="text-white/60 text-sm">No stories yet. Try adding one in <a class="underline" href="/admin.html">Admin</a>.</div>`;
 
-      // Reset selection index after render
       selectedIdx = filtered.length ? 0 : -1;
       applySelection();
-      cachedView = filtered; // for keyboard open
+      cachedView = filtered;
     }
 
-    /* ===== Filter persistence + Settings defaults ===== */
+    /* ===== Filter persistence (local only) ===== */
+    const KEY_PREFS = "onemarket.user.prefs";
+    const KEY_FEED_BEAT = "feed.beat";
+    const KEY_FEED_TRUST = "feed.trust";
+    const KEY_FEED_Q = "feed.q";
+
     function applySavedFiltersOrPrefs(){
       const savedBeat  = localStorage.getItem(KEY_FEED_BEAT);
       const savedTrust = localStorage.getItem(KEY_FEED_TRUST);
@@ -365,7 +346,6 @@
     pulse.addEventListener('animationiteration', ()=>{
       root.classList.add('dim');
       setTimeout(()=>root.classList.remove('dim'), 280);
-      // optional: lightly highlight fresh cards after the sweep
       [...document.querySelectorAll('.card')].slice(0,3).forEach(c=>{
         c.animate([{boxShadow:'0 0 0 0 rgba(163,230,53,0)'},{boxShadow:'0 0 0 6px rgba(163,230,53,.08)'},{boxShadow:'0 0 0 0 rgba(163,230,53,0)'}], {duration:900, easing:'ease-out'});
       });
@@ -386,13 +366,11 @@
       cache = await load();
       render(cache);
     }
-
     elRefresh.onclick = boot;
     elClear.onclick = clearFilters;
     elQ.oninput = persistFilters;
     elBeat.onchange = persistFilters;
     elTrust.onchange = persistFilters;
-
     boot();
 
     /* Active nav highlight */
