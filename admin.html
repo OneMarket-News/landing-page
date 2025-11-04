@@ -6,6 +6,8 @@
   <title>OneMarket — Admin</title>
   <meta name="theme-color" content="#000" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase client -->
+  <script src="https://esm.sh/@supabase/supabase-js@2.45.4"></script>
   <style>
     :root { color-scheme: dark; --lime:#a3e635; }
     body{background:#000;color:#fff}
@@ -15,60 +17,28 @@
       background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23cbd5e1" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5"/></svg>');
       background-repeat:no-repeat;background-position:right .7rem center;background-size:16px 16px}
     option{background:#0b0b0b;color:#fff}
-
-    /* Pulse sweep bar */
     .pulse-wrap{position:relative;overflow:hidden}
-    .pulse-line{
-      position:absolute;left:-30%;top:0;height:2px;width:30%;
+    .pulse-line{position:absolute;left:-30%;top:0;height:2px;width:30%;
       background:linear-gradient(90deg,transparent,rgba(163,230,53,.9),transparent);
-      filter:drop-shadow(0 0 6px rgba(163,230,53,.5));
-      opacity:0;animation:pulseSweep 18s infinite ease-in-out;
-    }
-    @keyframes pulseSweep{
-      0%{transform:translateX(0);opacity:0}
-      3%{opacity:.95}
-      6%{transform:translateX(440%);opacity:.2}
-      8%{opacity:0}
-      100%{transform:translateX(440%);opacity:0}
-    }
-
-    /* Cards / rows */
+      filter:drop-shadow(0 0 6px rgba(163,230,53,.5));opacity:0;animation:pulseSweep 18s infinite ease-in-out}
+    @keyframes pulseSweep{0%{transform:translateX(0);opacity:0}3%{opacity:.95}6%{transform:translateX(440%);opacity:.2}8%{opacity:0}100%{transform:translateX(440%);opacity:0}}
     .row{transition:transform .12s ease, background .2s ease, box-shadow .2s ease}
     .row:hover{transform:translateY(-1px)}
-    .glint{
-      background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);
-      position:absolute;left:0;right:0;bottom:0;height:1px;opacity:0;transition:opacity .2s ease
-    }
+    .glint{background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);position:absolute;left:0;right:0;bottom:0;height:1px;opacity:0;transition:opacity .2s ease}
     .row:hover .glint{opacity:1}
-
-    /* PCI bar */
     .pci{height:6px;border-radius:9999px;background:rgba(255,255,255,.08);overflow:hidden}
-    .pci > i{display:block;height:100%;background:linear-gradient(90deg,rgba(163,230,53,.85),rgba(163,230,53,.55))}
-
-    /* Table-ish grid */
-    .grid-head, .grid-row{display:grid;grid-template-columns: 26px 1.6fr .9fr .9fr .9fr 120px 120px 100px;gap:.75rem;align-items:center}
-    @media (max-width: 860px){
-      .grid-head, .grid-row{grid-template-columns: 26px 1.6fr .9fr .9fr 0fr 120px 100px 88px}
-      .grid-row .tags, .grid-head .tags-h{display:none}
-    }
-
-    /* Badges */
+    .pci>i{display:block;height:100%;background:linear-gradient(90deg,rgba(163,230,53,.85),rgba(163,230,53,.55))}
+    .grid-head,.grid-row{display:grid;grid-template-columns:26px 1.6fr .9fr .9fr .9fr 120px 120px 100px;gap:.75rem;align-items:center}
+    @media(max-width:860px){.grid-head,.grid-row{grid-template-columns:26px 1.6fr .9fr .9fr 0fr 120px 100px 88px}.grid-row .tags,.grid-head .tags-h{display:none}}
     .badge{border-radius:9999px;background:rgba(255,255,255,.1);padding:.15rem .5rem}
     .green{color:#bbf7d0;background:rgba(34,197,94,.18)}
     .yellow{color:#fde68a;background:rgba(234,179,8,.18)}
     .red{color:#fecaca;background:rgba(239,68,68,.18)}
-
-    /* Inline edit states */
     .editable{cursor:text;border:1px dashed transparent}
     .editable:focus{outline:none;border-color:rgba(163,230,53,.45);background:rgba(255,255,255,.06);border-style:solid}
-
-    /* Snackbar */
     .snackbar{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:#0b0f14;border:1px solid rgba(255,255,255,.15);padding:.6rem .9rem;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.35);z-index:60;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s}
     .snackbar.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(-2px)}
-
-    /* Selection */
-    .is-selected{outline:2px solid rgba(163,230,53,.6); outline-offset:2px; background:rgba(255,255,255,.06)}
-
+    .is-selected{outline:2px solid rgba(163,230,53,.6);outline-offset:2px;background:rgba(255,255,255,.06)}
   </style>
 </head>
 <body class="min-h-screen">
@@ -78,7 +48,6 @@
 
   <!-- 🧠 PROTECTED APP CONTENT -->
   <div id="app" hidden>
-    <!-- Header with pulse -->
     <header class="pulse-wrap sticky top-0 z-40 backdrop-blur bg-black/40 border-b border-white/10">
       <div class="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
         <a href="./index.html" class="font-black tracking-tight">
@@ -97,7 +66,6 @@
     </header>
 
     <main class="mx-auto max-w-5xl px-4 py-6 space-y-6">
-
       <!-- Top controls / metrics -->
       <section class="glass rounded-2xl border border-white/10 p-4 sm:p-5">
         <div class="flex flex-wrap items-center gap-3">
@@ -134,7 +102,7 @@
               Import JSON <input id="importInput" type="file" accept="application/json" class="hidden">
             </label>
             <button id="seed" class="rounded-full border border-white/15 bg-white/10 px-3 py-2 text-sm hover:bg-white/15">Add 2 demo posts</button>
-            <button id="clearAll" class="rounded-full border border-white/15 bg-white/10 px-3 py-2 text-sm hover:bg-white/15">Clear ALL</button>
+            <button id="clearAll" class="rounded-full border border-white/15 bg-white/10 px-3 py-2 text-sm hover:bg-white/15">Clear ALL (local)</button>
           </div>
         </div>
 
@@ -159,9 +127,9 @@
         </div>
       </section>
 
-      <!-- Create / Edit form -->
+      <!-- Create -->
       <section class="glass rounded-2xl border border-white/10 p-6">
-        <h1 class="text-xl font-semibold mb-4">Create Sample Post</h1>
+        <h1 class="text-xl font-semibold mb-4">Create Post</h1>
         <form id="f" class="grid gap-3">
           <input class="field" id="title" placeholder="Title" required>
           <textarea class="field" id="summary" rows="4" placeholder="Summary (2–4 sentences)" required></textarea>
@@ -175,7 +143,8 @@
           <div class="grid sm:grid-cols-3 gap-3">
             <select id="beat" class="field">
               <option value="">Beat (optional)</option>
-              <option>AI</option><option>Markets</option><option>Energy</option><option>Chips / Hardware</option><option>Policy / Regulation</option><option>Other</option>
+              <option>AI</option><option>Markets</option><option>Energy</option>
+              <option>Chips / Hardware</option><option>Policy / Regulation</option><option>Other</option>
             </select>
             <input id="tags" class="field" placeholder="Tags (comma-separated)">
             <select id="status" class="field">
@@ -199,7 +168,7 @@
         </form>
       </section>
 
-      <!-- List / Editor table -->
+      <!-- List -->
       <section class="glass rounded-2xl border border-white/10 p-0">
         <div class="px-4 pt-4 pb-2 flex items-center justify-between">
           <h2 class="text-lg font-semibold">Existing Posts</h2>
@@ -228,53 +197,73 @@
     </main>
   </div>
 
-  <!-- Snackbar -->
   <div id="snack" class="snackbar">Saved</div>
 
-  <!-- 📦 LOCAL POST LOGIC -->
   <script>
-    const KEY = "onemarket.submissions";
-    const $ = (id)=>document.getElementById(id);
+    // ===== CONFIG =====
+    const SUPA_URL = "https://fdwjzdvdqskcdidiervv.supabase.co";
+    const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZkd2p6ZHZkcXNrY2RpZGllcnZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMDk0MDgsImV4cCI6MjA3Nzc4NTQwOH0.iCEfiC1EH4Ec0GZB7y437yTA-ylyszIdhMJu-UimbCQ";
+    const supa = window.supabase.createClient(SUPA_URL, SUPA_KEY);
 
+    // Local fallback cache (drafts/offline)
+    const LKEY = "onemarket.submissions";
+
+    const $ = id => document.getElementById(id);
     const els = {
-      q:$('q'), fBeat:$('fBeat'), fStatus:$('fStatus'), fTrust:$('fTrust'), fSort:$('fSort'),
-      refresh:$('refresh'), clearFilters:$('clearFilters'),
-      exportBtn:$('exportBtn'), importInput:$('importInput'),
-      seed:$('seed'), clearAll:$('clearAll'),
-      list:$('list'), checkAll:$('checkAll'),
-      bulkPublish:$('bulkPublish'), bulkReview:$('bulkReview'), bulkDelete:$('bulkDelete'),
-      mTotal:$('mTotal'), mPub:$('mPub'), mRev:$('mRev'), mTrust:$('mTrust'),
-      msg:$('msg'), snack:$('snack')
+      q: $('q'), fBeat: $('fBeat'), fStatus: $('fStatus'), fTrust: $('fTrust'), fSort: $('fSort'),
+      refresh: $('refresh'), clearFilters: $('clearFilters'),
+      exportBtn: $('exportBtn'), importInput: $('importInput'),
+      seed: $('seed'), clearAll: $('clearAll'),
+      list: $('list'), checkAll: $('checkAll'),
+      bulkPublish: $('bulkPublish'), bulkReview: $('bulkReview'), bulkDelete: $('bulkDelete'),
+      mTotal: $('mTotal'), mPub: $('mPub'), mRev: $('mRev'), mTrust: $('mTrust'),
+      snack: $('snack'), msg: $('msg')
     };
-
     const form = {
-      title:$('title'), summary:$('summary'), wim:$('wim'),
-      citations:$('citations'), primary_url:$('primary_url'),
-      beat:$('beat'), tags:$('tags'), status:$('status'),
-      trustLabel:$('trustLabel'), trustScore:$('trustScore')
+      title: $('title'), summary: $('summary'), wim: $('wim'),
+      citations: $('citations'), primary_url: $('primary_url'),
+      beat: $('beat'), tags: $('tags'), status: $('status'),
+      trustLabel: $('trustLabel'), trustScore: $('trustScore')
     };
 
-    /* Storage helpers */
-    function read(){ try{return JSON.parse(localStorage.getItem(KEY)||"[]");}catch{return[];} }
-    function write(arr){ localStorage.setItem(KEY, JSON.stringify(arr)); }
-    function genId(){ return "m_" + Math.random().toString(36).slice(2,10); }
+    // ===== Utilities =====
+    const snack = (t="Saved") => { els.snack.textContent=t; els.snack.classList.add('show'); setTimeout(()=>els.snack.classList.remove('show'), 1200); };
+    const fmtTime = t => t ? new Date(t).toLocaleString() : "";
+    const esc = s => String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
+    const pci = n => `<div class="pci mt-1"><i style="width:${Math.max(0,Math.min(100,Math.round(n||0)))}%"></i></div>`;
+    const badgeTrust = t => t ? `<span class="badge ${t.label==='green'?'green':t.label==='yellow'?'yellow':'red'}">Trust ${Math.round(t.score||0)}% • ${t.label}</span>` : "";
 
-    /* UI helpers */
-    function snack(text="Saved"){
-      els.snack.textContent = text;
-      els.snack.classList.add('show');
-      setTimeout(()=>els.snack.classList.remove('show'), 1200);
+    // ===== Supabase Data Layer =====
+    async function db_list() {
+      const { data, error } = await supa
+        .from('posts')
+        .select('id,title,summary,why_it_matters,primary_url,beat,tags,status,trust,citations,date')
+        .order('date', { ascending: false });
+      if (error) throw error;
+      return data || [];
     }
-    function fmtTime(t){ if(!t) return ""; try{ return new Date(t).toLocaleString(); }catch{ return "" } }
-    function badgeTrust(t){
-      if(!t) return "";
-      const cls = t.label==='green'?'green':t.label==='yellow'?'yellow':'red';
-      return `<span class="badge ${cls}">Trust ${Math.round(t.score||0)}% • ${t.label||''}</span>`;
+    async function db_insert(post) {
+      const { data, error } = await supa.from('posts').insert(post).select().single();
+      if (error) throw error;
+      return data;
     }
-    function pci(score=0){ const s=Math.max(0,Math.min(100,Math.round(score))); return `<div class="pci mt-1"><i style="width:${s}%"></i></div>`; }
-    function esc(s){ return String(s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])) }
+    async function db_update(id, patch) {
+      const { data, error } = await supa.from('posts').update(patch).eq('id', id).select().single();
+      if (error) throw error;
+      return data;
+    }
+    async function db_delete(ids) {
+      const { error } = await supa.from('posts').delete().in('id', ids);
+      if (error) throw error;
+    }
 
-    /* Filters */
+    // Local fallback
+    const local = {
+      read(){ try{return JSON.parse(localStorage.getItem(LKEY)||"[]");}catch{return[];} },
+      write(arr){ localStorage.setItem(LKEY, JSON.stringify(arr)); }
+    };
+
+    // ===== View / filters =====
     function applyFiltersSort(items){
       const q = els.q.value.trim().toLowerCase();
       const beat = els.fBeat.value;
@@ -290,19 +279,17 @@
         }
         return true;
       });
-
       switch(els.fSort.value){
-        case 'date_asc': out.sort((a,b)=> (a.date||0)-(b.date||0)); break;
+        case 'date_asc': out.sort((a,b)=> new Date(a.date) - new Date(b.date)); break;
         case 'trust_desc': out.sort((a,b)=> (b?.trust?.score||0)-(a?.trust?.score||0)); break;
         case 'trust_asc': out.sort((a,b)=> (a?.trust?.score||0)-(b?.trust?.score||0)); break;
         case 'title_asc': out.sort((a,b)=> (a.title||'').localeCompare(b.title||'')); break;
         case 'title_desc': out.sort((a,b)=> (b.title||'').localeCompare(a.title||'')); break;
-        default: out.sort((a,b)=> (b.date||0)-(a.date||0)); // date_desc
+        default: out.sort((a,b)=> new Date(b.date) - new Date(a.date));
       }
       return out;
     }
 
-    /* Metrics */
     function renderMetrics(items){
       els.mTotal.textContent = items.length;
       els.mPub.textContent   = items.filter(x=>x.status==='Published').length;
@@ -311,10 +298,7 @@
       els.mTrust.textContent = ts.length ? Math.round(ts.reduce((a,b)=>a+b,0)/ts.length)+'%' : '—';
     }
 
-    /* Row template */
     function rowTemplate(s, idx){
-      const trust = s.trust ? badgeTrust(s.trust) : '';
-      const trustPCI = s.trust ? pci(s.trust.score) : '';
       const tags = Array.isArray(s.tags) ? s.tags.join(", ") : (s.tags||"");
       return `
         <div class="row relative grid-row glass rounded-xl border border-white/10 p-3" data-id="${esc(s.id)}" data-idx="${idx}" tabindex="0">
@@ -344,9 +328,9 @@
             </div>
             <div class="flex items-center gap-2 mt-2">
               <input type="number" class="field w-20" min="0" max="100" value="${Math.round(s?.trust?.score||0)}" data-field="trust.score" />
-              <div class="flex-1">${trustPCI}</div>
+              <div class="flex-1">${s.trust ? pci(s.trust.score) : ''}</div>
             </div>
-            <div class="mt-1 text-xs">${trust}</div>
+            <div class="mt-1 text-xs">${badgeTrust(s.trust)}</div>
           </div>
           <div class="text-sm text-white/70">${fmtTime(s.date)}</div>
           <div class="text-right flex items-center justify-end gap-2">
@@ -358,26 +342,24 @@
       `;
     }
 
-    /* Render list */
+    // State
+    let state = [];
+    let selectedIdx = -1, cachedView = [];
+
     function renderList(items){
-      if(!items.length){
-        els.list.innerHTML = `<div class="text-white/60 text-sm px-4 pb-4">No posts yet.</div>`;
-        return;
-      }
+      if(!items.length){ els.list.innerHTML = `<div class="text-white/60 text-sm px-4 pb-4">No posts yet.</div>`; return; }
       els.list.innerHTML = items.map((s,i)=>rowTemplate(s,i)).join('');
-      // wire events
       els.list.querySelectorAll('.del').forEach(btn=>{
-        btn.onclick = ()=>{
-          const row = btn.closest('[data-id]');
-          const id = row.getAttribute('data-id');
+        btn.onclick = async ()=>{
+          const row = btn.closest('[data-id]'); const id = row.getAttribute('data-id');
           if(!confirm('Delete this post?')) return;
-          const next = read().filter(x=>String(x.id)!==String(id));
-          write(next); boot();
+          try { await db_delete([id]); snack('Deleted'); await refreshAll(); }
+          catch(err){ alert('Delete failed: '+err.message); }
         };
       });
       els.list.querySelectorAll('[contenteditable][data-field]').forEach(el=>{
         el.addEventListener('blur', ()=>commitInline(el));
-        el.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); el.blur(); }});
+        el.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); el.blur(); }});
       });
       els.list.querySelectorAll('[data-type="select"], input[data-field="trust.score"]').forEach(el=>{
         el.addEventListener('change', ()=>commitInline(el));
@@ -385,203 +367,160 @@
       els.checkAll.checked = false;
     }
 
-    /* Commit inline edits */
-    function commitInline(el){
-      const row = el.closest('[data-id]');
-      const id = row.getAttribute('data-id');
-      const field = el.getAttribute('data-field'); // e.g., "title" or "trust.score"
-      const all = read();
-      const idx = all.findIndex(x=>String(x.id)===String(id));
-      if(idx<0) return;
-
-      let val;
-      if(el.tagName==='SELECT' || el.type==='number') val = (el.value||'').trim();
-      else val = (el.textContent||'').trim();
-
-      // apply nested fields
-      const parts = field.split('.');
-      let ref = all[idx];
-      for(let i=0;i<parts.length-1;i++){
-        const k = parts[i];
-        if(typeof ref[k]!=='object' || !ref[k]) ref[k] = {};
-        ref = ref[k];
-      }
-      ref[parts.at(-1)] = parts.at(-1)==='score' ? Number(val||0) : val;
-
-      // special: tags split
-      if(field==='tags'){
-        ref[parts.at(-1)] = val ? val.split(',').map(s=>s.trim()).filter(Boolean) : [];
-      }
-
-      // update date (modified)
-      all[idx].date = Date.now();
-      write(all);
-      snack('Updated');
-      // re-render visible list item only (simple approach: full boot keeps metrics aligned)
-      boot();
+    function selectedIds(){
+      return [...document.querySelectorAll('#list [data-id] .sel:checked')].map(cb=>cb.closest('[data-id]').getAttribute('data-id'));
     }
 
-    /* Build filtered view & render */
+    async function commitInline(el){
+      const row = el.closest('[data-id]'); const id = row.getAttribute('data-id');
+      let val; if(el.tagName==='SELECT' || el.type==='number') val = (el.value||'').trim(); else val = (el.textContent||'').trim();
+
+      // build patch
+      const field = el.getAttribute('data-field'); // e.g. "title" or "trust.score"
+      const patch = {}; if(field.includes('.')){
+        const [a,b] = field.split('.'); patch[a] = {}; patch[a][b] = (b==='score') ? Number(val||0) : val;
+      } else if(field==='tags') {
+        patch.tags = val ? val.split(',').map(s=>s.trim()).filter(Boolean) : [];
+      } else {
+        patch[field] = val;
+      }
+      patch.date = new Date().toISOString();
+
+      try{ await db_update(id, patch); snack('Updated'); await refreshAll(); }
+      catch(err){ alert('Update failed: '+err.message); }
+    }
+
     function rebuild(){
-      const items = read();
-      renderMetrics(items);
-      const view = applyFiltersSort(items);
+      renderMetrics(state);
+      const view = applyFiltersSort(state);
       renderList(view);
-      cachedView = view;
-      selectedIdx = view.length ? 0 : -1;
-      applySelection();
+      cachedView = view; selectedIdx = view.length ? 0 : -1; applySelection();
     }
-
-    /* Selection / keyboard */
-    let selectedIdx = -1, cachedView = [];
     function applySelection(){
       const rows = [...document.querySelectorAll('#list [data-id]')];
       rows.forEach(r=>r.classList.remove('is-selected'));
       if (selectedIdx>=0 && rows[selectedIdx]) rows[selectedIdx].classList.add('is-selected');
     }
+
+    // Keyboard navigation
     document.addEventListener('keydown', (e)=>{
       if(['ArrowDown','ArrowUp','j','k'].includes(e.key)) e.preventDefault();
       const rows = [...document.querySelectorAll('#list [data-id]')];
       if(!rows.length) return;
-      if(e.key==='ArrowDown' || e.key==='j'){ selectedIdx=Math.min(selectedIdx+1, rows.length-1); applySelection(); rows[selectedIdx]?.scrollIntoView({block:'nearest',behavior:'smooth'}); }
-      if(e.key==='ArrowUp' || e.key==='k'){ selectedIdx=Math.max(selectedIdx-1, 0); applySelection(); rows[selectedIdx]?.scrollIntoView({block:'nearest',behavior:'smooth'}); }
-      if(e.key==='Enter' && selectedIdx>=0){
-        const id = rows[selectedIdx].getAttribute('data-id');
-        window.open(`./story.html?id=${encodeURIComponent(id)}`,'_blank');
+      if(e.key==='ArrowDown'||e.key==='j'){ selectedIdx=Math.min(selectedIdx+1, rows.length-1); applySelection(); rows[selectedIdx]?.scrollIntoView({block:'nearest',behavior:'smooth'}); }
+      if(e.key==='ArrowUp'||e.key==='k'){ selectedIdx=Math.max(selectedIdx-1, 0); applySelection(); rows[selectedIdx]?.scrollIntoView({block:'nearest',behavior:'smooth'}); }
+      if(e.key==='Enter' && selectedIdx>=0){ const id = rows[selectedIdx].getAttribute('data-id'); window.open(`./story.html?id=${encodeURIComponent(id)}`,'_blank'); }
+    });
+
+    // Create
+    $('f').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const post = {
+        // let Postgres generate UUID (recommended): omit id
+        title: form.title.value.trim(),
+        summary: form.summary.value.trim(),
+        why_it_matters: form.wim.value.trim() || null,
+        citations: form.citations.value.trim() ? form.citations.value.split(',').map(s=>s.trim()) : [],
+        primary_url: form.primary_url.value.trim() || null,
+        beat: form.beat.value || null,
+        tags: form.tags.value.trim() ? form.tags.value.split(',').map(s=>s.trim()) : [],
+        status: form.status.value,
+        trust: { label: form.trustLabel.value, score: Number(form.trustScore.value||0) },
+        date: new Date().toISOString()
+      };
+      try{
+        await db_insert(post);
+        e.target.reset(); snack('Post created'); await refreshAll();
+      }catch(err){
+        // fallback to local cache so nothing is lost
+        const cached = local.read(); cached.unshift({ id:'m_'+Math.random().toString(36).slice(2,10), ...post });
+        local.write(cached); alert('Supabase insert failed (saved locally): '+err.message); rebuildLocal();
       }
     });
 
-    /* Form submit (create) */
-    $('f').addEventListener('submit', (e)=>{
-      e.preventDefault();
-      const post = {
-        id: genId(),
-        title: form.title.value.trim(),
-        summary: form.summary.value.trim(),
-        why_it_matters: form.wim.value.trim(),
-        citations: form.citations.value.trim() ? form.citations.value.split(',').map(s=>s.trim()) : [],
-        primary_url: form.primary_url.value.trim() || "",
-        beat: form.beat.value || "Other",
-        tags: form.tags.value.trim() ? form.tags.value.split(',').map(s=>s.trim()) : [],
-        status: form.status.value,
-        date: Date.now(),
-        trust: { label: form.trustLabel.value, score: Number(form.trustScore.value||0) }
-      };
-      const all = read();
-      all.unshift(post); write(all);
-      e.target.reset();
-      snack('Post saved'); rebuild();
-    });
-
-    /* Bulk actions */
-    function selectedIds(){
-      return [...document.querySelectorAll('#list [data-id] .sel:checked')].map(cb=>cb.closest('[data-id]').getAttribute('data-id'));
-    }
-    els.checkAll.addEventListener('change', ()=>{
-      document.querySelectorAll('#list .sel').forEach(cb=>cb.checked = els.checkAll.checked);
-    });
-    els.bulkPublish.onclick = ()=>{
+    // Bulk actions
+    els.checkAll.addEventListener('change', ()=>{ document.querySelectorAll('#list .sel').forEach(cb=>cb.checked = els.checkAll.checked); });
+    els.bulkPublish.onclick = async ()=>{
       const ids = selectedIds(); if(!ids.length) return;
-      const all = read().map(x=> ids.includes(String(x.id)) ? {...x,status:'Published',date:Date.now()} : x );
-      write(all); snack('Published'); rebuild();
+      try{ await Promise.all(ids.map(id=>db_update(id,{status:'Published',date:new Date().toISOString()}))); snack('Published'); await refreshAll(); }
+      catch(err){ alert('Bulk publish failed: '+err.message); }
     };
-    els.bulkReview.onclick = ()=>{
+    els.bulkReview.onclick = async ()=>{
       const ids = selectedIds(); if(!ids.length) return;
-      const all = read().map(x=> ids.includes(String(x.id)) ? {...x,status:'In Review',date:Date.now()} : x );
-      write(all); snack('Moved to review'); rebuild();
+      try{ await Promise.all(ids.map(id=>db_update(id,{status:'In Review',date:new Date().toISOString()}))); snack('Moved to review'); await refreshAll(); }
+      catch(err){ alert('Bulk update failed: '+err.message); }
     };
-    els.bulkDelete.onclick = ()=>{
+    els.bulkDelete.onclick = async ()=>{
       const ids = selectedIds(); if(!ids.length) return;
       if(!confirm(`Delete ${ids.length} post(s)?`)) return;
-      const all = read().filter(x=> !ids.includes(String(x.id)) );
-      write(all); snack('Deleted'); rebuild();
+      try{ await db_delete(ids); snack('Deleted'); await refreshAll(); }
+      catch(err){ alert('Bulk delete failed: '+err.message); }
     };
 
-    /* Filters + sort wiring */
+    // Filters/sort
     [els.q, els.fBeat, els.fStatus, els.fTrust, els.fSort].forEach(el=>{
       el.addEventListener('input', rebuild);
       el.addEventListener('change', rebuild);
     });
-    els.clearFilters.onclick = ()=>{
-      els.q.value = ''; els.fBeat.value=''; els.fStatus.value=''; els.fTrust.value=''; els.fSort.value='date_desc';
-      rebuild();
-    };
-    els.refresh.onclick = rebuild;
+    els.clearFilters.onclick = ()=>{ els.q.value=''; els.fBeat.value=''; els.fStatus.value=''; els.fTrust.value=''; els.fSort.value='date_desc'; rebuild(); };
+    els.refresh.onclick = ()=>refreshAll();
 
-    /* Export / Import / Seed / Clear */
+    // Export / Import / Seed / Clear (local)
     els.exportBtn.onclick = ()=>{
-      const blob = new Blob([JSON.stringify(read(), null, 2)], {type:'application/json'});
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'onemarket_submissions.json'; a.click(); URL.revokeObjectURL(a.href);
+      const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'onemarket_posts.json'; a.click(); URL.revokeObjectURL(a.href);
     };
     els.importInput.addEventListener('change', async (e)=>{
       const f = e.target.files[0]; if(!f) return;
       try{
         const j = JSON.parse(await f.text());
-        if(!Array.isArray(j)) throw new Error('Expected an array of posts');
-        write(j); snack('Imported'); rebuild();
+        if(!Array.isArray(j)) throw new Error('Expected array');
+        // naive upsert into DB
+        for (const rec of j) {
+          const { id, ...rest } = rec;
+          if (id) await db_update(id, rest).catch(()=>db_insert(rec));
+          else await db_insert(rest);
+        }
+        snack('Imported'); await refreshAll();
       }catch(err){ alert('Import failed: '+err.message); }
       finally{ e.target.value=''; }
     });
-    els.seed.onclick = ()=>{
-      const id = ()=>genId();
+    els.seed.onclick = async ()=>{
+      const now = new Date().toISOString();
       const demo = [
-        { title:"NVIDIA announces new inference stack", summary:"NVIDIA introduced updates to its inference stack targeting throughput and latency.", citations:["https://nvidianews.nvidia.com/newsreleases?"], beat:"Chips / Hardware", tags:["NVDA","AI"], status:"Published", trust:{label:"green",score:95} },
-        { title:"FTC files complaint on ad-tech merger", summary:"FTC initiated a complaint to block an ad-tech acquisition on competition grounds.", citations:["https://www.ftc.gov/feeds/press-release.xml"], beat:"Policy / Regulation", tags:["FTC","Antitrust"], status:"In Review", trust:{label:"yellow",score:82} }
-      ].map(d => ({ id:id(), date:Date.now(), why_it_matters:"Implications for the ecosystem.", primary_url:d.citations[0], ...d }));
-      write([...demo, ...read()]); snack('Seeded'); rebuild();
+        { title:"NVIDIA announces new inference stack", summary:"NVIDIA introduced updates to its inference stack targeting throughput and latency.", citations:["https://nvidianews.nvidia.com"], beat:"Chips / Hardware", tags:["NVDA","AI"], status:"Published", trust:{label:"green",score:95}, primary_url:"https://nvidianews.nvidia.com", why_it_matters:"Implications for compute cost.", date:now },
+        { title:"FTC files complaint on ad-tech merger", summary:"FTC initiated a complaint to block an ad-tech acquisition on competition grounds.", citations:["https://www.ftc.gov"], beat:"Policy / Regulation", tags:["FTC","Antitrust"], status:"In Review", trust:{label:"yellow",score:82}, primary_url:"https://www.ftc.gov", why_it_matters:"Could reshape market power.", date:now }
+      ];
+      try{ await supa.from('posts').insert(demo); snack('Seeded'); await refreshAll(); }
+      catch(err){ alert('Seed failed: '+err.message); }
     };
-    els.clearAll.onclick = ()=>{
-      if(!confirm('Delete ALL posts?')) return;
-      write([]); snack('Cleared'); rebuild();
-    };
+    els.clearAll.onclick = ()=>{ if(!confirm('Clear local fallback cache?')) return; local.write([]); snack('Local cache cleared'); };
 
-    /* Boot */
-    function boot(){ rebuild(); }
-    boot();
-  </script>
+    // Load state from DB (with local fallback)
+    async function refreshAll(){
+      try{ state = await db_list(); local.write(state); }
+      catch{ state = local.read(); }
+      rebuild();
+    }
+    function rebuildLocal(){ state = local.read(); rebuild(); }
 
-  <!-- 🔐 PASSWORD GATE -->
-  <script>
-    // Static-site friendly password gate (same realm as before)
-    const AUTH_CONFIG = {
-      realm: "onemarket-admin",
-      passHashHex: "e32b3109ef525b451510a3d957623ea1b735c06bd43b1a392185d7eec4823967",
-      sessionHours: 12,
-      maxAttempts: 5
-    };
-
-    const $app = document.getElementById("app");
-    const $root = document.getElementById("auth-root");
-    const STORE_KEY = `om.auth.${AUTH_CONFIG.realm}`;
+    // ===== Password Gate (same as before) =====
+    const AUTH_CONFIG = { realm:"onemarket-admin", passHashHex:"e32b3109ef525b451510a3d957623ea1b735c06bd43b1a392185d7eec4823967", sessionHours:12, maxAttempts:5 };
+    const $app = document.getElementById("app"); const $root = document.getElementById("auth-root"); const STORE_KEY = `om.auth.${AUTH_CONFIG.realm}`;
     let attempts = 0;
-
-    const hex = (buf)=>Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
-    const sha256Hex = async (s)=>hex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)));
+    const hex = buf=>Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+    const sha256Hex = async s => hex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)));
     const now = ()=>Date.now();
-
-    function setSession(){
-      const exp = now() + AUTH_CONFIG.sessionHours * 3600 * 1000;
-      localStorage.setItem(STORE_KEY, JSON.stringify({ h: AUTH_CONFIG.passHashHex, exp }));
-    }
-    function hasSession(){
-      try{
-        const raw = localStorage.getItem(STORE_KEY);
-        if(!raw) return false;
-        const { h, exp } = JSON.parse(raw);
-        if(h !== AUTH_CONFIG.passHashHex) return false;
-        if(!exp || exp < now()){ localStorage.removeItem(STORE_KEY); return false; }
-        return true;
-      }catch{ return false; }
-    }
+    function setSession(){ const exp = now() + AUTH_CONFIG.sessionHours*3600*1000; localStorage.setItem(STORE_KEY, JSON.stringify({h:AUTH_CONFIG.passHashHex,exp})); }
+    function hasSession(){ try{ const raw=localStorage.getItem(STORE_KEY); if(!raw) return false; const {h,exp}=JSON.parse(raw); if(h!==AUTH_CONFIG.passHashHex) return false; if(!exp||exp<now()){localStorage.removeItem(STORE_KEY); return false;} return true; }catch{ return false; } }
     window.omLogout = function(){ localStorage.removeItem(STORE_KEY); location.reload(); };
-
     function renderGate(message=""){
       $root.innerHTML = `
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur p-4">
           <div class="w-full max-w-sm rounded-2xl border border-white/15 bg-[#0b0f14] p-5 text-white shadow-xl">
             <div class="mb-2 text-xs text-white/60">Protected • ${AUTH_CONFIG.realm}</div>
             <h1 class="text-lg font-semibold">Enter Password</h1>
-            ${message ? `<p class="mt-2 text-xs text-red-300">${message}</p>` : ""}
+            ${message?`<p class="mt-2 text-xs text-red-300">${message}</p>`:""}
             <form id="authForm" class="mt-4 space-y-3">
               <input id="pw" type="password" autocomplete="current-password"
                      class="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none"
@@ -593,54 +532,20 @@
             </form>
             <div class="mt-3 text-[11px] text-white/40">Locked after ${AUTH_CONFIG.maxAttempts} attempts. Reload to retry.</div>
           </div>
-        </div>
-      `;
-      const f = document.getElementById("authForm");
-      const pw = document.getElementById("pw");
-      f.onsubmit = async (e)=>{
-        e.preventDefault();
-        if(attempts >= AUTH_CONFIG.maxAttempts){
-          renderGate("Locked. Reload this page to try again.");
-          return;
-        }
-        const inputHash = await sha256Hex(pw.value);
-        if(inputHash === AUTH_CONFIG.passHashHex){
-          setSession();
-          $root.innerHTML = "";
-          $app.hidden = false;
-        }else{
-          attempts++;
-          renderGate(`Incorrect password (${attempts}/${AUTH_CONFIG.maxAttempts}).`);
-        }
-      };
+        </div>`;
+      const f=document.getElementById("authForm"); const pw=document.getElementById("pw");
+      f.onsubmit = async (e)=>{ e.preventDefault(); if(attempts>=AUTH_CONFIG.maxAttempts){ renderGate("Locked. Reload this page to try again."); return; }
+        const inputHash = await sha256Hex(pw.value); if(inputHash===AUTH_CONFIG.passHashHex){ setSession(); $root.innerHTML=""; $app.hidden=false; refreshAll(); }
+        else { attempts++; renderGate(`Incorrect password (${attempts}/${AUTH_CONFIG.maxAttempts}).`); } };
     }
+    (function bootAuth(){ if(hasSession()){ $app.hidden=false; refreshAll();
+      const chip=document.createElement("button"); chip.className="fixed bottom-4 right-4 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs text-white/70 hover:bg-white/15"; chip.textContent="Logout"; chip.onclick=window.omLogout; document.body.appendChild(chip);
+    } else { renderGate(); } })();
 
-    (function bootAuth(){
-      if(hasSession()){
-        $app.hidden = false;
-        const chip = document.createElement("button");
-        chip.className = "fixed bottom-4 right-4 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs text-white/70 hover:bg-white/15";
-        chip.textContent = "Logout";
-        chip.onclick = window.omLogout;
-        document.body.appendChild(chip);
-      }else{
-        renderGate();
-      }
-    })();
-  </script>
-
-  <!-- ✅ Active navigation highlight -->
-  <script>
+    // Active nav highlight
     (function highlightActiveNav() {
-      const here = new URL(location.href);
-      const normalize = (p) => p.replace(/\/$/, "/index.html");
-      const current = normalize(here.pathname);
-      document.querySelectorAll("header nav a[href]").forEach(a => {
-        const dest = new URL(a.getAttribute("href"), here).pathname;
-        if (normalize(dest) === current) {
-          a.classList.add("text-lime-300","bg-white/5","rounded-lg","ring-2","ring-lime-300/40");
-        }
-      });
+      const here = new URL(location.href); const normalize = (p)=>p.replace(/\/$/, "/index.html"); const current = normalize(here.pathname);
+      document.querySelectorAll("header nav a[href]").forEach(a => { const dest = new URL(a.getAttribute("href"), here).pathname; if (normalize(dest) === current) { a.classList.add("text-lime-300","bg-white/5","rounded-lg","ring-2","ring-lime-300/40"); } });
     })();
   </script>
 </body>
