@@ -16,8 +16,7 @@
     @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
     .fade-in{animation:fadeIn .4s ease-out both}
     .modal-bg{background:linear-gradient(180deg,rgba(0,0,0,.6),rgba(0,0,0,.8))}
-    /* Dark-friendly native selects */
-    select.field{ background-color:rgba(255,255,255,.06) !important; color:#fff; appearance:none; padding-right:2.25rem;
+    select.field{ background-color:rgba(255,255,255,.06)!important; color:#fff; appearance:none; padding-right:2.25rem;
       background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23cbd5e1" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5"/></svg>');
       background-repeat:no-repeat; background-position:right .7rem center; background-size:16px 16px;
     }
@@ -31,6 +30,12 @@
     .trust-yellow{background:rgba(234,179,8,.2); color:#fde68a}
     .trust-red{background:rgba(239,68,68,.2); color:#fca5a5}
     .link{color:#bef264; text-decoration:underline; text-underline-offset:2px}
+    .snackbar{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:#0b0f14;border:1px solid rgba(255,255,255,.15);padding:.6rem .9rem;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.35);z-index:60;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s}
+    .snackbar.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(-2px)}
+    .row-hover:hover{background:rgba(255,255,255,.03)}
+    .drawer{position:fixed;top:0;right:0;height:100%;width:min(640px,92vw);background:#06090f;border-left:1px solid rgba(255,255,255,.12);transform:translateX(100%);transition:transform .25s ease;z-index:60}
+    .drawer.open{transform:translateX(0)}
+    .drawer .head{position:sticky;top:0;background:rgba(0,0,0,.5);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.12)}
   </style>
 </head>
 <body>
@@ -54,9 +59,63 @@
         <button class="w-full btn btn-primary">Unlock</button>
         <div id="gateMsg" class="text-sm text-red-300"></div>
       </form>
-      <p class="mt-4 text-center text-xs text-white/50">Tip: change the passcode in <code>EDITOR_PASS</code> inside the script.</p>
+      <p class="mt-4 text-center text-xs text-white/50">Change the secret in <code>EDITOR_PASS</code> inside the script.</p>
     </div>
   </div>
+
+  <!-- Drawer inspector -->
+  <aside id="drawer" class="drawer">
+    <div class="head px-5 py-3 flex items-center justify-between">
+      <div class="text-sm text-white/70">Submission Inspector</div>
+      <button id="closeDrawer" class="btn">Close</button>
+    </div>
+    <div class="p-5 space-y-4">
+      <div id="dTitle" class="text-xl font-semibold"></div>
+      <div class="text-white/60 text-sm" id="dMeta"></div>
+
+      <div class="glass rounded-xl border border-white/10 p-4">
+        <div class="text-white/70 text-xs mb-1">Summary</div>
+        <div id="dSummary" class="text-sm text-white/90 whitespace-pre-wrap"></div>
+      </div>
+
+      <div class="glass rounded-xl border border-white/10 p-4">
+        <div class="text-white/70 text-xs mb-1">Why it matters</div>
+        <div id="dWim" class="text-sm text-white/90 whitespace-pre-wrap"></div>
+      </div>
+
+      <div class="glass rounded-xl border border-white/10 p-4">
+        <div class="text-white/70 text-xs mb-2">Sources</div>
+        <ul id="dCites" class="list-disc pl-5 text-sm space-y-1"></ul>
+        <div class="mt-2 text-sm">
+          Primary:&nbsp;<span id="dPrimary"></span>
+        </div>
+      </div>
+
+      <div class="glass rounded-xl border border-white/10 p-4 space-y-2">
+        <div class="text-white/70 text-xs">Trust</div>
+        <div class="flex items-center gap-2">
+          <select id="dTrustLabel" class="field w-36">
+            <option value="green">green</option><option value="yellow">yellow</option><option value="red">red</option>
+          </select>
+          <input id="dTrustScore" class="field w-24" type="number" min="0" max="100" />
+          <button id="dSaveTrust" class="btn btn-primary">Save Trust</button>
+        </div>
+        <div id="dTrustBadge" class="mt-1"></div>
+      </div>
+
+      <div class="glass rounded-xl border border-white/10 p-4">
+        <div class="text-white/70 text-xs mb-2">Editor Notes</div>
+        <textarea id="dNote" class="field" rows="4" placeholder="Leave a note for the writer (saved locally)"></textarea>
+        <div class="flex items-center gap-2 mt-2">
+          <button id="dAddNote" class="btn btn-primary">Add Note</button>
+          <button id="dPublish" class="btn">Publish</button>
+          <button id="dNeedsEdits" class="btn">Needs Edits</button>
+          <button id="dReject" class="btn" style="border-color:rgba(239,68,68,.4)">Reject</button>
+        </div>
+        <ul id="dNotesList" class="mt-3 space-y-2 text-sm"></ul>
+      </div>
+    </div>
+  </aside>
 
   <main id="app" class="mx-auto hidden max-w-7xl p-6 space-y-6">
     <!-- Header / Actions -->
@@ -65,12 +124,12 @@
         <h1 class="text-2xl font-black">Editor Review</h1>
         <p class="text-white/70 text-sm">Local prototype — reads/writes <code>onemarket.submissions</code> in this browser.</p>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex flex-wrap items-center gap-2">
         <button id="exportCsv" class="btn btn-primary">Export CSV</button>
         <button id="exportJson" class="btn">Export JSON</button>
         <label class="btn cursor-pointer">Import JSON <input id="importJson" type="file" accept="application/json" class="hidden"></label>
-        <a href="/admin.html" class="btn">Open Admin</a>
-        <a href="/settings.html" class="btn">Settings</a>
+        <a href="./admin.html" class="btn">Open Admin</a>
+        <a href="./settings.html" class="btn">Settings</a>
         <button id="lock" class="btn">Lock</button>
       </div>
     </header>
@@ -120,7 +179,14 @@
           <label class="block text-xs text-white/60 mb-1">Search title / tags</label>
           <input id="fSearch" class="field" placeholder="Type to filter…" />
         </div>
-        <button id="clearFilters" class="btn">Clear</button>
+
+        <div class="flex items-center gap-2 ml-auto">
+          <button id="bulkPublish" class="btn btn-primary">Publish Selected</button>
+          <button id="bulkReview"  class="btn">Mark Review</button>
+          <button id="bulkNeeds"   class="btn">Needs Edits</button>
+          <button id="bulkReject"  class="btn" style="border-color:rgba(239,68,68,.4)">Reject</button>
+          <button id="clearFilters" class="btn">Clear</button>
+        </div>
       </div>
     </section>
 
@@ -130,6 +196,7 @@
         <table class="min-w-full text-sm">
           <thead>
             <tr class="text-left text-white/60 border-b border-white/10">
+              <th><input id="checkAll" type="checkbox" /></th>
               <th>Title</th>
               <th>Beat</th>
               <th>Date</th>
@@ -145,9 +212,11 @@
     </section>
   </main>
 
+  <div id="snack" class="snackbar">Saved</div>
+
   <script>
     /* ====== Config ====== */
-    const EDITOR_PASS = 'onemarket2025'; // <-- change this to your secret (demo only)
+    const EDITOR_PASS = 'onemarket2025'; // <-- change this
     const LS_AUTH_KEY = 'onemarket.editor.auth';
     const LS_SUBS_KEY = 'onemarket.submissions';
 
@@ -185,6 +254,15 @@
     /* ====== Data Helpers ====== */
     const read = () => { try { return JSON.parse(localStorage.getItem(LS_SUBS_KEY)||'[]'); } catch { return []; } };
     const write = (v) => localStorage.setItem(LS_SUBS_KEY, JSON.stringify(v));
+    const esc = s => String(s||'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
+    const toLocal = ts => { try { return new Date(ts).toLocaleString(); } catch { return ""; } };
+
+    function trustBadge(t) {
+      if(!t) return '';
+      const c = t.label==='green' ? 'trust-green' : t.label==='yellow' ? 'trust-yellow' : 'trust-red';
+      const s = Math.round(t.score||0);
+      return `<span class="badge ${c}">Trust ${s}% • ${esc(t.label||'')}</span>`;
+    }
 
     /* ====== UI Refs ====== */
     const rowsEl = document.getElementById('rows');
@@ -195,25 +273,132 @@
     const fStatus = document.getElementById('fStatus');
     const fBeat   = document.getElementById('fBeat');
     const fSearch = document.getElementById('fSearch');
+    const clearFiltersBtn = document.getElementById('clearFilters');
 
-    document.getElementById('clearFilters').addEventListener('click', ()=>{
-      fStatus.value = '';
-      fBeat.value = '';
-      fSearch.value = '';
-      render();
-    });
-    [fStatus, fBeat].forEach(el => el.addEventListener('change', render));
-    fSearch.addEventListener('input', render);
+    const checkAll = document.getElementById('checkAll');
+    const bulkPublish = document.getElementById('bulkPublish');
+    const bulkReview  = document.getElementById('bulkReview');
+    const bulkNeeds   = document.getElementById('bulkNeeds');
+    const bulkReject  = document.getElementById('bulkReject');
 
-    const esc = s => String(s||'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
-    const toLocal = ts => { try { return new Date(ts).toLocaleString(); } catch { return ""; } };
+    const snackEl = document.getElementById('snack');
+    const snack = (t='Saved')=>{ snackEl.textContent=t; snackEl.classList.add('show'); setTimeout(()=>snackEl.classList.remove('show'), 1200); }
 
-    function trustBadge(t) {
-      if(!t) return '';
-      const c = t.label==='green' ? 'trust-green' : t.label==='yellow' ? 'trust-yellow' : 'trust-red';
-      const s = Math.round(t.score||0);
-      return `<span class="badge ${c}">Trust ${s}% • ${esc(t.label||'')}</span>`;
+    /* ====== Drawer Inspector ====== */
+    const drawer = document.getElementById('drawer');
+    const closeDrawer = document.getElementById('closeDrawer');
+    const dTitle = document.getElementById('dTitle');
+    const dMeta = document.getElementById('dMeta');
+    const dSummary = document.getElementById('dSummary');
+    const dWim = document.getElementById('dWim');
+    const dCites = document.getElementById('dCites');
+    const dPrimary = document.getElementById('dPrimary');
+    const dTrustLabel = document.getElementById('dTrustLabel');
+    const dTrustScore = document.getElementById('dTrustScore');
+    const dTrustBadge = document.getElementById('dTrustBadge');
+    const dSaveTrust = document.getElementById('dSaveTrust');
+    const dNote = document.getElementById('dNote');
+    const dAddNote = document.getElementById('dAddNote');
+    const dNotesList = document.getElementById('dNotesList');
+    const dPublish = document.getElementById('dPublish');
+    const dNeedsEdits = document.getElementById('dNeedsEdits');
+    const dReject = document.getElementById('dReject');
+
+    let selectedId = null;
+    function openDrawer(row){
+      selectedId = row.id;
+      dTitle.textContent = row.title || '(Untitled)';
+      dMeta.textContent = [
+        row.beat || '',
+        (row.tags && row.tags.length ? '• ' + row.tags.join(', ') : ''),
+        row.date ? '• ' + new Date(row.date).toLocaleString() : ''
+      ].filter(Boolean).join(' ');
+      dSummary.textContent = row.summary || '';
+      dWim.textContent = row.why_it_matters || '';
+      dCites.innerHTML = '';
+      const cites = Array.isArray(row.citations)? row.citations : [];
+      cites.forEach(u=>{
+        const li = document.createElement('li');
+        li.innerHTML = `<a class="link" href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>`;
+        dCites.appendChild(li);
+      });
+      dPrimary.innerHTML = row.primary_url ? `<a class="link" href="${esc(row.primary_url)}" target="_blank" rel="noopener">${esc(row.primary_url)}</a>` : '<span class="text-white/40">—</span>';
+      dTrustLabel.value = row.trust?.label || 'green';
+      dTrustScore.value = typeof row.trust?.score === 'number' ? row.trust.score : 90;
+      dTrustBadge.innerHTML = trustBadge(row.trust);
+      renderNotes(row);
+      drawer.classList.add('open');
     }
+    function renderNotes(row){
+      const notes = Array.isArray(row.editor_notes) ? row.editor_notes : [];
+      dNotesList.innerHTML = notes.length ? '' : '<li class="text-white/50">No notes yet.</li>';
+      notes.forEach((n, idx)=>{
+        const li = document.createElement('li');
+        li.className = 'glass rounded-lg border border-white/10 p-3';
+        li.innerHTML = `
+          <div class="text-xs text-white/60">${new Date(n.ts).toLocaleString()}</div>
+          <div class="mt-1">${esc(n.text||'')}</div>
+          <div class="mt-2"><button data-delnote="${idx}" class="btn text-xs" style="border-color:rgba(239,68,68,.4)">Delete</button></div>
+        `;
+        dNotesList.appendChild(li);
+      });
+      dNotesList.querySelectorAll('button[data-delnote]').forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const idx = +b.getAttribute('data-delnote');
+          const data = read();
+          const i = data.findIndex(x=>x.id===selectedId);
+          if(i>-1){
+            data[i].editor_notes = (data[i].editor_notes||[]);
+            data[i].editor_notes.splice(idx,1);
+            write(data); openDrawer(data[i]); snack('Note deleted');
+          }
+        });
+      });
+    }
+    closeDrawer.addEventListener('click', ()=> drawer.classList.remove('open'));
+    dSaveTrust.addEventListener('click', ()=>{
+      const data = read();
+      const i = data.findIndex(x=>x.id===selectedId);
+      if(i>-1){
+        data[i].trust = { label: dTrustLabel.value, score: Math.max(0,Math.min(100,Number(dTrustScore.value||0))) };
+        write(data); dTrustBadge.innerHTML = trustBadge(data[i].trust); snack('Trust saved');
+        render(); // refresh table badges
+      }
+    });
+    dAddNote.addEventListener('click', ()=>{
+      const text = dNote.value.trim(); if(!text) return;
+      const data = read();
+      const i = data.findIndex(x=>x.id===selectedId);
+      if(i>-1){
+        data[i].editor_notes = data[i].editor_notes || [];
+        data[i].editor_notes.unshift({ ts: Date.now(), text });
+        write(data); dNote.value=''; openDrawer(data[i]); snack('Note added');
+      }
+    });
+    dPublish.addEventListener('click', ()=> setStatusSelected('Published'));
+    dNeedsEdits.addEventListener('click', ()=> setStatusSelected('Needs Edits'));
+    dReject.addEventListener('click', ()=> setStatusSelected('Rejected'));
+    function setStatusSelected(status){
+      const data = read();
+      const i = data.findIndex(x=>x.id===selectedId);
+      if(i>-1){
+        data[i].status = status;
+        if(status==='Published' && !data[i].date) data[i].date = Date.now();
+        write(data); snack(status); render();
+      }
+    }
+
+    /* ====== Filters Persist ====== */
+    const KEY_F = { s:'editor.f.status', b:'editor.f.beat', q:'editor.f.q' };
+    function saveFilters(){ localStorage.setItem(KEY_F.s, fStatus.value); localStorage.setItem(KEY_F.b, fBeat.value); localStorage.setItem(KEY_F.q, fSearch.value); }
+    function loadFilters(){
+      const s = localStorage.getItem(KEY_F.s); if(s!==null) fStatus.value=s;
+      const b = localStorage.getItem(KEY_F.b); if(b!==null) fBeat.value=b;
+      const q = localStorage.getItem(KEY_F.q); if(q!==null) fSearch.value=q;
+    }
+    [fStatus,fBeat].forEach(el=> el.addEventListener('change', ()=>{ saveFilters(); render(); }));
+    fSearch.addEventListener('input', ()=>{ saveFilters(); render(); });
+    clearFiltersBtn.addEventListener('click', ()=>{ fStatus.value=''; fBeat.value=''; fSearch.value=''; saveFilters(); render(); });
 
     /* ====== Render ====== */
     function render(){
@@ -235,33 +420,34 @@
         const hay = ((r.title||'') + ' ' + (Array.isArray(r.tags)?r.tags.join(','):r.tags||'')).toLowerCase();
         const okQ = !q || hay.includes(q);
         return okS && okB && okQ;
-      });
+      }).sort((a,b)=> (b.date||0)-(a.date||0));
 
       rowsEl.innerHTML = '';
       filtered.forEach(r=>{
-        const i = data.indexOf(r);
         const tr = document.createElement('tr');
-        tr.className = 'border-t border-white/10 align-top';
+        tr.className = 'border-t border-white/10 align-top row-hover';
+        const idx = data.indexOf(r);
         const storyUrl = `/story.html?id=${encodeURIComponent(r.id)}`;
         const shareX = `https://x.com/intent/tweet?text=${encodeURIComponent(r.title||'OneMarket story')}&url=${encodeURIComponent(location.origin+storyUrl)}&via=OneMarketNews`;
         tr.innerHTML = `
+          <td><input type="checkbox" data-check="${esc(r.id)}" /></td>
           <td class="align-top">
-            <div class="font-semibold">${esc(r.title||'(Untitled)')}</div>
+            <button class="text-left hover:underline" data-open="${esc(r.id)}">${esc(r.title||'(Untitled)')}</button>
             ${r.tags && r.tags.length ? `<div class="text-white/50 text-xs mt-1">${esc(r.tags.join(', '))}</div>` : ''}
           </td>
           <td class="align-top text-white/70">${esc(r.beat||'')}</td>
           <td class="align-top text-white/70 whitespace-nowrap">${r.date ? toLocal(r.date) : ''}</td>
           <td class="align-top">
-            <select data-idx="${i}" class="field w-40">
+            <select data-idx="${idx}" class="field w-40">
               ${['In Review','Needs Edits','Published','Rejected'].map(s=>`<option ${r.status===s?'selected':''}>${s}</option>`).join('')}
             </select>
           </td>
           <td class="align-top">
             <div class="flex items-center gap-2">
-              <select data-trust="${i}" class="field w-32">
+              <select data-trust="${idx}" class="field w-32">
                 ${['green','yellow','red'].map(l=>`<option ${r.trust&&r.trust.label===l?'selected':''} value="${l}">${l}</option>`).join('')}
               </select>
-              <input type="number" min="0" max="100" value="${r.trust?Number(r.trust.score||0):90}" data-score="${i}" class="field w-20">
+              <input type="number" min="0" max="100" value="${r.trust?Number(r.trust.score||0):90}" data-score="${idx}" class="field w-20">
             </div>
             <div class="mt-1">${trustBadge(r.trust)}</div>
           </td>
@@ -272,19 +458,29 @@
             <div class="flex flex-wrap gap-2">
               <a href="${storyUrl}" target="_blank" class="btn">View</a>
               <a href="${shareX}" target="_blank" rel="noopener" class="btn" aria-label="Share on X">
-                <!-- Modern X icon -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="-mb-[2px] inline"><path d="M20.945 3H17.3l-4.01 5.05L8.19 3H3l7.01 9.26L3.3 21h3.65l4.22-5.31L15.82 21H21l-7.28-9.62L20.945 3zM16.52 19.5l-7.2-9.47 1.17-1.48 7.38 9.63-1.35 1.32zm-9.93-15h.96l7.02 9.16-.96 1.2L6.59 4.5z"/></svg>
                 Share
               </a>
               <button data-copy="${location.origin+storyUrl}" class="btn">Copy link</button>
-              <button data-pub="${i}" class="btn btn-primary">Publish</button>
-              <button data-ne="${i}" class="btn">Needs Edits</button>
-              <button data-rej="${i}" class="btn">Reject</button>
-              <button data-del="${i}" class="btn" style="border-color:rgba(239,68,68,.4)">Delete</button>
+              <button data-open="${esc(r.id)}" class="btn btn-primary">Inspect</button>
+              <button data-pub="${idx}" class="btn btn-primary">Publish</button>
+              <button data-ne="${idx}" class="btn">Needs Edits</button>
+              <button data-rej="${idx}" class="btn" style="border-color:rgba(239,68,68,.4)">Reject</button>
+              <button data-del="${idx}" class="btn" style="border-color:rgba(239,68,68,.4)">Delete</button>
             </div>
           </td>
         `;
         rowsEl.appendChild(tr);
+      });
+
+      // Open drawer
+      rowsEl.querySelectorAll('button[data-open]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const id = btn.getAttribute('data-open');
+          const data = read();
+          const row = data.find(x=>String(x.id)===String(id));
+          if(row) openDrawer(row);
+        });
       });
 
       // Status change
@@ -293,11 +489,11 @@
           const idx = +e.target.dataset.idx;
           const data = read();
           data[idx].status = e.target.value;
-          write(data); render();
+          write(data); snack('Status updated'); render();
         });
       });
 
-      // Trust label
+      // Trust label/score
       rowsEl.querySelectorAll('select[data-trust]').forEach(sel=>{
         sel.addEventListener('change', e=>{
           const idx = +e.target.dataset.trust;
@@ -308,8 +504,6 @@
           write(data); render();
         });
       });
-
-      // Trust score
       rowsEl.querySelectorAll('input[data-score]').forEach(inp=>{
         inp.addEventListener('change', e=>{
           const idx = +e.target.dataset.score;
@@ -324,7 +518,7 @@
       // Quick actions
       rowsEl.querySelectorAll('button[data-copy]').forEach(btn=>{
         btn.addEventListener('click', async ()=>{
-          try { await navigator.clipboard.writeText(btn.getAttribute('data-copy')); btn.textContent='Copied!'; setTimeout(()=>btn.textContent='Copy link',1200);} catch{}
+          try{ await navigator.clipboard.writeText(btn.getAttribute('data-copy')); btn.textContent='Copied!'; setTimeout(()=>btn.textContent='Copy link',1200);}catch{}
         });
       });
       rowsEl.querySelectorAll('button[data-pub]').forEach(btn=>{
@@ -333,7 +527,7 @@
           const data = read();
           data[idx].status = 'Published';
           if(!data[idx].date) data[idx].date = Date.now();
-          write(data); render();
+          write(data); snack('Published'); render();
         });
       });
       rowsEl.querySelectorAll('button[data-ne]').forEach(btn=>{
@@ -341,7 +535,7 @@
           const idx = +btn.getAttribute('data-ne');
           const data = read();
           data[idx].status = 'Needs Edits';
-          write(data); render();
+          write(data); snack('Marked Needs Edits'); render();
         });
       });
       rowsEl.querySelectorAll('button[data-rej]').forEach(btn=>{
@@ -349,7 +543,7 @@
           const idx = +btn.getAttribute('data-rej');
           const data = read();
           data[idx].status = 'Rejected';
-          write(data); render();
+          write(data); snack('Rejected'); render();
         });
       });
       rowsEl.querySelectorAll('button[data-del]').forEach(btn=>{
@@ -358,17 +552,45 @@
           const data = read();
           if(confirm('Delete this submission?')){
             data.splice(idx,1);
-            write(data); render();
+            write(data); snack('Deleted'); render();
           }
         });
       });
+
+      // Bulk check
+      checkAll.checked = false;
+      checkAll.addEventListener('change', ()=>{
+        rowsEl.querySelectorAll('input[type="checkbox"][data-check]').forEach(cb=> cb.checked = checkAll.checked);
+      });
     }
+
+    /* ====== Bulk Actions ====== */
+    function applyBulk(status){
+      const ids = Array.from(rowsEl.querySelectorAll('input[type="checkbox"][data-check]:checked')).map(cb=>cb.getAttribute('data-check'));
+      if(!ids.length) return;
+      const data = read();
+      ids.forEach(id=>{
+        const i = data.findIndex(r=>String(r.id)===String(id));
+        if(i>-1){
+          data[i].status = status;
+          if(status==='Published' && !data[i].date) data[i].date = Date.now();
+        }
+      });
+      write(data);
+      snack(`${status} (${ids.length})`);
+      render();
+    }
+    bulkPublish.addEventListener('click', ()=> applyBulk('Published'));
+    bulkReview.addEventListener('click',  ()=> applyBulk('In Review'));
+    bulkNeeds.addEventListener('click',   ()=> applyBulk('Needs Edits'));
+    bulkReject.addEventListener('click',  ()=> applyBulk('Rejected'));
 
     /* ====== Export / Import ====== */
     document.getElementById('exportCsv').onclick = ()=>{
       const data = read();
-      const rows = [['Title','Beat','Date','Status','Trust Label','Trust Score','Primary URL','Tags']].concat(
+      const rows = [['ID','Title','Beat','Date','Status','Trust Label','Trust Score','Primary URL','Tags','WhyItMatters','Summary']].concat(
         data.map(r=>[
+          r.id||'',
           r.title||'',
           r.beat||'',
           new Date(r.date||Date.now()).toISOString(),
@@ -376,7 +598,9 @@
           r.trust?.label||'',
           typeof r.trust?.score==='number'?r.trust.score:'',
           r.primary_url||'',
-          Array.isArray(r.tags)?r.tags.join('|'):(r.tags||'')
+          Array.isArray(r.tags)?r.tags.join('|'):(r.tags||''),
+          r.why_it_matters||'',
+          r.summary||''
         ])
       );
       const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
@@ -412,6 +636,19 @@
       a.click();
       URL.revokeObjectURL(a.href);
     }
+
+    /* ====== Keyboard Shortcuts ====== */
+    document.addEventListener('keydown', (e)=>{
+      const isMac = navigator.platform.toUpperCase().includes('MAC');
+      const mod = isMac ? e.metaKey : e.ctrlKey;
+      if(mod && e.key.toLowerCase()==='f'){ e.preventDefault(); fSearch.focus(); }
+      if(mod && e.key.toLowerCase()==='p'){ e.preventDefault(); applyBulk('Published'); }
+      if(mod && e.key.toLowerCase()==='r'){ e.preventDefault(); applyBulk('In Review'); }
+    });
+
+    // Boot
+    loadFilters();
+    render();
   </script>
 </body>
 </html>
