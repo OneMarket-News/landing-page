@@ -203,7 +203,11 @@
     // ===== CONFIG =====
     const SUPA_URL = "https://fdwjzdvdqskcdidiervv.supabase.co";
     const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZkd2p6ZHZkcXNrY2RpZGllcnZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMDk0MDgsImV4cCI6MjA3Nzc4NTQwOH0.iCEfiC1EH4Ec0GZB7y437yTA-ylyszIdhMJu-UimbCQ";
-    const supa = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+    if (!window.supabase || !window.supabase.createClient) {
+  alert("Supabase library failed to load. Check the <script> src URL.");
+}
+const supa = window.supabase ? window.supabase.createClient(SUPA_URL, SUPA_KEY) : null;
+
 
     // Local fallback cache (drafts/offline)
     const LKEY = "onemarket.submissions";
