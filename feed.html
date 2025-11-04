@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#000" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    :root { color-scheme: dark; }
+    :root { color-scheme: dark; --lime:#a3e635; }
     body{background:#000;color:#fff}
     .glass{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));backdrop-filter:blur(10px) saturate(120%)}
     .field{border-radius:9999px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);padding:.55rem .9rem;color:#fff;outline:none}
@@ -17,11 +17,52 @@
     }
     option{ background:#0b0b0b; color:#fff; }
 
-    /* Compact mode */
-    body.compact article.feed-card { padding: .9rem 1rem !important; }
-    body.compact article.feed-card h2 { font-size: 1rem !important; }
-    body.compact article.feed-card .text-sm { font-size: .8rem !important; }
-    body.compact .field { padding:.45rem .75rem; }
+    /* ===== Pulse line (signature sweep) ===== */
+    .pulse-wrap{position:relative;overflow:hidden}
+    .pulse-line{
+      position:absolute;left:-30%;top:0;height:2px;width:30%;
+      background:linear-gradient(90deg,transparent,rgba(163,230,53,.9),transparent);
+      filter:drop-shadow(0 0 6px rgba(163,230,53,.5));
+      opacity:.0;
+      animation:pulseSweep 18s infinite ease-in-out;
+    }
+    @keyframes pulseSweep{
+      0%{transform:translateX(0);opacity:0}
+      3%{opacity:.95}
+      6%{transform:translateX(440%);opacity:.2}
+      8%{opacity:0}
+      100%{transform:translateX(440%);opacity:0}
+    }
+
+    /* Subtle ‘system breath’ on sweep */
+    .breath{transition:opacity .3s ease}
+    .breath.dim{opacity:.97}
+
+    /* Card micro-interactions */
+    .card{transition:transform .15s ease, box-shadow .2s ease, background .2s ease}
+    .card:hover{transform:translateY(-2px)}
+    .glint{
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);
+      position:absolute;inset:auto 0 0 0;height:1px;opacity:.0;transition:opacity .2s ease;
+    }
+    .card:hover .glint{opacity:1}
+
+    /* Primary Confidence Indicator (PCI) — trust bar */
+    .pci{height:6px;border-radius:9999px;background:rgba(255,255,255,.08);overflow:hidden}
+    .pci > i{display:block;height:100%;background:linear-gradient(90deg,rgba(163,230,53,.85),rgba(163,230,53,.55));}
+
+    /* Active selection (keyboard scan) */
+    .is-selected{outline:2px solid rgba(163,230,53,.6); outline-offset:2px; background:rgba(255,255,255,.06)}
+
+    /* Spotlight hero image fallback */
+    .hero{
+      background:radial-gradient(1200px 240px at 50% 0, rgba(163,230,53,.08), transparent 55%),
+                 linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+    }
+
+    /* Tiny badges */
+    .badge{border-radius:9999px;background:rgba(255,255,255,.1);padding:.15rem .5rem}
+
   </style>
 
   <!-- Social previews -->
@@ -33,8 +74,9 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@OneMarketNews">
 </head>
-<body class="min-h-screen">
-  <header class="sticky top-0 z-40 backdrop-blur bg-black/40 border-b border-white/10">
+<body class="min-h-screen breath" id="root">
+  <!-- Header with pulse line -->
+  <header class="pulse-wrap sticky top-0 z-40 backdrop-blur bg-black/40 border-b border-white/10">
     <div class="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
       <a href="/" class="font-black tracking-tight">
         ONE<span class="text-lime-400">MARKET</span> <span class="font-semibold text-white/80">News</span>
@@ -46,10 +88,11 @@
         <a class="hover:text-white" href="/settings.html">Settings</a>
       </nav>
     </div>
+    <div class="pulse-line" id="pulse"></div>
   </header>
 
   <main class="mx-auto max-w-5xl px-4 py-6">
-    <!-- Filters -->
+    <!-- Quick filters -->
     <div class="mb-4 flex flex-wrap gap-2 items-center">
       <input id="q" placeholder="Search title or tags…" class="field w-full sm:w-64 placeholder:text-white/50">
       <select id="beat" class="field">
@@ -65,58 +108,67 @@
       </select>
       <button id="refresh" class="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm hover:bg-white/15">Refresh</button>
       <button id="clearFilters" class="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm hover:bg-white/15">Clear</button>
-      <!-- Compact mode toggle -->
-      <button id="density" class="rounded-full border border-white/15 bg-white/10 px-3 py-2 text-sm">Compact</button>
+
+      <!-- Fast taps -->
+      <div class="ml-auto flex flex-wrap gap-2 text-xs">
+        <button data-quick="AI" class="rounded-full border border-white/15 px-3 py-1 bg-white/5 hover:bg-white/10">AI</button>
+        <button data-quick="Markets" class="rounded-full border border-white/15 px-3 py-1 bg-white/5 hover:bg-white/10">Markets</button>
+        <button data-quick="Energy" class="rounded-full border border-white/15 px-3 py-1 bg-white/5 hover:bg-white/10">Energy</button>
+      </div>
     </div>
 
+    <!-- Spotlight (top story) -->
+    <section id="spotlight" class="mb-5 hidden">
+      <article class="card hero relative overflow-hidden rounded-2xl border border-white/10 p-5">
+        <div class="glint"></div>
+        <header class="flex flex-wrap items-center gap-2 text-xs text-white/70">
+          <span id="spBeat" class="badge"></span>
+          <span>•</span><time id="spTime"></time>
+          <span id="spTrustWrap" class="hidden">• <span id="spTrust" class="badge"></span></span>
+        </header>
+        <h2 id="spTitle" class="mt-2 text-2xl sm:text-3xl font-bold tracking-tight"></h2>
+        <p id="spSummary" class="mt-2 text-white/80"></p>
+        <div class="mt-3 flex items-center gap-4 text-xs">
+          <div id="spCitations" class="text-lime-300"></div>
+          <a id="spShare" class="inline-flex items-center gap-1 text-white/70 hover:text-white" target="_blank" rel="noopener">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2H21l-6.51 7.44L22 22h-6.93l-4.81-6.26L4.8 22H2l7.02-8.03L2 2h6.93l4.47 5.82L18.244 2Zm-1.22 18h2.1L7.06 4H4.96L17.024 20Z"/></svg>
+            Share
+          </a>
+        </div>
+      </article>
+    </section>
+
+    <!-- Feed list -->
     <div id="list" class="grid gap-4"></div>
 
-    <footer class="mt-10 text-center text-xs text-white/60">© <span id="year"></span> OneMarket News, LLC.</footer>
+    <footer class="mt-10 text-center text-xs text-white/60">
+      © <span id="year"></span> OneMarket News, LLC. • <span class="text-white/50">↑/↓ to scan • Enter to open</span>
+    </footer>
   </main>
 
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    const API_URL = "";
+    /* ===== CONFIG / KEYS ===== */
+    const API_URL = ""; // optional remote source
     const KEY_SUBS = "onemarket.submissions";
     const KEY_PREFS = "onemarket.user.prefs";
     const KEY_FEED_BEAT = "feed.beat";
     const KEY_FEED_TRUST = "feed.trust";
     const KEY_FEED_Q = "feed.q";
-    const KEY_DENSITY="feed.density";
-    const KEY_READ="feed.read.ids";
 
+    /* ===== DOM ===== */
     const elList = document.getElementById('list');
     const elQ = document.getElementById('q');
     const elBeat = document.getElementById('beat');
     const elTrust = document.getElementById('trust');
     const elRefresh = document.getElementById('refresh');
     const elClear = document.getElementById('clearFilters');
-    const densityBtn = document.getElementById('density');
+    const root = document.getElementById('root');
 
     const esc = s => String(s||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]));
 
-    // time utils
-    function timeAgo(ts){
-      const s = Math.floor((Date.now() - (ts||0))/1000);
-      if (!isFinite(s) || s < 0) return '';
-      const r=(n,u)=>`${n} ${u}${n>1?'s':''} ago`;
-      if (s<60) return r(s,'sec');
-      const m=Math.floor(s/60); if(m<60) return r(m,'min');
-      const h=Math.floor(m/60); if(h<24) return r(h,'hour');
-      const d=Math.floor(h/24); return r(d,'day');
-    }
-    const fmt = (ts)=> new Date(ts).toLocaleString();
-
-    // read state
-    const readSet = new Set(JSON.parse(localStorage.getItem(KEY_READ)||"[]"));
-    function markRead(id){
-      if(!id) return;
-      readSet.add(id);
-      localStorage.setItem(KEY_READ, JSON.stringify([...readSet]));
-    }
-    function isRead(id){ return readSet.has(id); }
-
+    /* ===== LOAD ITEMS ===== */
     async function load() {
       let items = [];
       if (API_URL) {
@@ -131,9 +183,11 @@
           items = local.filter(x => x.status === "Published");
         } catch { items = []; }
       }
-      return items.sort((a,b)=> (b.date||0)-(a.date||0));
+      // sort by recency, then trust score
+      return items.sort((a,b)=> ((b.date||0)-(a.date||0)) || ((b?.trust?.score||0) - (a?.trust?.score||0)));
     }
 
+    /* ===== BADGES ===== */
     function trustBadge(t) {
       if (!t) return "";
       const cls = t.label==='green' ? 'bg-green-500/20 text-green-300'
@@ -143,56 +197,84 @@
       return `<span class="rounded-full px-2 py-1 text-xs ${cls}">Trust ${s}% • ${esc(t.label)}</span>`;
     }
 
-    // helpers to apply filters via chips
-    function applyBeat(b){ elBeat.value=b; persistFilters(); }
-    function applyQuery(q){ elQ.value=q; persistFilters(); }
+    /* ===== PCI BAR ===== */
+    function pci(score=0){
+      const s = Math.max(0, Math.min(100, Math.round(score)));
+      return `<div class="pci mt-2" aria-label="Confidence ${s}%"><i style="width:${s}%"></i></div>`;
+    }
 
-    function card(s){
+    /* ===== CARD ===== */
+    function card(s, idx){
       const shareUrl = `${location.origin}/story.html?id=${encodeURIComponent(s.id)}`;
-      const shareText = `${s.title || 'Check this out'} — via OneMarket`;
-      // Build beat chip (clickable)
-      const beatChip = s.beat
-        ? `<button class="rounded-full bg-white/10 px-2 py-1 text-white/70 hover:bg-white/20"
-            onclick="applyBeat('${esc(s.beat)}')">${esc(s.beat)}</button>`
-        : "";
-
-      // Tags → quick query buttons
-      const tagChips = Array.isArray(s.tags) ? s.tags.map(t =>
-        `<button class="underline text-white/70 hover:text-white" onclick="applyQuery('${esc(t)}')">${esc(t)}</button>`
-      ).join(' <span>•</span> ') : "";
-
-      // Sources
-      const srcLinks = (Array.isArray(s.citations)?s.citations:[]).slice(0,2)
-        .map(u=>`<a class="underline hover:text-lime-400 mr-3" target="_blank" rel="noopener" href="${esc(u)}">Source</a>`).join("");
+      const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(s.title||'Check this out')}&url=${encodeURIComponent(shareUrl)}&via=OneMarketNews`;
+      const tags = Array.isArray(s.tags)&&s.tags.length ? `<span>•</span><span>${esc(s.tags.join(", "))}</span>` : "";
+      const beat = s.beat ? `<span class="rounded-full bg-white/10 px-2 py-1 text-white/70">${esc(s.beat)}</span>` : "";
+      const time = s.date ? `<span>•</span><time>${new Date(s.date).toLocaleString()}</time>` : "";
+      const tb = s.trust ? `<span>•</span>${trustBadge(s.trust)}` : "";
+      const cite = (Array.isArray(s.citations)?s.citations:[]).slice(0,2).map(u=>`<a class="underline hover:text-lime-400 mr-3" target="_blank" rel="noopener" href="${esc(u)}">Source</a>`).join("");
+      const pciBar = s.trust ? pci(s.trust.score||0) : "";
 
       return `
-        <article class="feed-card glass rounded-2xl border border-white/10 p-5 ${isRead(s.id)?'opacity-70':''}"
-                 onclick="markRead('${esc(s.id)}')">
+        <article class="card relative glass rounded-2xl border border-white/10 p-5 focus:outline-none" tabindex="0" data-idx="${idx}" data-id="${esc(s.id)}">
+          <div class="glint"></div>
           <header class="flex flex-wrap items-center gap-2 text-xs text-white/60">
-            ${beatChip}
-            ${tagChips ? `<span>•</span><span class="space-x-1">${tagChips}</span>` : ""}
-            ${s.date ? `<span>•</span><time title="${fmt(s.date)}">${timeAgo(s.date)}</time>` : ""}
-            ${s.trust ? `<span>•</span>${trustBadge(s.trust)}` : ""}
+            ${beat} ${tags} ${time} ${tb}
           </header>
           <h2 class="mt-2 text-xl font-semibold">
             <a class="hover:underline" href="/story.html?id=${encodeURIComponent(s.id)}">${esc(s.title || "(Untitled)")}</a>
           </h2>
           <p class="mt-2 text-white/80 text-sm">${esc(s.summary || "")}</p>
-          <div class="mt-3 flex flex-wrap items-center gap-4 text-xs">
-            <div class="text-lime-300">${srcLinks}</div>
-
-            <!-- Smart share: Web Share API fallback to X -->
-            <button class="inline-flex items-center gap-1 text-white/70 hover:text-white"
-              onclick="(async()=>{try{ if(navigator.share){await navigator.share({title:'OneMarket', text:'${esc(shareText)}', url:'${esc(shareUrl)}'});}else{window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent('${esc(shareText)}')+'&url='+encodeURIComponent('${esc(shareUrl)}'),'_blank');}}catch(e){}})()"
-              aria-label="Share">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2H21l-6.51 7.44L22 22h-6.93l-4.81-6.26L4.8 22H2l7.02-8.03L2 2h6.93l4.47 5.82L18.244 2Zm-1.22 18h2.1L7.06 4H4.96L17.024 20Z"/></svg>
+          ${pciBar}
+          <div class="mt-3 flex items-center gap-4 text-xs">
+            <div class="text-lime-300">${cite}</div>
+            <a class="inline-flex items-center gap-1 text-white/70 hover:text-white" href="${xUrl}" target="_blank" rel="noopener" aria-label="Share on X">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2H21l-6.51 7.44L22 22h-6.93l-4.81-6.26L4.8 22H2l7.02-8.03L2 2h6.93l4.47 5.82L18.244 2Zm-1.22 18h2.1L7.06 4H4.96L17.024 20Z"/></svg>
               Share
-            </button>
+            </a>
           </div>
         </article>
       `;
     }
 
+    /* ===== SPOTLIGHT ===== */
+    function renderSpotlight(items){
+      const sp = document.getElementById('spotlight');
+      if(!items.length){ sp.classList.add('hidden'); return; }
+      // Pick top by trust.score among latest 24h; fallback first item
+      const dayAgo = Date.now() - (24*3600*1000);
+      let top = items.filter(x => (x.date||0) > dayAgo)
+                     .sort((a,b)=>( (b?.trust?.score||0)-(a?.trust?.score||0)) )[0] || items[0];
+
+      const spBeat = document.getElementById('spBeat');
+      const spTime = document.getElementById('spTime');
+      const spTrustWrap = document.getElementById('spTrustWrap');
+      const spTrust = document.getElementById('spTrust');
+      const spTitle = document.getElementById('spTitle');
+      const spSummary = document.getElementById('spSummary');
+      const spCitations = document.getElementById('spCitations');
+      const spShare = document.getElementById('spShare');
+
+      spBeat.textContent = top.beat || 'Spotlight';
+      spTime.textContent = top.date ? new Date(top.date).toLocaleString() : '';
+      if(top.trust){
+        spTrustWrap.classList.remove('hidden');
+        spTrust.innerHTML = `Trust ${Math.round(top.trust.score||0)}% • ${esc(top.trust.label||'')}`;
+        spTrust.className = 'badge ' + (top.trust.label==='green' ? 'text-green-300 bg-green-500/20' :
+                        top.trust.label==='yellow' ? 'text-yellow-200 bg-yellow-500/20' : 'text-red-300 bg-red-500/20');
+      }else{
+        spTrustWrap.classList.add('hidden');
+      }
+      spTitle.innerHTML = `<a class="hover:underline" href="/story.html?id=${encodeURIComponent(top.id)}">${esc(top.title||'(Untitled)')}</a>`;
+      spSummary.textContent = top.summary || '';
+      const cites = (Array.isArray(top.citations)?top.citations:[]).slice(0,3)
+        .map(u=>`<a class="underline hover:text-lime-400 mr-3" target="_blank" rel="noopener" href="${esc(u)}">Source</a>`).join('');
+      spCitations.innerHTML = cites;
+      spShare.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(top.title||'Check this out')}&url=${encodeURIComponent(location.origin+'/story.html?id='+top.id)}&via=OneMarketNews`;
+
+      sp.classList.remove('hidden');
+    }
+
+    /* ===== RENDER LIST ===== */
     function render(items) {
       const q = elQ.value.trim().toLowerCase();
       const beat = elBeat.value;
@@ -206,11 +288,18 @@
         return hay.includes(q);
       });
 
-      elList.innerHTML = filtered.length
-        ? filtered.map(card).join("")
-        : `<div class="text-white/60 text-sm">No results. <button class="underline" onclick="clearFilters()">Clear filters</button> or try another search.</div>`;
+      renderSpotlight(filtered);
+
+      const listHtml = filtered.map((s, i)=> card(s, i)).join("");
+      elList.innerHTML = listHtml || `<div class="text-white/60 text-sm">No stories yet. Try adding one in <a class="underline" href="/admin.html">Admin</a>.</div>`;
+
+      // Reset selection index after render
+      selectedIdx = filtered.length ? 0 : -1;
+      applySelection();
+      cachedView = filtered; // for keyboard open
     }
 
+    /* ===== Filter persistence + Settings defaults ===== */
     function applySavedFiltersOrPrefs(){
       const savedBeat  = localStorage.getItem(KEY_FEED_BEAT);
       const savedTrust = localStorage.getItem(KEY_FEED_TRUST);
@@ -228,14 +317,12 @@
         } catch {}
       }
     }
-
     function persistFilters(){
       localStorage.setItem(KEY_FEED_BEAT, elBeat.value);
       localStorage.setItem(KEY_FEED_TRUST, elTrust.value);
       localStorage.setItem(KEY_FEED_Q, elQ.value);
       render(cache);
     }
-
     function clearFilters(){
       localStorage.removeItem(KEY_FEED_BEAT);
       localStorage.removeItem(KEY_FEED_TRUST);
@@ -246,18 +333,55 @@
       render(cache);
     }
 
-    // density
-    function setDensity(mode){
-      document.body.classList.toggle('compact', mode==='compact');
-      localStorage.setItem(KEY_DENSITY, mode);
-      densityBtn.textContent = mode==='compact' ? 'Comfortable' : 'Compact';
+    /* ===== Keyboard scan ===== */
+    let selectedIdx = -1;
+    let cachedView = [];
+    function applySelection(){
+      const cards = [...document.querySelectorAll('[data-idx]')];
+      cards.forEach(c=>c.classList.remove('is-selected'));
+      if (selectedIdx >= 0 && cards[selectedIdx]) cards[selectedIdx].classList.add('is-selected');
     }
+    function openSelected(){
+      if (selectedIdx < 0 || !cachedView[selectedIdx]) return;
+      const id = cachedView[selectedIdx].id;
+      window.location.href = `/story.html?id=${encodeURIComponent(id)}`;
+    }
+    document.addEventListener('keydown', (e)=>{
+      if (!cachedView.length) return;
+      if (['ArrowDown','ArrowUp','Enter','j','k'].includes(e.key)) e.preventDefault();
+      if (e.key === 'ArrowDown' || e.key === 'j'){
+        selectedIdx = Math.min(selectedIdx+1, cachedView.length-1); applySelection();
+        document.querySelector(`[data-idx="${selectedIdx}"]`)?.scrollIntoView({block:'nearest', behavior:'smooth'});
+      }
+      if (e.key === 'ArrowUp' || e.key === 'k'){
+        selectedIdx = Math.max(selectedIdx-1, 0); applySelection();
+        document.querySelector(`[data-idx="${selectedIdx}"]`)?.scrollIntoView({block:'nearest', behavior:'smooth'});
+      }
+      if (e.key === 'Enter'){ openSelected(); }
+    });
 
+    /* ===== Pulse line “breath” sync ===== */
+    const pulse = document.getElementById('pulse');
+    pulse.addEventListener('animationiteration', ()=>{
+      root.classList.add('dim');
+      setTimeout(()=>root.classList.remove('dim'), 280);
+      // optional: lightly highlight fresh cards after the sweep
+      [...document.querySelectorAll('.card')].slice(0,3).forEach(c=>{
+        c.animate([{boxShadow:'0 0 0 0 rgba(163,230,53,0)'},{boxShadow:'0 0 0 6px rgba(163,230,53,.08)'},{boxShadow:'0 0 0 0 rgba(163,230,53,0)'}], {duration:900, easing:'ease-out'});
+      });
+    });
+
+    /* ===== Quick taps ===== */
+    document.querySelectorAll('[data-quick]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        elBeat.value = btn.getAttribute('data-quick');
+        persistFilters();
+      });
+    });
+
+    /* ===== Boot ===== */
     let cache = [];
     async function boot(){
-      // density on boot
-      setDensity(localStorage.getItem(KEY_DENSITY) || 'comfortable');
-
       applySavedFiltersOrPrefs();
       cache = await load();
       render(cache);
@@ -268,11 +392,10 @@
     elQ.oninput = persistFilters;
     elBeat.onchange = persistFilters;
     elTrust.onchange = persistFilters;
-    densityBtn.onclick = ()=> setDensity(document.body.classList.contains('compact') ? 'comfortable' : 'compact');
 
     boot();
 
-    /* ✅ Active navigation highlight */
+    /* Active nav highlight */
     (function highlightActiveNav() {
       const here = new URL(location.href);
       const normalize = (p) => p.replace(/\/$/, "/index.html");
