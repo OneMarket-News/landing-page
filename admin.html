@@ -4,10 +4,71 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>OneMarket — Admin</title>
+  <meta name="theme-color" content="#000" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    :root { color-scheme: dark; --lime:#a3e635; }
     body{background:#000;color:#fff}
     .glass{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));backdrop-filter:blur(10px) saturate(120%)}
+    .field{border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);padding:.6rem .8rem;color:#fff;outline:none}
+    select.field{appearance:none;padding-right:2.25rem;
+      background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23cbd5e1" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5"/></svg>');
+      background-repeat:no-repeat;background-position:right .7rem center;background-size:16px 16px}
+    option{background:#0b0b0b;color:#fff}
+
+    /* Pulse sweep bar */
+    .pulse-wrap{position:relative;overflow:hidden}
+    .pulse-line{
+      position:absolute;left:-30%;top:0;height:2px;width:30%;
+      background:linear-gradient(90deg,transparent,rgba(163,230,53,.9),transparent);
+      filter:drop-shadow(0 0 6px rgba(163,230,53,.5));
+      opacity:0;animation:pulseSweep 18s infinite ease-in-out;
+    }
+    @keyframes pulseSweep{
+      0%{transform:translateX(0);opacity:0}
+      3%{opacity:.95}
+      6%{transform:translateX(440%);opacity:.2}
+      8%{opacity:0}
+      100%{transform:translateX(440%);opacity:0}
+    }
+
+    /* Cards / rows */
+    .row{transition:transform .12s ease, background .2s ease, box-shadow .2s ease}
+    .row:hover{transform:translateY(-1px)}
+    .glint{
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);
+      position:absolute;left:0;right:0;bottom:0;height:1px;opacity:0;transition:opacity .2s ease
+    }
+    .row:hover .glint{opacity:1}
+
+    /* PCI bar */
+    .pci{height:6px;border-radius:9999px;background:rgba(255,255,255,.08);overflow:hidden}
+    .pci > i{display:block;height:100%;background:linear-gradient(90deg,rgba(163,230,53,.85),rgba(163,230,53,.55))}
+
+    /* Table-ish grid */
+    .grid-head, .grid-row{display:grid;grid-template-columns: 26px 1.6fr .9fr .9fr .9fr 120px 120px 100px;gap:.75rem;align-items:center}
+    @media (max-width: 860px){
+      .grid-head, .grid-row{grid-template-columns: 26px 1.6fr .9fr .9fr 0fr 120px 100px 88px}
+      .grid-row .tags, .grid-head .tags-h{display:none}
+    }
+
+    /* Badges */
+    .badge{border-radius:9999px;background:rgba(255,255,255,.1);padding:.15rem .5rem}
+    .green{color:#bbf7d0;background:rgba(34,197,94,.18)}
+    .yellow{color:#fde68a;background:rgba(234,179,8,.18)}
+    .red{color:#fecaca;background:rgba(239,68,68,.18)}
+
+    /* Inline edit states */
+    .editable{cursor:text;border:1px dashed transparent}
+    .editable:focus{outline:none;border-color:rgba(163,230,53,.45);background:rgba(255,255,255,.06);border-style:solid}
+
+    /* Snackbar */
+    .snackbar{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:#0b0f14;border:1px solid rgba(255,255,255,.15);padding:.6rem .9rem;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.35);z-index:60;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s}
+    .snackbar.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(-2px)}
+
+    /* Selection */
+    .is-selected{outline:2px solid rgba(163,230,53,.6); outline-offset:2px; background:rgba(255,255,255,.06)}
+
   </style>
 </head>
 <body class="min-h-screen">
@@ -17,8 +78,8 @@
 
   <!-- 🧠 PROTECTED APP CONTENT -->
   <div id="app" hidden>
-    <!-- ✅ Global header -->
-    <header class="sticky top-0 z-40 backdrop-blur bg-black/40 border-b border-white/10">
+    <!-- Header with pulse -->
+    <header class="pulse-wrap sticky top-0 z-40 backdrop-blur bg-black/40 border-b border-white/10">
       <div class="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
         <a href="./index.html" class="font-black tracking-tight">
           ONE<span class="text-lime-400">MARKET</span> <span class="font-semibold text-white/80">News</span>
@@ -32,135 +93,458 @@
         </nav>
         <button onclick="omLogout()" class="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs hover:bg-white/15">Logout</button>
       </div>
+      <div class="pulse-line"></div>
     </header>
 
     <main class="mx-auto max-w-5xl px-4 py-6 space-y-6">
+
+      <!-- Top controls / metrics -->
+      <section class="glass rounded-2xl border border-white/10 p-4 sm:p-5">
+        <div class="flex flex-wrap items-center gap-3">
+          <input id="q" class="field w-full sm:w-64 placeholder:text-white/50" placeholder="Search title, tags…">
+          <select id="fBeat" class="field">
+            <option value="">All beats</option>
+            <option>AI</option><option>Markets</option><option>Energy</option>
+            <option>Chips / Hardware</option><option>Policy / Regulation</option><option>Other</option>
+          </select>
+          <select id="fStatus" class="field">
+            <option value="">All status</option>
+            <option>Published</option><option>In Review</option>
+          </select>
+          <select id="fTrust" class="field">
+            <option value="">All trust</option>
+            <option value="green">Green</option>
+            <option value="yellow">Yellow</option>
+            <option value="red">Red</option>
+          </select>
+          <select id="fSort" class="field">
+            <option value="date_desc">Newest</option>
+            <option value="date_asc">Oldest</option>
+            <option value="trust_desc">Trust (high→low)</option>
+            <option value="trust_asc">Trust (low→high)</option>
+            <option value="title_asc">Title (A→Z)</option>
+            <option value="title_desc">Title (Z→A)</option>
+          </select>
+          <button id="refresh" class="rounded-full border border-white/15 bg-white/10 px-3 py-2 text-sm hover:bg-white/15">Refresh</button>
+          <button id="clearFilters" class="rounded-full border border-white/15 bg-white/10 px-3 py-2 text-sm hover:bg-white/15">Clear</button>
+
+          <div class="ml-auto flex flex-wrap gap-2">
+            <button id="exportBtn" class="rounded-full border border-white/15 bg-white/10 px-3 py-2 text-sm hover:bg-white/15">Export JSON</button>
+            <label class="rounded-full border border-white/15 bg-white/10 px-3 py-2 text-sm hover:bg-white/15 cursor-pointer">
+              Import JSON <input id="importInput" type="file" accept="application/json" class="hidden">
+            </label>
+            <button id="seed" class="rounded-full border border-white/15 bg-white/10 px-3 py-2 text-sm hover:bg-white/15">Add 2 demo posts</button>
+            <button id="clearAll" class="rounded-full border border-white/15 bg-white/10 px-3 py-2 text-sm hover:bg-white/15">Clear ALL</button>
+          </div>
+        </div>
+
+        <!-- Counters -->
+        <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="glass rounded-xl border border-white/10 p-3">
+            <div class="text-xs text-white/60">Total</div>
+            <div id="mTotal" class="text-2xl font-bold">0</div>
+          </div>
+          <div class="glass rounded-xl border border-white/10 p-3">
+            <div class="text-xs text-white/60">Published</div>
+            <div id="mPub" class="text-2xl font-bold">0</div>
+          </div>
+          <div class="glass rounded-xl border border-white/10 p-3">
+            <div class="text-xs text-white/60">In Review</div>
+            <div id="mRev" class="text-2xl font-bold">0</div>
+          </div>
+          <div class="glass rounded-xl border border-white/10 p-3">
+            <div class="text-xs text-white/60">Avg Trust</div>
+            <div id="mTrust" class="text-2xl font-bold">—</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Create / Edit form -->
       <section class="glass rounded-2xl border border-white/10 p-6">
         <h1 class="text-xl font-semibold mb-4">Create Sample Post</h1>
         <form id="f" class="grid gap-3">
-          <input class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" id="title" placeholder="Title" required>
-          <textarea class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" id="summary" rows="4" placeholder="Summary (2–4 sentences)" required></textarea>
-          <textarea class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" id="wim" rows="2" placeholder="Why it matters (1–2 sentences)"></textarea>
+          <input class="field" id="title" placeholder="Title" required>
+          <textarea class="field" id="summary" rows="4" placeholder="Summary (2–4 sentences)" required></textarea>
+          <textarea class="field" id="wim" rows="2" placeholder="Why it matters (1–2 sentences)"></textarea>
 
           <div class="grid sm:grid-cols-2 gap-3">
-            <input class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" id="citations" placeholder="Citations (comma-separated URLs)">
-            <input class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" id="primary_url" placeholder="Primary URL (optional)">
+            <input class="field" id="citations" placeholder="Citations (comma-separated URLs)">
+            <input class="field" id="primary_url" placeholder="Primary URL (optional)">
           </div>
 
           <div class="grid sm:grid-cols-3 gap-3">
-            <select id="beat" class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none">
+            <select id="beat" class="field">
               <option value="">Beat (optional)</option>
               <option>AI</option><option>Markets</option><option>Energy</option><option>Chips / Hardware</option><option>Policy / Regulation</option><option>Other</option>
             </select>
-            <input id="tags" class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" placeholder="Tags (comma-separated)">
-            <select id="status" class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none">
+            <input id="tags" class="field" placeholder="Tags (comma-separated)">
+            <select id="status" class="field">
               <option>Published</option>
               <option>In Review</option>
             </select>
           </div>
 
-          <div class="grid sm:grid-cols-3 gap-3">
-            <select id="trustLabel" class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none">
+          <div class="grid sm:grid-cols-3 gap-3 items-center">
+            <select id="trustLabel" class="field">
               <option value="green">Trust: Green</option>
               <option value="yellow">Trust: Yellow</option>
               <option value="red">Trust: Red</option>
             </select>
-            <input id="trustScore" type="number" min="0" max="100" value="95" class="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm outline-none" placeholder="Trust score (0–100)">
-            <button class="rounded-full bg-lime-400 text-black font-semibold px-4 py-2 hover:bg-lime-300" type="submit">Save Post</button>
+            <input id="trustScore" type="number" min="0" max="100" value="95" class="field" placeholder="Trust score (0–100)">
+            <div class="flex items-center gap-2">
+              <button class="rounded-full bg-lime-400 text-black font-semibold px-4 py-2 hover:bg-lime-300" type="submit">Save Post</button>
+              <span id="msg" class="text-sm text-white/70"></span>
+            </div>
           </div>
         </form>
-        <p id="msg" class="mt-3 text-sm text-white/70"></p>
       </section>
 
-      <section class="glass rounded-2xl border border-white/10 p-6">
-        <div class="flex items-center justify-between mb-3">
+      <!-- List / Editor table -->
+      <section class="glass rounded-2xl border border-white/10 p-0">
+        <div class="px-4 pt-4 pb-2 flex items-center justify-between">
           <h2 class="text-lg font-semibold">Existing Posts</h2>
-          <div class="space-x-2">
-            <button id="seed" class="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-sm hover:bg-white/15">Add 2 demo posts</button>
-            <button id="clear" class="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-sm hover:bg-white/15">Clear ALL</button>
+          <div class="flex items-center gap-2">
+            <button id="bulkPublish" class="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-sm hover:bg-white/15">Publish</button>
+            <button id="bulkReview" class="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-sm hover:bg-white/15">Mark In Review</button>
+            <button id="bulkDelete" class="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-sm hover:bg-white/15">Delete</button>
           </div>
         </div>
-        <div id="list" class="space-y-2 text-sm"></div>
+
+        <div class="px-4 pb-4">
+          <div class="grid-head text-xs text-white/60 py-2">
+            <div><input type="checkbox" id="checkAll"></div>
+            <div>Title</div>
+            <div>Beat</div>
+            <div>Status</div>
+            <div class="tags-h">Tags</div>
+            <div>Trust</div>
+            <div>Updated</div>
+            <div class="text-right">Actions</div>
+          </div>
+        </div>
+
+        <div id="list" class="space-y-2 px-4 pb-5"></div>
       </section>
     </main>
   </div>
+
+  <!-- Snackbar -->
+  <div id="snack" class="snackbar">Saved</div>
 
   <!-- 📦 LOCAL POST LOGIC -->
   <script>
     const KEY = "onemarket.submissions";
     const $ = (id)=>document.getElementById(id);
-    const msg = $("msg"), list = $("list");
 
+    const els = {
+      q:$('q'), fBeat:$('fBeat'), fStatus:$('fStatus'), fTrust:$('fTrust'), fSort:$('fSort'),
+      refresh:$('refresh'), clearFilters:$('clearFilters'),
+      exportBtn:$('exportBtn'), importInput:$('importInput'),
+      seed:$('seed'), clearAll:$('clearAll'),
+      list:$('list'), checkAll:$('checkAll'),
+      bulkPublish:$('bulkPublish'), bulkReview:$('bulkReview'), bulkDelete:$('bulkDelete'),
+      mTotal:$('mTotal'), mPub:$('mPub'), mRev:$('mRev'), mTrust:$('mTrust'),
+      msg:$('msg'), snack:$('snack')
+    };
+
+    const form = {
+      title:$('title'), summary:$('summary'), wim:$('wim'),
+      citations:$('citations'), primary_url:$('primary_url'),
+      beat:$('beat'), tags:$('tags'), status:$('status'),
+      trustLabel:$('trustLabel'), trustScore:$('trustScore')
+    };
+
+    /* Storage helpers */
     function read(){ try{return JSON.parse(localStorage.getItem(KEY)||"[]");}catch{return[];} }
     function write(arr){ localStorage.setItem(KEY, JSON.stringify(arr)); }
-    function id(){ return "m_" + Math.random().toString(36).slice(2,10); }
+    function genId(){ return "m_" + Math.random().toString(36).slice(2,10); }
 
-    function render(){
-      const all = read().sort((a,b)=>(b.date||0)-(a.date||0));
-      if(!all.length){ list.innerHTML = `<div class="text-white/60">No posts yet.</div>`; return; }
-      list.innerHTML = all.map(s => `
-        <div class="rounded-lg border border-white/10 bg-white/5 p-3 flex items-center justify-between">
-          <div>
-            <div class="font-semibold">${s.title || "(Untitled)"} <span class="text-xs text-white/50">• ${s.status}</span></div>
-            <div class="text-white/60">${(s.beat||"")}${s.tags && s.tags.length ? " • "+s.tags.join(", ") : ""}</div>
-          </div>
-          <div class="space-x-2">
-            <a class="underline text-lime-300" href="./story.html?id=${encodeURIComponent(s.id)}" target="_blank">View</a>
-            <button data-id="${s.id}" class="del underline text-red-300">Delete</button>
-          </div>
-        </div>
-      `).join("");
-      [...document.querySelectorAll(".del")].forEach(btn=>{
-        btn.onclick = ()=>{
-          const id = btn.getAttribute("data-id");
-          const next = read().filter(x=>String(x.id)!==String(id));
-          write(next); render();
-        };
+    /* UI helpers */
+    function snack(text="Saved"){
+      els.snack.textContent = text;
+      els.snack.classList.add('show');
+      setTimeout(()=>els.snack.classList.remove('show'), 1200);
+    }
+    function fmtTime(t){ if(!t) return ""; try{ return new Date(t).toLocaleString(); }catch{ return "" } }
+    function badgeTrust(t){
+      if(!t) return "";
+      const cls = t.label==='green'?'green':t.label==='yellow'?'yellow':'red';
+      return `<span class="badge ${cls}">Trust ${Math.round(t.score||0)}% • ${t.label||''}</span>`;
+    }
+    function pci(score=0){ const s=Math.max(0,Math.min(100,Math.round(score))); return `<div class="pci mt-1"><i style="width:${s}%"></i></div>`; }
+    function esc(s){ return String(s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])) }
+
+    /* Filters */
+    function applyFiltersSort(items){
+      const q = els.q.value.trim().toLowerCase();
+      const beat = els.fBeat.value;
+      const status = els.fStatus.value;
+      const tlabel = els.fTrust.value;
+      let out = items.filter(it=>{
+        if (beat && it.beat !== beat) return false;
+        if (status && it.status !== status) return false;
+        if (tlabel && (!it.trust || it.trust.label !== tlabel)) return false;
+        if (q){
+          const hay = (it.title+" "+(Array.isArray(it.tags)?it.tags.join(","):it.tags||"")).toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
       });
+
+      switch(els.fSort.value){
+        case 'date_asc': out.sort((a,b)=> (a.date||0)-(b.date||0)); break;
+        case 'trust_desc': out.sort((a,b)=> (b?.trust?.score||0)-(a?.trust?.score||0)); break;
+        case 'trust_asc': out.sort((a,b)=> (a?.trust?.score||0)-(b?.trust?.score||0)); break;
+        case 'title_asc': out.sort((a,b)=> (a.title||'').localeCompare(b.title||'')); break;
+        case 'title_desc': out.sort((a,b)=> (b.title||'').localeCompare(a.title||'')); break;
+        default: out.sort((a,b)=> (b.date||0)-(a.date||0)); // date_desc
+      }
+      return out;
     }
 
-    $("f").addEventListener("submit", (e)=>{
+    /* Metrics */
+    function renderMetrics(items){
+      els.mTotal.textContent = items.length;
+      els.mPub.textContent   = items.filter(x=>x.status==='Published').length;
+      els.mRev.textContent   = items.filter(x=>x.status==='In Review').length;
+      const ts = items.map(x=>x?.trust?.score).filter(n=>typeof n==='number');
+      els.mTrust.textContent = ts.length ? Math.round(ts.reduce((a,b)=>a+b,0)/ts.length)+'%' : '—';
+    }
+
+    /* Row template */
+    function rowTemplate(s, idx){
+      const trust = s.trust ? badgeTrust(s.trust) : '';
+      const trustPCI = s.trust ? pci(s.trust.score) : '';
+      const tags = Array.isArray(s.tags) ? s.tags.join(", ") : (s.tags||"");
+      return `
+        <div class="row relative grid-row glass rounded-xl border border-white/10 p-3" data-id="${esc(s.id)}" data-idx="${idx}" tabindex="0">
+          <div><input type="checkbox" class="sel"></div>
+          <div class="flex flex-col gap-1">
+            <div class="editable text-sm font-semibold" contenteditable="true" data-field="title">${esc(s.title||'(Untitled)')}</div>
+            <div class="text-[11px] text-white/50">${esc(s.primary_url||'')}</div>
+          </div>
+          <div>
+            <select class="field w-full" data-field="beat" data-type="select">
+              ${['','AI','Markets','Energy','Chips / Hardware','Policy / Regulation','Other'].map(opt=>`<option ${opt===(s.beat||'')?'selected':''}>${opt||'—'}</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <select class="field w-full" data-field="status" data-type="select">
+              ${['Published','In Review'].map(opt=>`<option ${opt===(s.status||'In Review')?'selected':''}>${opt}</option>`).join('')}
+            </select>
+          </div>
+          <div class="tags">
+            <div class="editable text-sm" contenteditable="true" data-field="tags">${esc(tags)}</div>
+          </div>
+          <div>
+            <div class="flex items-center gap-1">
+              <select class="field w-full" data-field="trust.label" data-type="select">
+                ${['green','yellow','red'].map(opt=>`<option value="${opt}" ${(s?.trust?.label||'green')===opt?'selected':''}>${opt}</option>`).join('')}
+              </select>
+            </div>
+            <div class="flex items-center gap-2 mt-2">
+              <input type="number" class="field w-20" min="0" max="100" value="${Math.round(s?.trust?.score||0)}" data-field="trust.score" />
+              <div class="flex-1">${trustPCI}</div>
+            </div>
+            <div class="mt-1 text-xs">${trust}</div>
+          </div>
+          <div class="text-sm text-white/70">${fmtTime(s.date)}</div>
+          <div class="text-right flex items-center justify-end gap-2">
+            <a class="underline text-lime-300" href="./story.html?id=${encodeURIComponent(s.id)}" target="_blank">View</a>
+            <button class="underline text-red-300 del">Delete</button>
+          </div>
+          <div class="glint"></div>
+        </div>
+      `;
+    }
+
+    /* Render list */
+    function renderList(items){
+      if(!items.length){
+        els.list.innerHTML = `<div class="text-white/60 text-sm px-4 pb-4">No posts yet.</div>`;
+        return;
+      }
+      els.list.innerHTML = items.map((s,i)=>rowTemplate(s,i)).join('');
+      // wire events
+      els.list.querySelectorAll('.del').forEach(btn=>{
+        btn.onclick = ()=>{
+          const row = btn.closest('[data-id]');
+          const id = row.getAttribute('data-id');
+          if(!confirm('Delete this post?')) return;
+          const next = read().filter(x=>String(x.id)!==String(id));
+          write(next); boot();
+        };
+      });
+      els.list.querySelectorAll('[contenteditable][data-field]').forEach(el=>{
+        el.addEventListener('blur', ()=>commitInline(el));
+        el.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); el.blur(); }});
+      });
+      els.list.querySelectorAll('[data-type="select"], input[data-field="trust.score"]').forEach(el=>{
+        el.addEventListener('change', ()=>commitInline(el));
+      });
+      els.checkAll.checked = false;
+    }
+
+    /* Commit inline edits */
+    function commitInline(el){
+      const row = el.closest('[data-id]');
+      const id = row.getAttribute('data-id');
+      const field = el.getAttribute('data-field'); // e.g., "title" or "trust.score"
+      const all = read();
+      const idx = all.findIndex(x=>String(x.id)===String(id));
+      if(idx<0) return;
+
+      let val;
+      if(el.tagName==='SELECT' || el.type==='number') val = (el.value||'').trim();
+      else val = (el.textContent||'').trim();
+
+      // apply nested fields
+      const parts = field.split('.');
+      let ref = all[idx];
+      for(let i=0;i<parts.length-1;i++){
+        const k = parts[i];
+        if(typeof ref[k]!=='object' || !ref[k]) ref[k] = {};
+        ref = ref[k];
+      }
+      ref[parts.at(-1)] = parts.at(-1)==='score' ? Number(val||0) : val;
+
+      // special: tags split
+      if(field==='tags'){
+        ref[parts.at(-1)] = val ? val.split(',').map(s=>s.trim()).filter(Boolean) : [];
+      }
+
+      // update date (modified)
+      all[idx].date = Date.now();
+      write(all);
+      snack('Updated');
+      // re-render visible list item only (simple approach: full boot keeps metrics aligned)
+      boot();
+    }
+
+    /* Build filtered view & render */
+    function rebuild(){
+      const items = read();
+      renderMetrics(items);
+      const view = applyFiltersSort(items);
+      renderList(view);
+      cachedView = view;
+      selectedIdx = view.length ? 0 : -1;
+      applySelection();
+    }
+
+    /* Selection / keyboard */
+    let selectedIdx = -1, cachedView = [];
+    function applySelection(){
+      const rows = [...document.querySelectorAll('#list [data-id]')];
+      rows.forEach(r=>r.classList.remove('is-selected'));
+      if (selectedIdx>=0 && rows[selectedIdx]) rows[selectedIdx].classList.add('is-selected');
+    }
+    document.addEventListener('keydown', (e)=>{
+      if(['ArrowDown','ArrowUp','j','k'].includes(e.key)) e.preventDefault();
+      const rows = [...document.querySelectorAll('#list [data-id]')];
+      if(!rows.length) return;
+      if(e.key==='ArrowDown' || e.key==='j'){ selectedIdx=Math.min(selectedIdx+1, rows.length-1); applySelection(); rows[selectedIdx]?.scrollIntoView({block:'nearest',behavior:'smooth'}); }
+      if(e.key==='ArrowUp' || e.key==='k'){ selectedIdx=Math.max(selectedIdx-1, 0); applySelection(); rows[selectedIdx]?.scrollIntoView({block:'nearest',behavior:'smooth'}); }
+      if(e.key==='Enter' && selectedIdx>=0){
+        const id = rows[selectedIdx].getAttribute('data-id');
+        window.open(`./story.html?id=${encodeURIComponent(id)}`,'_blank');
+      }
+    });
+
+    /* Form submit (create) */
+    $('f').addEventListener('submit', (e)=>{
       e.preventDefault();
       const post = {
-        id: id(),
-        title: $("title").value.trim(),
-        summary: $("summary").value.trim(),
-        why_it_matters: $("wim").value.trim(),
-        citations: $("citations").value.trim() ? $("citations").value.split(",").map(s=>s.trim()) : [],
-        primary_url: $("primary_url").value.trim() || "",
-        beat: $("beat").value || "Other",
-        tags: $("tags").value.trim() ? $("tags").value.split(",").map(s=>s.trim()) : [],
-        status: $("status").value,
+        id: genId(),
+        title: form.title.value.trim(),
+        summary: form.summary.value.trim(),
+        why_it_matters: form.wim.value.trim(),
+        citations: form.citations.value.trim() ? form.citations.value.split(',').map(s=>s.trim()) : [],
+        primary_url: form.primary_url.value.trim() || "",
+        beat: form.beat.value || "Other",
+        tags: form.tags.value.trim() ? form.tags.value.split(',').map(s=>s.trim()) : [],
+        status: form.status.value,
         date: Date.now(),
-        trust: { label: $("trustLabel").value, score: Number($("trustScore").value||0) }
+        trust: { label: form.trustLabel.value, score: Number(form.trustScore.value||0) }
       };
       const all = read();
       all.unshift(post); write(all);
-      msg.textContent = "Saved. Open the Feed to see it.";
-      (e.target).reset(); render();
+      e.target.reset();
+      snack('Post saved'); rebuild();
     });
 
-    $("seed").onclick = ()=>{
+    /* Bulk actions */
+    function selectedIds(){
+      return [...document.querySelectorAll('#list [data-id] .sel:checked')].map(cb=>cb.closest('[data-id]').getAttribute('data-id'));
+    }
+    els.checkAll.addEventListener('change', ()=>{
+      document.querySelectorAll('#list .sel').forEach(cb=>cb.checked = els.checkAll.checked);
+    });
+    els.bulkPublish.onclick = ()=>{
+      const ids = selectedIds(); if(!ids.length) return;
+      const all = read().map(x=> ids.includes(String(x.id)) ? {...x,status:'Published',date:Date.now()} : x );
+      write(all); snack('Published'); rebuild();
+    };
+    els.bulkReview.onclick = ()=>{
+      const ids = selectedIds(); if(!ids.length) return;
+      const all = read().map(x=> ids.includes(String(x.id)) ? {...x,status:'In Review',date:Date.now()} : x );
+      write(all); snack('Moved to review'); rebuild();
+    };
+    els.bulkDelete.onclick = ()=>{
+      const ids = selectedIds(); if(!ids.length) return;
+      if(!confirm(`Delete ${ids.length} post(s)?`)) return;
+      const all = read().filter(x=> !ids.includes(String(x.id)) );
+      write(all); snack('Deleted'); rebuild();
+    };
+
+    /* Filters + sort wiring */
+    [els.q, els.fBeat, els.fStatus, els.fTrust, els.fSort].forEach(el=>{
+      el.addEventListener('input', rebuild);
+      el.addEventListener('change', rebuild);
+    });
+    els.clearFilters.onclick = ()=>{
+      els.q.value = ''; els.fBeat.value=''; els.fStatus.value=''; els.fTrust.value=''; els.fSort.value='date_desc';
+      rebuild();
+    };
+    els.refresh.onclick = rebuild;
+
+    /* Export / Import / Seed / Clear */
+    els.exportBtn.onclick = ()=>{
+      const blob = new Blob([JSON.stringify(read(), null, 2)], {type:'application/json'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'onemarket_submissions.json'; a.click(); URL.revokeObjectURL(a.href);
+    };
+    els.importInput.addEventListener('change', async (e)=>{
+      const f = e.target.files[0]; if(!f) return;
+      try{
+        const j = JSON.parse(await f.text());
+        if(!Array.isArray(j)) throw new Error('Expected an array of posts');
+        write(j); snack('Imported'); rebuild();
+      }catch(err){ alert('Import failed: '+err.message); }
+      finally{ e.target.value=''; }
+    });
+    els.seed.onclick = ()=>{
+      const id = ()=>genId();
       const demo = [
-        { title:"NVIDIA announces new inference stack", summary:"NVIDIA introduced updates to its inference stack targeting throughput and latency improvements for enterprise workloads.", citations:["https://nvidianews.nvidia.com/newsreleases?"], beat:"Chips / Hardware", tags:["NVDA","AI"], status:"Published", trust:{label:"green",score:95} },
-        { title:"FTC files complaint on ad-tech merger", summary:"The FTC initiated a complaint to block a proposed ad-tech acquisition on competition grounds.", citations:["https://www.ftc.gov/feeds/press-release.xml"], beat:"Policy / Regulation", tags:["FTC","Antitrust"], status:"Published", trust:{label:"yellow",score:82} }
+        { title:"NVIDIA announces new inference stack", summary:"NVIDIA introduced updates to its inference stack targeting throughput and latency.", citations:["https://nvidianews.nvidia.com/newsreleases?"], beat:"Chips / Hardware", tags:["NVDA","AI"], status:"Published", trust:{label:"green",score:95} },
+        { title:"FTC files complaint on ad-tech merger", summary:"FTC initiated a complaint to block an ad-tech acquisition on competition grounds.", citations:["https://www.ftc.gov/feeds/press-release.xml"], beat:"Policy / Regulation", tags:["FTC","Antitrust"], status:"In Review", trust:{label:"yellow",score:82} }
       ].map(d => ({ id:id(), date:Date.now(), why_it_matters:"Implications for the ecosystem.", primary_url:d.citations[0], ...d }));
-      const all = read(); write([...demo, ...all]); render();
+      write([...demo, ...read()]); snack('Seeded'); rebuild();
+    };
+    els.clearAll.onclick = ()=>{
+      if(!confirm('Delete ALL posts?')) return;
+      write([]); snack('Cleared'); rebuild();
     };
 
-    $("clear").onclick = ()=>{
-      if(confirm("Delete ALL posts?")){ write([]); render(); }
-    };
-
-    render();
+    /* Boot */
+    function boot(){ rebuild(); }
+    boot();
   </script>
 
   <!-- 🔐 PASSWORD GATE -->
   <script>
-    // MVP password gate — static-site friendly.
+    // Static-site friendly password gate (same realm as before)
     const AUTH_CONFIG = {
       realm: "onemarket-admin",
-      // Your SHA-256 hex (from your generator):
       passHashHex: "e32b3109ef525b451510a3d957623ea1b735c06bd43b1a392185d7eec4823967",
       sessionHours: 12,
       maxAttempts: 5
@@ -231,10 +615,9 @@
       };
     }
 
-    (function boot(){
+    (function bootAuth(){
       if(hasSession()){
         $app.hidden = false;
-        // Optional floating logout chip (comment out if you don't want it)
         const chip = document.createElement("button");
         chip.className = "fixed bottom-4 right-4 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs text-white/70 hover:bg-white/15";
         chip.textContent = "Logout";
