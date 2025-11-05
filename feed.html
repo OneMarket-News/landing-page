@@ -32,6 +32,10 @@
     .is-selected{outline:2px solid rgba(163,230,53,.6); outline-offset:2px; background:rgba(255,255,255,.06)}
     .hero{background:radial-gradient(1200px 240px at 50% 0, rgba(163,230,53,.08), transparent 55%),linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));}
     .badge{border-radius:9999px;background:rgba(255,255,255,.1);padding:.15rem .5rem}
+    .banner{display:none; margin:0 0 12px; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.15)}
+    .banner.err{display:block; background:rgba(239,68,68,.12); color:#fecaca}
+    .banner.ok{display:block; background:rgba(34,197,94,.12); color:#bbf7d0}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
   </style>
 
   <!-- Social previews -->
@@ -61,6 +65,9 @@
   </header>
 
   <main class="mx-auto max-w-5xl px-4 py-6">
+    <!-- Error / status banner -->
+    <div id="banner" class="banner mono"></div>
+
     <!-- Quick filters -->
     <div class="mb-4 flex flex-wrap gap-2 items-center">
       <input id="q" placeholder="Search title or tags…" class="field w-full sm:w-64 placeholder:text-white/50">
@@ -82,6 +89,7 @@
         <button data-quick="AI" class="rounded-full border border-white/15 px-3 py-1 bg-white/5 hover:bg-white/10">AI</button>
         <button data-quick="Markets" class="rounded-full border border-white/15 px-3 py-1 bg-white/5 hover:bg-white/10">Markets</button>
         <button data-quick="Energy" class="rounded-full border border-white/15 px-3 py-1 bg-white/5 hover:bg-white/10">Energy</button>
+        <button id="runTests" class="rounded-full border border-white/15 px-3 py-1 bg-white/5 hover:bg-white/10">Run self‑tests</button>
       </div>
     </div>
 
@@ -118,62 +126,102 @@
     document.getElementById('year').textContent = new Date().getFullYear();
 
     /* ===== SUPABASE CONFIG ===== */
+    // TODO: move anon key to env / server if this page becomes write-capable
     const SUPABASE_URL = 'https://fdwjzdvdqskcdidiervv.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZkd2p6ZHZkcXNrY2RpZGllcnZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMDk0MDgsImV4cCI6MjA3Nzc4NTQwOH0.iCEfiC1EH4Ec0GZB7y437yTA-ylyszIdhMJu-UimbCQ';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     /* ===== DOM ===== */
+    const elBanner = document.getElementById('banner');
     const elList = document.getElementById('list');
     const elQ = document.getElementById('q');
     const elBeat = document.getElementById('beat');
     const elTrust = document.getElementById('trust');
     const elRefresh = document.getElementById('refresh');
     const elClear = document.getElementById('clearFilters');
+    const elRunTests = document.getElementById('runTests');
     const root = document.getElementById('root');
 
     /* ===== Helpers ===== */
     const esc = s => String(s||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]));
+
+    function safeStringify(obj){
+      try { return JSON.stringify(obj, Object.getOwnPropertyNames(obj), 2); }
+      catch(e){ try { return JSON.stringify(obj, null, 2); } catch { return String(obj); } }
+    }
+    function showError(prefix, err){
+      const msg = (err && err.message) ? err.message : safeStringify(err);
+      console.error(`[Feed] ${prefix}:`, safeStringify(err));
+      elBanner.className = 'banner err mono';
+      elBanner.textContent = `${prefix}: ${msg}`;
+    }
+    function showOk(text){
+      elBanner.className = 'banner ok mono';
+      elBanner.textContent = text;
+    }
+
     const toArr = (v) => {
-      if (!v) return [];
+      if (v == null) return [];
       if (Array.isArray(v)) return v;
-      try { const j = JSON.parse(v); return Array.isArray(j) ? j : String(v).split(',').map(s=>s.trim()).filter(Boolean); }
+      // If Supabase returns text for legacy rows, try JSON parse, else CSV fallback
+      try { const j = typeof v === 'string' ? JSON.parse(v) : v; return Array.isArray(j) ? j : String(v).split(',').map(s=>s.trim()).filter(Boolean); }
       catch { return String(v).split(',').map(s=>s.trim()).filter(Boolean); }
     };
 
     /* ===== LOAD ITEMS (Supabase) ===== */
     async function load() {
-      const { data, error } = await supabase
-        .from('posts')
-        .select('id,title,summary,beat,tags,status,date,primary_url,citations,trust_label,trust_score')
-        .eq('status','Published')
-        .order('date',{ ascending:false })
-        .limit(200);
+      try {
+        const { data, error } = await supabase
+          .from('posts')
+          .select('id,title,summary,beat,tags,citations,status,date,primary_url,trust')
+          .eq('status','Published')
+          .order('date',{ ascending:false })
+          .limit(200);
 
-      if (error) { console.error(error); return []; }
+        if (error) { showError('Supabase select failed', error); return []; }
 
-      // Normalize to the shape the UI expects
-      return (data || []).map(r => ({
-        id: r.id,
-        title: r.title,
-        summary: r.summary,
-        beat: r.beat,
-        tags: toArr(r.tags),
-        date: r.date ? new Date(r.date).getTime() : null,
-        primary_url: r.primary_url,
-        citations: toArr(r.citations),
-        trust: (r.trust_label || r.trust_score != null) ? { label: r.trust_label || 'green', score: Number(r.trust_score||0) } : null,
-        status: 'Published'
-      }));
+        // Normalize
+        const items = (data || []).map(r => {
+          // trust may arrive as object or JSON string; normalize
+          let t = null;
+          try {
+            const raw = (typeof r.trust === 'string') ? JSON.parse(r.trust) : r.trust;
+            if (raw && typeof raw === 'object') {
+              t = { label: (raw.label || 'green'), score: Number(raw.score ?? 0) };
+            }
+          } catch (_) { /* swallow parse error; leave t = null */ }
+
+          return {
+            id: r.id,
+            title: r.title,
+            summary: r.summary,
+            beat: r.beat,
+            tags: toArr(r.tags),
+            date: r.date ? new Date(r.date).getTime() : null,
+            primary_url: r.primary_url,
+            citations: toArr(r.citations),
+            trust: t,
+            status: 'Published'
+          };
+        });
+
+        // filter out posts without trust (cannot post without trust)
+return items.filter(it => it.trust && typeof it.trust.label === 'string');
+      } catch (err) {
+        showError('Unexpected load error', err);
+        return [];
+      }
     }
 
     /* ===== BADGES ===== */
     function trustBadge(t) {
       if (!t) return "";
-      const cls = t.label==='green' ? 'bg-green-500/20 text-green-300'
-               : t.label==='yellow' ? 'bg-yellow-500/20 text-yellow-200'
+      const label = (t.label||'').toLowerCase();
+      const cls = label==='green' ? 'bg-green-500/20 text-green-300'
+               : label==='yellow' ? 'bg-yellow-500/20 text-yellow-200'
                : 'bg-red-500/20 text-red-300';
-      const s = Math.round(t.score||0);
-      return `<span class="rounded-full px-2 py-1 text-xs ${cls}">Trust ${s}% • ${esc(t.label)}</span>`;
+      const s = Math.round(Number(t.score)||0);
+      return `<span class="rounded-full px-2 py-1 text-xs ${cls}">Trust ${s}% • ${esc(label)}</span>`;
     }
 
     /* ===== PCI BAR ===== */
@@ -236,9 +284,10 @@
       spTime.textContent = top.date ? new Date(top.date).toLocaleString() : '';
       if(top.trust){
         spTrustWrap.classList.remove('hidden');
-        spTrust.textContent = `Trust ${Math.round(top.trust.score||0)}% • ${top.trust.label||''}`;
-        spTrust.className = 'badge ' + (top.trust.label==='green' ? 'text-green-300 bg-green-500/20' :
-                        top.trust.label==='yellow' ? 'text-yellow-200 bg-yellow-500/20' : 'text-red-300 bg-red-500/20');
+        const lbl = (top.trust.label||'').toLowerCase();
+        spTrust.textContent = `Trust ${Math.round(top.trust.score||0)}% • ${lbl}`;
+        spTrust.className = 'badge ' + (lbl==='green' ? 'text-green-300 bg-green-500/20' :
+                        lbl==='yellow' ? 'text-yellow-200 bg-yellow-500/20' : 'text-red-300 bg-red-500/20');
       }else{
         spTrustWrap.classList.add('hidden');
       }
@@ -259,7 +308,7 @@
 
       const filtered = items.filter(it => {
         if (beat && it.beat !== beat) return false;
-        if (tlabel && (!it.trust || it.trust.label !== tlabel)) return false;
+        if (tlabel && (!it.trust || (it.trust.label||'').toLowerCase() !== tlabel)) return false;
         if (!q) return true;
         const hay = (it.title+" "+(Array.isArray(it.tags)?it.tags.join(","):it.tags||"")).toLowerCase();
         return hay.includes(q);
@@ -359,6 +408,30 @@
       });
     });
 
+    /* ===== Smoke test / diagnostics ===== */
+    function selfTests(items){
+      const results = [];
+      function ok(name, cond){ results.push(`${cond ? '✅' : '❌'} ${name}`); return !!cond; }
+      if (!Array.isArray(items)) { results.push('❌ items is not an array'); }
+      else {
+        // Test 1: required keys present on first row
+        if (items[0]) {
+          ok('title is string', typeof items[0].title === 'string');
+          ok('tags is array', Array.isArray(items[0].tags));
+          ok('citations is array', Array.isArray(items[0].citations));
+          ok('date coerces to number or null', items[0].date === null || typeof items[0].date === 'number');
+          if (items[0].trust != null) {
+            ok('trust has label', typeof items[0].trust.label === 'string');
+            ok('trust score is number', typeof items[0].trust.score === 'number' && !Number.isNaN(items[0].trust.score));
+          }
+        } else {
+          results.push('ℹ️ No rows returned to validate.');
+        }
+      }
+      console.log('[Feed] Self-tests results:\n' + results.join('\n'));
+      showOk('Self-tests complete. Open console for details.');
+    }
+
     /* ===== Boot ===== */
     let cache = [];
     async function boot(){
@@ -371,6 +444,7 @@
     elQ.oninput = persistFilters;
     elBeat.onchange = persistFilters;
     elTrust.onchange = persistFilters;
+    elRunTests.onclick = ()=> selfTests(cache);
     boot();
 
     /* Active nav highlight */
