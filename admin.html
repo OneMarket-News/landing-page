@@ -203,11 +203,11 @@
     // ===== CONFIG =====
     const SUPA_URL = "https://fdwjzdvdqskcdidiervv.supabase.co";
     const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZkd2p6ZHZkcXNrY2RpZGllcnZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMDk0MDgsImV4cCI6MjA3Nzc4NTQwOH0.iCEfiC1EH4Ec0GZB7y437yTA-ylyszIdhMJu-UimbCQ";
-    if (!window.supabase || !window.supabase.createClient) {
-  alert("Supabase library failed to load. Check the <script> src URL.");
-}
-const supa = window.supabase ? window.supabase.createClient(SUPA_URL, SUPA_KEY) : null;
 
+    if (!window.supabase || !window.supabase.createClient) {
+      alert("Supabase library failed to load. Check the <script> src URL.");
+    }
+    const supa = window.supabase ? window.supabase.createClient(SUPA_URL, SUPA_KEY) : null;
 
     // Local fallback cache (drafts/offline)
     const LKEY = "onemarket.submissions";
@@ -247,12 +247,12 @@ const supa = window.supabase ? window.supabase.createClient(SUPA_URL, SUPA_KEY) 
       return data || [];
     }
     async function db_insert(post) {
-      const { data, error } = await supa.from('posts').insert(post).select().single();
+      const { data, error } = await supa.from('posts').insert(post).select().maybeSingle();
       if (error) throw error;
       return data;
     }
     async function db_update(id, patch) {
-      const { data, error } = await supa.from('posts').update(patch).eq('id', id).select().single();
+      const { data, error } = await supa.from('posts').update(patch).eq('id', id).select().maybeSingle();
       if (error) throw error;
       return data;
     }
@@ -379,15 +379,21 @@ const supa = window.supabase ? window.supabase.createClient(SUPA_URL, SUPA_KEY) 
       const row = el.closest('[data-id]'); const id = row.getAttribute('data-id');
       let val; if(el.tagName==='SELECT' || el.type==='number') val = (el.value||'').trim(); else val = (el.textContent||'').trim();
 
-      // build patch
       const field = el.getAttribute('data-field'); // e.g. "title" or "trust.score"
-      const patch = {}; if(field.includes('.')){
-        const [a,b] = field.split('.'); patch[a] = {}; patch[a][b] = (b==='score') ? Number(val||0) : val;
-      } else if(field==='tags') {
+      const patch = {};
+      if (field.includes('.')) {
+        // Merge into existing trust object (avoid overwriting)
+        const [root, sub] = field.split('.');
+        const current = state.find(x => String(x.id) === String(id));
+        const currentTrust = (current && current.trust) ? current.trust : {};
+        const nextTrust = { ...currentTrust, [sub]: (sub === 'score') ? Number(val||0) : val };
+        patch[root] = nextTrust;
+      } else if (field === 'tags') {
         patch.tags = val ? val.split(',').map(s=>s.trim()).filter(Boolean) : [];
       } else {
         patch[field] = val;
       }
+      // Keep an updated timestamp for ordering
       patch.date = new Date().toISOString();
 
       try{ await db_update(id, patch); snack('Updated'); await refreshAll(); }
@@ -420,7 +426,7 @@ const supa = window.supabase ? window.supabase.createClient(SUPA_URL, SUPA_KEY) 
     $('f').addEventListener('submit', async (e)=>{
       e.preventDefault();
       const post = {
-        // let Postgres generate UUID (recommended): omit id
+        // let Postgres generate UUID: omit id
         title: form.title.value.trim(),
         summary: form.summary.value.trim(),
         why_it_matters: form.wim.value.trim() || null,
