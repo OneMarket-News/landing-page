@@ -8,154 +8,326 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root { --lime:#a3e635; color-scheme: dark; }
-    body{background:#000;color:#fff}
-    .noise{background-image:radial-gradient(1px 1px at 25px 25px,rgba(255,255,255,.9)1px,transparent 0);opacity:.06}
-    .glass{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));backdrop-filter:blur(10px) saturate(120%)}
-    .field{width:100%;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);padding:.7rem .85rem;color:#fff;outline:none}
-    table td,table th{padding:.6rem .75rem}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-    .fade-in{animation:fadeIn .4s ease-out both}
-    .modal-bg{background:linear-gradient(180deg,rgba(0,0,0,.6),rgba(0,0,0,.8))}
-    select.field{ background-color:rgba(255,255,255,.06)!important; color:#fff; appearance:none; padding-right:2.25rem;
-      background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23cbd5e1" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5"/></svg>');
-      background-repeat:no-repeat; background-position:right .7rem center; background-size:16px 16px;
+    body { background:#000; color:#fff; font-family: system-ui, -apple-system, BlinkMacSystemFont, -sans-serif; }
+
+    .noise {
+      background-image:radial-gradient(1px 1px at 25px 25px,rgba(255,255,255,.9)1px,transparent 0);
+      opacity:.06;
     }
-    option{ background:#0b0b0b; color:#fff; }
-    .btn{border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.07); border-radius:9999px; padding:.45rem .75rem; font-size:.85rem}
-    .btn:hover{background:rgba(255,255,255,.12)}
-    .btn-primary{background:var(--lime); color:#000; border-color:transparent}
-    .btn-primary:hover{background:#c3f36a}
-    .badge{border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); border-radius:9999px; padding:.15rem .5rem; font-size:.75rem}
-    .trust-green{background:rgba(34,197,94,.18); color:#86efac}
-    .trust-yellow{background:rgba(234,179,8,.2); color:#fde68a}
-    .trust-red{background:rgba(239,68,68,.2); color:#fca5a5}
-    .link{color:#bef264; text-decoration:underline; text-underline-offset:2px}
-    .snackbar{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:#0b0f14;border:1px solid rgba(255,255,255,.15);padding:.6rem .9rem;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.35);z-index:60;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s}
-    .snackbar.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(-2px)}
-    .row-hover:hover{background:rgba(255,255,255,.03)}
-    .drawer{position:fixed;top:0;right:0;height:100%;width:min(640px,92vw);background:#06090f;border-left:1px solid rgba(255,255,255,.12);transform:translateX(100%);transition:transform .25s ease;z-index:60}
-    .drawer.open{transform:translateX(0)}
-    .drawer .head{position:sticky;top:0;background:rgba(0,0,0,.5);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.12)}
+    .glass {
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
+      backdrop-filter:blur(10px) saturate(120%);
+    }
+    .field {
+      width:100%;
+      border-radius:12px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      padding:.7rem .85rem;
+      color:#fff;
+      outline:none;
+      font-size:.8rem;
+      transition:border-color .16s, background-color .16s, box-shadow .16s;
+    }
+    .field::placeholder { color:rgba(255,255,255,.42); }
+    .field:focus {
+      border-color:rgba(163,230,53,.7);
+      background:rgba(255,255,255,.08);
+      box-shadow:0 0 0 1px rgba(163,230,53,.2);
+    }
+
+    select.field {
+      appearance:none;
+      padding-right:2.25rem;
+      background-color:rgba(255,255,255,.06) !important;
+      background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23cbd5e1" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5"/></svg>');
+      background-repeat:no-repeat;
+      background-position:right .7rem center;
+      background-size:16px 16px;
+    }
+    option { background:#050608; color:#fff; }
+
+    .btn {
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(255,255,255,.07);
+      border-radius:9999px;
+      padding:.45rem .8rem;
+      font-size:.78rem;
+      color:#fff;
+      display:inline-flex;
+      align-items:center;
+      gap:.25rem;
+      transition:background .16s, border-color .16s, transform .08s;
+      white-space:nowrap;
+    }
+    .btn:hover {
+      background:rgba(255,255,255,.13);
+    }
+    .btn:active {
+      transform:translateY(1px);
+    }
+    .btn-primary {
+      background:var(--lime);
+      color:#000;
+      border-color:transparent;
+      font-weight:600;
+    }
+    .btn-primary:hover {
+      background:#c3f36a;
+    }
+
+    .badge {
+      border-radius:9999px;
+      padding:.15rem .5rem;
+      font-size:.7rem;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.04);
+      display:inline-flex;
+      align-items:center;
+      gap:.25rem;
+    }
+    .trust-green  { background:rgba(22,163,74,.18);  color:#86efac; }
+    .trust-yellow { background:rgba(234,179,8,.20); color:#fde68a; }
+    .trust-red    { background:rgba(239,68,68,.20); color:#fca5a5; }
+
+    .link {
+      color:#bef264;
+      text-decoration:underline;
+      text-underline-offset:2px;
+    }
+
+    table td, table th { padding:.6rem .6rem; font-size:.78rem; }
+    .row-hover:hover { background:rgba(255,255,255,.03); }
+
+    .snackbar {
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:18px;
+      background:#05070b;
+      border:1px solid rgba(255,255,255,.15);
+      padding:.55rem .9rem;
+      border-radius:12px;
+      box-shadow:0 10px 30px rgba(0,0,0,.35);
+      z-index:70;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .18s, transform .18s;
+      font-size:.72rem;
+      display:flex;
+      align-items:center;
+      gap:.35rem;
+    }
+    .snackbar.show {
+      opacity:1;
+      pointer-events:auto;
+      transform:translateX(-50%) translateY(-2px);
+    }
+
+    .modal-bg {
+      background:linear-gradient(180deg,rgba(0,0,0,.7),rgba(0,0,0,.9));
+    }
+
+    .drawer {
+      position:fixed;
+      top:0;
+      right:0;
+      height:100%;
+      width:min(640px,92vw);
+      background:#020308;
+      border-left:1px solid rgba(255,255,255,.14);
+      transform:translateX(100%);
+      transition:transform .22s ease-out;
+      z-index:65;
+      display:flex;
+      flex-direction:column;
+    }
+    .drawer.open { transform:translateX(0); }
+    .drawer .head {
+      position:sticky;
+      top:0;
+      background:rgba(0,0,0,.85);
+      backdrop-filter:blur(14px);
+      border-bottom:1px solid rgba(255,255,255,.14);
+      z-index:1;
+    }
+
+    @media (max-width:768px) {
+      table td, table th { padding-left:.4rem; padding-right:.4rem; }
+      .btn { font-size:.72rem; padding:.4rem .65rem; }
+    }
   </style>
 </head>
 <body>
   <!-- Background -->
   <div class="fixed inset-0 -z-10">
-    <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/25 to-black/80"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-black/35 via-black/25 to-black/85"></div>
     <div aria-hidden class="noise absolute inset-0"></div>
   </div>
 
   <!-- Password Gate Modal -->
   <div id="gate" class="fixed inset-0 z-50 flex items-center justify-center modal-bg">
     <div class="glass w-full max-w-md rounded-2xl border border-white/15 p-6">
-      <div class="flex items-center gap-2 text-white/70 text-xs">
-        <span class="h-2 w-2 rounded-full bg-lime-400"></span> Editor Access
+      <div class="flex items-center gap-2 text-white/70 text-[10px]">
+        <span class="h-2 w-2 rounded-full bg-lime-400"></span>
+        Editor access only
       </div>
-      <h1 class="mt-2 text-2xl font-black">Enter Passcode</h1>
-      <p class="mt-1 text-white/70 text-sm">This page is for OneMarket editors only.</p>
+      <h1 class="mt-2 text-2xl font-black tracking-tight">Enter passcode</h1>
+      <p class="mt-1 text-white/72 text-xs">
+        This review console is for OneMarket editors. Submissions are stored locally in this browser.
+      </p>
 
       <form id="gateForm" class="mt-5 space-y-3">
-        <input id="pass" type="password" placeholder="Editor passcode" class="field" autocomplete="current-password" />
+        <input
+          id="pass"
+          type="password"
+          placeholder="Editor passcode"
+          class="field"
+          autocomplete="current-password"
+        />
         <button class="w-full btn btn-primary">Unlock</button>
-        <div id="gateMsg" class="text-sm text-red-300"></div>
+        <div id="gateMsg" class="text-xs text-red-300 mt-1"></div>
       </form>
-      <p class="mt-4 text-center text-xs text-white/50">Change the secret in <code>EDITOR_PASS</code> inside the script.</p>
+
+      <p class="mt-4 text-center text-[9px] text-white/50">
+        Configure your secret in <code>EDITOR_PASS</code> inside <span class="text-white/70">editor.html</span>.
+      </p>
     </div>
   </div>
 
   <!-- Drawer inspector -->
   <aside id="drawer" class="drawer">
-    <div class="head px-5 py-3 flex items-center justify-between">
-      <div class="text-sm text-white/70">Submission Inspector</div>
-      <button id="closeDrawer" class="btn">Close</button>
+    <div class="head px-5 py-3 flex items-center justify-between gap-3">
+      <div class="flex flex-col">
+        <span class="text-[10px] text-white/55 uppercase tracking-wide">Inspector</span>
+        <span class="text-xs text-white/75">Review details, sources &amp; trust score</span>
+      </div>
+      <button id="closeDrawer" class="btn text-[10px]">Close</button>
     </div>
-    <div class="p-5 space-y-4">
-      <div id="dTitle" class="text-xl font-semibold"></div>
-      <div class="text-white/60 text-sm" id="dMeta"></div>
+    <div class="flex-1 overflow-y-auto p-5 space-y-4">
+      <div id="dTitle" class="text-lg font-semibold"></div>
+      <div id="dMeta" class="text-[10px] text-white/55"></div>
 
       <div class="glass rounded-xl border border-white/10 p-4">
-        <div class="text-white/70 text-xs mb-1">Summary</div>
-        <div id="dSummary" class="text-sm text-white/90 whitespace-pre-wrap"></div>
+        <div class="text-[9px] text-white/60 mb-1 uppercase tracking-wide">Summary</div>
+        <div id="dSummary" class="text-xs text-white/90 whitespace-pre-wrap leading-relaxed"></div>
       </div>
 
       <div class="glass rounded-xl border border-white/10 p-4">
-        <div class="text-white/70 text-xs mb-1">Why it matters</div>
-        <div id="dWim" class="text-sm text-white/90 whitespace-pre-wrap"></div>
+        <div class="text-[9px] text-white/60 mb-1 uppercase tracking-wide">Why it matters</div>
+        <div id="dWim" class="text-xs text-white/90 whitespace-pre-wrap leading-relaxed"></div>
       </div>
 
       <div class="glass rounded-xl border border-white/10 p-4">
-        <div class="text-white/70 text-xs mb-2">Sources</div>
-        <ul id="dCites" class="list-disc pl-5 text-sm space-y-1"></ul>
-        <div class="mt-2 text-sm">
-          Primary:&nbsp;<span id="dPrimary"></span>
-        </div>
+        <div class="text-[9px] text-white/60 mb-2 uppercase tracking-wide">Sources</div>
+        <div class="text-[10px] text-white/55 mb-1">Primary</div>
+        <div id="dPrimary" class="text-xs mb-2"></div>
+        <div class="text-[10px] text-white/55 mb-1">Secondary</div>
+        <ul id="dCites" class="list-disc pl-5 text-xs space-y-1"></ul>
       </div>
 
       <div class="glass rounded-xl border border-white/10 p-4 space-y-2">
-        <div class="text-white/70 text-xs">Trust</div>
-        <div class="flex items-center gap-2">
-          <select id="dTrustLabel" class="field w-36">
-            <option value="green">green</option><option value="yellow">yellow</option><option value="red">red</option>
+        <div class="text-[9px] text-white/60 uppercase tracking-wide">Trust score</div>
+        <div class="flex flex-wrap items-center gap-2">
+          <select id="dTrustLabel" class="field w-32">
+            <option value="green">green</option>
+            <option value="yellow">yellow</option>
+            <option value="red">red</option>
           </select>
-          <input id="dTrustScore" class="field w-24" type="number" min="0" max="100" />
-          <button id="dSaveTrust" class="btn btn-primary">Save Trust</button>
+          <input
+            id="dTrustScore"
+            class="field w-20"
+            type="number"
+            min="0"
+            max="100"
+            placeholder="%"
+          />
+          <button id="dSaveTrust" class="btn btn-primary text-[10px]">Save</button>
         </div>
-        <div id="dTrustBadge" class="mt-1"></div>
+        <div id="dTrustBadge" class="mt-1 text-[10px]"></div>
       </div>
 
       <div class="glass rounded-xl border border-white/10 p-4">
-        <div class="text-white/70 text-xs mb-2">Editor Notes</div>
-        <textarea id="dNote" class="field" rows="4" placeholder="Leave a note for the writer (saved locally)"></textarea>
-        <div class="flex items-center gap-2 mt-2">
-          <button id="dAddNote" class="btn btn-primary">Add Note</button>
-          <button id="dPublish" class="btn">Publish</button>
-          <button id="dNeedsEdits" class="btn">Needs Edits</button>
-          <button id="dReject" class="btn" style="border-color:rgba(239,68,68,.4)">Reject</button>
+        <div class="text-[9px] text-white/60 uppercase tracking-wide mb-1">Editor notes</div>
+        <textarea
+          id="dNote"
+          class="field text-xs"
+          rows="3"
+          placeholder="Short note for the writer or for your team (saved locally)."
+        ></textarea>
+        <div class="flex flex-wrap items-center gap-2 mt-2">
+          <button id="dAddNote" class="btn btn-primary text-[10px]">Add note</button>
+          <button id="dPublish" class="btn text-[10px]">Mark published</button>
+          <button id="dNeedsEdits" class="btn text-[10px]">Needs edits</button>
+          <button
+            id="dReject"
+            class="btn text-[10px]"
+            style="border-color:rgba(239,68,68,.45)"
+          >Reject</button>
         </div>
-        <ul id="dNotesList" class="mt-3 space-y-2 text-sm"></ul>
+        <ul id="dNotesList" class="mt-3 space-y-2 text-xs"></ul>
       </div>
     </div>
   </aside>
 
+  <!-- Main app -->
   <main id="app" class="mx-auto hidden max-w-7xl p-6 space-y-6">
-    <!-- Header / Actions -->
-    <header class="flex flex-wrap items-center justify-between gap-3">
+    <!-- Brand + nav -->
+    <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="text-2xl font-black">Editor Review</h1>
-        <p class="text-white/70 text-sm">Local prototype — reads/writes <code>onemarket.submissions</code> in this browser.</p>
+        <a href="./feed.html" class="font-black tracking-tight text-sm sm:text-base">
+          ONE<span class="text-lime-400">MARKET</span>
+          <span class="font-semibold text-white/80">News</span>
+        </a>
+        <p class="text-[10px] text-white/55 mt-0.5">
+          Editor Review — triage community submissions with clear sources &amp; trust scoring.
+        </p>
       </div>
-      <div class="flex flex-wrap items-center gap-2">
+      <nav class="text-[10px] sm:text-xs text-white/70 flex items-center gap-3">
+        <a class="hover:text-white" href="./feed.html">Feed</a>
+        <a class="hover:text-white" href="./dashboard.html">Writer</a>
+        <a class="hover:text-white" href="./admin.html">Admin</a>
+        <a class="hover:text-white" href="./settings.html">Settings</a>
+        <button id="lock" class="btn text-[10px]">Lock</button>
+      </nav>
+    </div>
+
+    <!-- Stats / import-export -->
+    <section class="glass rounded-2xl border border-white/10 p-4 flex flex-wrap items-center gap-3">
+      <div class="grid grid-cols-3 gap-3 w-full sm:w-auto">
+        <div class="glass rounded-xl border border-white/10 px-3 py-2">
+          <div class="text-[9px] text-white/60">Total submissions</div>
+          <div id="statTotal" class="text-xl font-semibold">0</div>
+        </div>
+        <div class="glass rounded-xl border border-white/10 px-3 py-2">
+          <div class="text-[9px] text-white/60">In review</div>
+          <div id="statReview" class="text-xl font-semibold">0</div>
+        </div>
+        <div class="glass rounded-xl border border-white/10 px-3 py-2">
+          <div class="text-[9px] text-white/60">Published</div>
+          <div id="statPublished" class="text-xl font-semibold text-lime-400">0</div>
+        </div>
+      </div>
+      <div class="ml-auto flex flex-wrap items-center gap-2">
         <button id="exportCsv" class="btn btn-primary">Export CSV</button>
         <button id="exportJson" class="btn">Export JSON</button>
-        <label class="btn cursor-pointer">Import JSON <input id="importJson" type="file" accept="application/json" class="hidden"></label>
-        <a href="./admin.html" class="btn">Open Admin</a>
-        <a href="./settings.html" class="btn">Settings</a>
-        <button id="lock" class="btn">Lock</button>
+        <label class="btn cursor-pointer">
+          Import JSON
+          <input id="importJson" type="file" accept="application/json" class="hidden" />
+        </label>
       </div>
-    </header>
-
-    <!-- Stats -->
-    <section class="grid gap-4 sm:grid-cols-3">
-      <div class="glass rounded-2xl p-5">
-        <p class="text-white/60 text-sm">Total Submissions</p>
-        <p id="statTotal" class="mt-1 text-3xl font-bold">0</p>
-      </div>
-      <div class="glass rounded-2xl p-5">
-        <p class="text-white/60 text-sm">In Review</p>
-        <p id="statReview" class="mt-1 text-3xl font-bold">0</p>
-      </div>
-      <div class="glass rounded-2xl p-5">
-        <p class="text-white/60 text-sm">Published</p>
-        <p id="statPublished" class="mt-1 text-3xl font-bold">0</p>
-      </div>
+      <p class="w-full text-[9px] text-white/45 mt-1">
+        This prototype reads &amp; writes <code>onemarket.submissions</code> in <strong>localStorage</strong> only.
+        Wire this into Supabase or your CMS when ready.
+      </p>
     </section>
 
     <!-- Toolbar -->
-    <section class="glass rounded-2xl p-5 fade-in">
+    <section class="glass rounded-2xl border border-white/10 p-4">
       <div class="flex flex-wrap items-end gap-3">
         <div>
-          <label class="block text-xs text-white/60 mb-1">Status</label>
-          <select id="fStatus" class="field w-44">
+          <label class="block text-[9px] text-white/60 mb-1">Status</label>
+          <select id="fStatus" class="field w-40">
             <option value="">All</option>
             <option>In Review</option>
             <option>Needs Edits</option>
@@ -164,8 +336,8 @@
           </select>
         </div>
         <div>
-          <label class="block text-xs text-white/60 mb-1">Beat</label>
-          <select id="fBeat" class="field w-48">
+          <label class="block text-[9px] text-white/60 mb-1">Beat</label>
+          <select id="fBeat" class="field w-40">
             <option value="">All</option>
             <option>AI</option>
             <option>Chips / Hardware</option>
@@ -176,30 +348,32 @@
           </select>
         </div>
         <div class="flex-1 min-w-[220px]">
-          <label class="block text-xs text-white/60 mb-1">Search title / tags</label>
-          <input id="fSearch" class="field" placeholder="Type to filter…" />
+          <label class="block text-[9px] text-white/60 mb-1">Search title / tags</label>
+          <input id="fSearch" class="field" placeholder="Filter quickly by keyword…" />
         </div>
 
-        <div class="flex items-center gap-2 ml-auto">
-          <button id="bulkPublish" class="btn btn-primary">Publish Selected</button>
-          <button id="bulkReview"  class="btn">Mark Review</button>
-          <button id="bulkNeeds"   class="btn">Needs Edits</button>
-          <button id="bulkReject"  class="btn" style="border-color:rgba(239,68,68,.4)">Reject</button>
-          <button id="clearFilters" class="btn">Clear</button>
+        <div class="flex flex-wrap items-center gap-2 ml-auto">
+          <button id="bulkPublish" class="btn btn-primary">Publish selected</button>
+          <button id="bulkReview"  class="btn">Mark review</button>
+          <button id="bulkNeeds"   class="btn">Needs edits</button>
+          <button id="bulkReject"  class="btn" style="border-color:rgba(239,68,68,.45)">Reject</button>
+          <button id="clearFilters" class="btn">Clear filters</button>
         </div>
       </div>
     </section>
 
     <!-- Table -->
-    <section class="glass rounded-2xl p-5 fade-in">
-      <div class="mt-1 overflow-x-auto">
+    <section class="glass rounded-2xl border border-white/10 p-4">
+      <div class="overflow-x-auto">
         <table class="min-w-full text-sm">
           <thead>
             <tr class="text-left text-white/60 border-b border-white/10">
-              <th><input id="checkAll" type="checkbox" /></th>
+              <th class="w-6">
+                <input id="checkAll" type="checkbox" class="accent-lime-400" />
+              </th>
               <th>Title</th>
               <th>Beat</th>
-              <th>Date</th>
+              <th>Submitted</th>
               <th>Status</th>
               <th>Trust</th>
               <th>Primary</th>
@@ -210,426 +384,738 @@
         </table>
       </div>
     </section>
+
+    <footer class="text-center text-[9px] text-white/55">
+      © <span id="year"></span> OneMarket News, LLC.
+    </footer>
   </main>
 
-  <div id="snack" class="snackbar">Saved</div>
+  <!-- Snackbar -->
+  <div id="snack" class="snackbar">
+    <span>✅</span><span>Saved</span>
+  </div>
 
   <script>
-    /* ====== Config ====== */
-    const EDITOR_PASS = 'onemarket2025'; // <-- change this
-    const LS_AUTH_KEY = 'onemarket.editor.auth';
-    const LS_SUBS_KEY = 'onemarket.submissions';
+    /* ========= Config ========= */
+    const EDITOR_PASS  = 'onemarket2025'; // change for real deployment
+    const LS_AUTH_KEY  = 'onemarket.editor.auth';
+    const LS_SUBS_KEY  = 'onemarket.submissions';
 
-    /* ====== Gate Logic ====== */
-    const gate = document.getElementById('gate');
-    const app  = document.getElementById('app');
-    const gateForm = document.getElementById('gateForm');
-    const gateMsg  = document.getElementById('gateMsg');
-    const passInp  = document.getElementById('pass');
+    /* ========= Small helpers ========= */
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) =>
+      String(s || '').replace(/[&<>"']/g, (m) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[m]);
 
-    function unlock(){
+    const readSubs = () => {
+      try { return JSON.parse(localStorage.getItem(LS_SUBS_KEY) || '[]'); }
+      catch { return []; }
+    };
+    const writeSubs = (v) => localStorage.setItem(LS_SUBS_KEY, JSON.stringify(v));
+
+    const snackEl = $('snack');
+    function snack(text = 'Saved') {
+      snackEl.children[1].textContent = text;
+      snackEl.classList.add('show');
+      setTimeout(() => snackEl.classList.remove('show'), 1300);
+    }
+
+    function trustBadge(t) {
+      if (!t) return '';
+      const label = (t.label || '').toLowerCase();
+      const s = Math.round(Number(t.score) || 0);
+      const cls =
+        label === 'green'
+          ? 'trust-green'
+          : label === 'yellow'
+          ? 'trust-yellow'
+          : 'trust-red';
+      return `<span class="badge ${cls}">Trust ${s}% • ${esc(label)}</span>`;
+    }
+
+    /* ========= Gate ========= */
+    const gate = $('gate');
+    const app  = $('app');
+    const gateForm = $('gateForm');
+    const gateMsg  = $('gateMsg');
+    const passInp  = $('pass');
+
+    function unlock() {
       gate.classList.add('hidden');
       app.classList.remove('hidden');
       localStorage.setItem(LS_AUTH_KEY, '1');
       render();
     }
-    function lock(){
+
+    function lock() {
       localStorage.removeItem(LS_AUTH_KEY);
       location.reload();
     }
-    if(localStorage.getItem(LS_AUTH_KEY) === '1'){ unlock(); }
 
-    gateForm.addEventListener('submit', (e)=>{
+    if (localStorage.getItem(LS_AUTH_KEY) === '1') {
+      gate.classList.add('hidden');
+      app.classList.remove('hidden');
+    }
+
+    gateForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const val = passInp.value.trim();
-      if(val === EDITOR_PASS){ unlock(); }
-      else{
+      if (val === EDITOR_PASS) {
+        unlock();
+      } else {
         gateMsg.textContent = 'Incorrect passcode. Try again.';
         passInp.value = '';
         passInp.focus();
       }
     });
-    document.getElementById('lock').addEventListener('click', lock);
 
-    /* ====== Data Helpers ====== */
-    const read = () => { try { return JSON.parse(localStorage.getItem(LS_SUBS_KEY)||'[]'); } catch { return []; } };
-    const write = (v) => localStorage.setItem(LS_SUBS_KEY, JSON.stringify(v));
-    const esc = s => String(s||'').replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
-    const toLocal = ts => { try { return new Date(ts).toLocaleString(); } catch { return ""; } };
+    const lockBtn = $('lock');
+    if (lockBtn) lockBtn.addEventListener('click', lock);
 
-    function trustBadge(t) {
-      if(!t) return '';
-      const c = t.label==='green' ? 'trust-green' : t.label==='yellow' ? 'trust-yellow' : 'trust-red';
-      const s = Math.round(t.score||0);
-      return `<span class="badge ${c}">Trust ${s}% • ${esc(t.label||'')}</span>`;
+    /* ========= Year ========= */
+    $('year').textContent = new Date().getFullYear();
+
+    /* ========= Filters ========= */
+    const fStatus = $('fStatus');
+    const fBeat   = $('fBeat');
+    const fSearch = $('fSearch');
+    const clearFiltersBtn = $('clearFilters');
+
+    const FILTER_KEYS = {
+      s: 'editor.f.status',
+      b: 'editor.f.beat',
+      q: 'editor.f.q'
+    };
+
+    function loadFilters() {
+      const s = localStorage.getItem(FILTER_KEYS.s);
+      const b = localStorage.getItem(FILTER_KEYS.b);
+      const q = localStorage.getItem(FILTER_KEYS.q);
+      if (s !== null) fStatus.value = s;
+      if (b !== null) fBeat.value = b;
+      if (q !== null) fSearch.value = q;
     }
 
-    /* ====== UI Refs ====== */
-    const rowsEl = document.getElementById('rows');
-    const statTotal = document.getElementById('statTotal');
-    const statReview = document.getElementById('statReview');
-    const statPublished = document.getElementById('statPublished');
+    function saveFilters() {
+      localStorage.setItem(FILTER_KEYS.s, fStatus.value);
+      localStorage.setItem(FILTER_KEYS.b, fBeat.value);
+      localStorage.setItem(FILTER_KEYS.q, fSearch.value);
+    }
 
-    const fStatus = document.getElementById('fStatus');
-    const fBeat   = document.getElementById('fBeat');
-    const fSearch = document.getElementById('fSearch');
-    const clearFiltersBtn = document.getElementById('clearFilters');
+    [fStatus, fBeat].forEach((el) =>
+      el.addEventListener('change', () => {
+        saveFilters();
+        render();
+      })
+    );
+    fSearch.addEventListener('input', () => {
+      saveFilters();
+      render();
+    });
 
-    const checkAll = document.getElementById('checkAll');
-    const bulkPublish = document.getElementById('bulkPublish');
-    const bulkReview  = document.getElementById('bulkReview');
-    const bulkNeeds   = document.getElementById('bulkNeeds');
-    const bulkReject  = document.getElementById('bulkReject');
+    clearFiltersBtn.addEventListener('click', () => {
+      fStatus.value = '';
+      fBeat.value = '';
+      fSearch.value = '';
+      saveFilters();
+      render();
+    });
 
-    const snackEl = document.getElementById('snack');
-    const snack = (t='Saved')=>{ snackEl.textContent=t; snackEl.classList.add('show'); setTimeout(()=>snackEl.classList.remove('show'), 1200); }
-
-    /* ====== Drawer Inspector ====== */
-    const drawer = document.getElementById('drawer');
-    const closeDrawer = document.getElementById('closeDrawer');
-    const dTitle = document.getElementById('dTitle');
-    const dMeta = document.getElementById('dMeta');
-    const dSummary = document.getElementById('dSummary');
-    const dWim = document.getElementById('dWim');
-    const dCites = document.getElementById('dCites');
-    const dPrimary = document.getElementById('dPrimary');
-    const dTrustLabel = document.getElementById('dTrustLabel');
-    const dTrustScore = document.getElementById('dTrustScore');
-    const dTrustBadge = document.getElementById('dTrustBadge');
-    const dSaveTrust = document.getElementById('dSaveTrust');
-    const dNote = document.getElementById('dNote');
-    const dAddNote = document.getElementById('dAddNote');
-    const dNotesList = document.getElementById('dNotesList');
-    const dPublish = document.getElementById('dPublish');
-    const dNeedsEdits = document.getElementById('dNeedsEdits');
-    const dReject = document.getElementById('dReject');
+    /* ========= Drawer ========= */
+    const drawer = $('drawer');
+    const closeDrawer = $('closeDrawer');
+    const dTitle = $('dTitle');
+    const dMeta = $('dMeta');
+    const dSummary = $('dSummary');
+    const dWim = $('dWim');
+    const dCites = $('dCites');
+    const dPrimary = $('dPrimary');
+    const dTrustLabel = $('dTrustLabel');
+    const dTrustScore = $('dTrustScore');
+    const dTrustBadge = $('dTrustBadge');
+    const dSaveTrust = $('dSaveTrust');
+    const dNote = $('dNote');
+    const dAddNote = $('dAddNote');
+    const dNotesList = $('dNotesList');
+    const dPublish = $('dPublish');
+    const dNeedsEdits = $('dNeedsEdits');
+    const dReject = $('dReject');
 
     let selectedId = null;
-    function openDrawer(row){
-      selectedId = row.id;
-      dTitle.textContent = row.title || '(Untitled)';
-      dMeta.textContent = [
-        row.beat || '',
-        (row.tags && row.tags.length ? '• ' + row.tags.join(', ') : ''),
-        row.date ? '• ' + new Date(row.date).toLocaleString() : ''
-      ].filter(Boolean).join(' ');
-      dSummary.textContent = row.summary || '';
-      dWim.textContent = row.why_it_matters || '';
-      dCites.innerHTML = '';
-      const cites = Array.isArray(row.citations)? row.citations : [];
-      cites.forEach(u=>{
-        const li = document.createElement('li');
-        li.innerHTML = `<a class="link" href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>`;
-        dCites.appendChild(li);
-      });
-      dPrimary.innerHTML = row.primary_url ? `<a class="link" href="${esc(row.primary_url)}" target="_blank" rel="noopener">${esc(row.primary_url)}</a>` : '<span class="text-white/40">—</span>';
-      dTrustLabel.value = row.trust?.label || 'green';
-      dTrustScore.value = typeof row.trust?.score === 'number' ? row.trust.score : 90;
-      dTrustBadge.innerHTML = trustBadge(row.trust);
-      renderNotes(row);
-      drawer.classList.add('open');
-    }
-    function renderNotes(row){
+
+    function renderNotes(row) {
       const notes = Array.isArray(row.editor_notes) ? row.editor_notes : [];
-      dNotesList.innerHTML = notes.length ? '' : '<li class="text-white/50">No notes yet.</li>';
-      notes.forEach((n, idx)=>{
+      if (!notes.length) {
+        dNotesList.innerHTML = '<li class="text-white/45 text-[10px]">No notes yet.</li>';
+        return;
+      }
+      dNotesList.innerHTML = '';
+      notes.forEach((n, idx) => {
         const li = document.createElement('li');
-        li.className = 'glass rounded-lg border border-white/10 p-3';
+        li.className = 'glass rounded-lg border border-white/10 p-3 text-xs';
         li.innerHTML = `
-          <div class="text-xs text-white/60">${new Date(n.ts).toLocaleString()}</div>
-          <div class="mt-1">${esc(n.text||'')}</div>
-          <div class="mt-2"><button data-delnote="${idx}" class="btn text-xs" style="border-color:rgba(239,68,68,.4)">Delete</button></div>
+          <div class="text-[9px] text-white/55">${new Date(n.ts).toLocaleString()}</div>
+          <div class="mt-1">${esc(n.text || '')}</div>
+          <div class="mt-2">
+            <button data-delnote="${idx}" class="btn text-[9px]" style="border-color:rgba(239,68,68,.45)">Delete</button>
+          </div>
         `;
         dNotesList.appendChild(li);
       });
-      dNotesList.querySelectorAll('button[data-delnote]').forEach(b=>{
-        b.addEventListener('click', ()=>{
-          const idx = +b.getAttribute('data-delnote');
-          const data = read();
-          const i = data.findIndex(x=>x.id===selectedId);
-          if(i>-1){
-            data[i].editor_notes = (data[i].editor_notes||[]);
-            data[i].editor_notes.splice(idx,1);
-            write(data); openDrawer(data[i]); snack('Note deleted');
+      dNotesList.querySelectorAll('button[data-delnote]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const idx = +btn.getAttribute('data-delnote');
+          const data = readSubs();
+          const i = data.findIndex((x) => x.id === selectedId);
+          if (i > -1) {
+            data[i].editor_notes = data[i].editor_notes || [];
+            data[i].editor_notes.splice(idx, 1);
+            writeSubs(data);
+            openDrawer(data[i]);
+            snack('Note deleted');
           }
         });
       });
     }
-    closeDrawer.addEventListener('click', ()=> drawer.classList.remove('open'));
-    dSaveTrust.addEventListener('click', ()=>{
-      const data = read();
-      const i = data.findIndex(x=>x.id===selectedId);
-      if(i>-1){
-        data[i].trust = { label: dTrustLabel.value, score: Math.max(0,Math.min(100,Number(dTrustScore.value||0))) };
-        write(data); dTrustBadge.innerHTML = trustBadge(data[i].trust); snack('Trust saved');
-        render(); // refresh table badges
+
+    function openDrawer(row) {
+      selectedId = row.id;
+      dTitle.textContent = row.title || '(Untitled)';
+      const tagStr =
+        row.tags && row.tags.length ? '• ' + row.tags.join(', ') : '';
+      const dateStr = row.date
+        ? '• ' + new Date(row.date).toLocaleString()
+        : '';
+      dMeta.textContent = [row.beat || '', tagStr, dateStr]
+        .filter(Boolean)
+        .join(' ');
+      dSummary.textContent = row.summary || '';
+      dWim.textContent = row.why_it_matters || '';
+
+      dCites.innerHTML = '';
+      const cites = Array.isArray(row.citations) ? row.citations : [];
+      cites.forEach((u) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<a class="link" href="${esc(
+          u
+        )}" target="_blank" rel="noopener">${esc(u)}</a>`;
+        dCites.appendChild(li);
+      });
+
+      dPrimary.innerHTML = row.primary_url
+        ? `<a class="link" href="${esc(
+            row.primary_url
+          )}" target="_blank" rel="noopener">${esc(row.primary_url)}</a>`
+        : '<span class="text-white/40">—</span>';
+
+      dTrustLabel.value = row.trust?.label || 'green';
+      dTrustScore.value =
+        typeof row.trust?.score === 'number' ? row.trust.score : 90;
+      dTrustBadge.innerHTML = trustBadge(row.trust);
+
+      renderNotes(row);
+      drawer.classList.add('open');
+    }
+
+    closeDrawer.addEventListener('click', () =>
+      drawer.classList.remove('open')
+    );
+
+    dSaveTrust.addEventListener('click', () => {
+      const data = readSubs();
+      const i = data.findIndex((x) => x.id === selectedId);
+      if (i > -1) {
+        data[i].trust = {
+          label: dTrustLabel.value,
+          score: Math.max(
+            0,
+            Math.min(100, Number(dTrustScore.value || 0))
+          )
+        };
+        writeSubs(data);
+        dTrustBadge.innerHTML = trustBadge(data[i].trust);
+        snack('Trust updated');
+        render();
       }
     });
-    dAddNote.addEventListener('click', ()=>{
-      const text = dNote.value.trim(); if(!text) return;
-      const data = read();
-      const i = data.findIndex(x=>x.id===selectedId);
-      if(i>-1){
+
+    dAddNote.addEventListener('click', () => {
+      const text = dNote.value.trim();
+      if (!text) return;
+      const data = readSubs();
+      const i = data.findIndex((x) => x.id === selectedId);
+      if (i > -1) {
         data[i].editor_notes = data[i].editor_notes || [];
         data[i].editor_notes.unshift({ ts: Date.now(), text });
-        write(data); dNote.value=''; openDrawer(data[i]); snack('Note added');
+        writeSubs(data);
+        dNote.value = '';
+        openDrawer(data[i]);
+        snack('Note added');
       }
     });
-    dPublish.addEventListener('click', ()=> setStatusSelected('Published'));
-    dNeedsEdits.addEventListener('click', ()=> setStatusSelected('Needs Edits'));
-    dReject.addEventListener('click', ()=> setStatusSelected('Rejected'));
-    function setStatusSelected(status){
-      const data = read();
-      const i = data.findIndex(x=>x.id===selectedId);
-      if(i>-1){
+
+    function setStatusFromDrawer(status) {
+      const data = readSubs();
+      const i = data.findIndex((x) => x.id === selectedId);
+      if (i > -1) {
         data[i].status = status;
-        if(status==='Published' && !data[i].date) data[i].date = Date.now();
-        write(data); snack(status); render();
+        if (status === 'Published' && !data[i].date) {
+          data[i].date = Date.now();
+        }
+        writeSubs(data);
+        snack(status);
+        render();
       }
     }
 
-    /* ====== Filters Persist ====== */
-    const KEY_F = { s:'editor.f.status', b:'editor.f.beat', q:'editor.f.q' };
-    function saveFilters(){ localStorage.setItem(KEY_F.s, fStatus.value); localStorage.setItem(KEY_F.b, fBeat.value); localStorage.setItem(KEY_F.q, fSearch.value); }
-    function loadFilters(){
-      const s = localStorage.getItem(KEY_F.s); if(s!==null) fStatus.value=s;
-      const b = localStorage.getItem(KEY_F.b); if(b!==null) fBeat.value=b;
-      const q = localStorage.getItem(KEY_F.q); if(q!==null) fSearch.value=q;
+    dPublish.addEventListener('click', () =>
+      setStatusFromDrawer('Published')
+    );
+    dNeedsEdits.addEventListener('click', () =>
+      setStatusFromDrawer('Needs Edits')
+    );
+    dReject.addEventListener('click', () =>
+      setStatusFromDrawer('Rejected')
+    );
+
+    /* ========= Table & stats ========= */
+    const rowsEl = $('rows');
+    const statTotal = $('statTotal');
+    const statReview = $('statReview');
+    const statPublished = $('statPublished');
+    const checkAll = $('checkAll');
+
+    function applyFilters(list) {
+      const s = (fStatus.value || '').toLowerCase();
+      const b = (fBeat.value || '').toLowerCase();
+      const q = (fSearch.value || '').toLowerCase();
+
+      return list
+        .filter((r) => {
+          const okS = !s || (r.status || '').toLowerCase() === s;
+          const okB = !b || (r.beat || '').toLowerCase() === b;
+          const hay = (
+            (r.title || '') +
+            ' ' +
+            (Array.isArray(r.tags) ? r.tags.join(',') : r.tags || '')
+          ).toLowerCase();
+          const okQ = !q || hay.includes(q);
+          return okS && okB && okQ;
+        })
+        .sort((a, b2) => (b2.date || 0) - (a.date || 0));
     }
-    [fStatus,fBeat].forEach(el=> el.addEventListener('change', ()=>{ saveFilters(); render(); }));
-    fSearch.addEventListener('input', ()=>{ saveFilters(); render(); });
-    clearFiltersBtn.addEventListener('click', ()=>{ fStatus.value=''; fBeat.value=''; fSearch.value=''; saveFilters(); render(); });
 
-    /* ====== Render ====== */
-    function render(){
-      const data = read();
+    function render() {
+      const data = readSubs();
 
-      // Stats
+      // stats
       statTotal.textContent = data.length;
-      statReview.textContent = data.filter(r=>r.status==='In Review').length;
-      statPublished.textContent = data.filter(r=>r.status==='Published').length;
+      statReview.textContent = data.filter(
+        (r) => r.status === 'In Review'
+      ).length;
+      statPublished.textContent = data.filter(
+        (r) => r.status === 'Published'
+      ).length;
 
-      // Filters
-      const s = (fStatus.value||'').toLowerCase();
-      const b = (fBeat.value||'').toLowerCase();
-      const q = (fSearch.value||'').toLowerCase();
-
-      const filtered = data.filter(r=>{
-        const okS = !s || (r.status||'').toLowerCase() === s;
-        const okB = !b || (r.beat||'').toLowerCase() === b;
-        const hay = ((r.title||'') + ' ' + (Array.isArray(r.tags)?r.tags.join(','):r.tags||'')).toLowerCase();
-        const okQ = !q || hay.includes(q);
-        return okS && okB && okQ;
-      }).sort((a,b)=> (b.date||0)-(a.date||0));
-
+      const filtered = applyFilters(data);
       rowsEl.innerHTML = '';
-      filtered.forEach(r=>{
-        const tr = document.createElement('tr');
-        tr.className = 'border-t border-white/10 align-top row-hover';
+
+      if (!filtered.length) {
+        rowsEl.innerHTML =
+          '<tr><td colspan="8" class="pt-4 text-[10px] text-white/55">No submissions match the current filters.</td></tr>';
+        return;
+      }
+
+      filtered.forEach((r) => {
         const idx = data.indexOf(r);
         const storyUrl = `/story.html?id=${encodeURIComponent(r.id)}`;
-        const shareX = `https://x.com/intent/tweet?text=${encodeURIComponent(r.title||'OneMarket story')}&url=${encodeURIComponent(location.origin+storyUrl)}&via=OneMarketNews`;
+        const shareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(
+          r.title || 'OneMarket story'
+        )}&url=${encodeURIComponent(
+          location.origin + storyUrl
+        )}&via=OneMarketNews`;
+
+        const tr = document.createElement('tr');
+        tr.className =
+          'border-t border-white/10 align-top row-hover';
+
         tr.innerHTML = `
-          <td><input type="checkbox" data-check="${esc(r.id)}" /></td>
-          <td class="align-top">
-            <button class="text-left hover:underline" data-open="${esc(r.id)}">${esc(r.title||'(Untitled)')}</button>
-            ${r.tags && r.tags.length ? `<div class="text-white/50 text-xs mt-1">${esc(r.tags.join(', '))}</div>` : ''}
+          <td class="pt-2">
+            <input type="checkbox" data-check="${esc(
+              r.id
+            )}" class="accent-lime-400" />
           </td>
-          <td class="align-top text-white/70">${esc(r.beat||'')}</td>
-          <td class="align-top text-white/70 whitespace-nowrap">${r.date ? toLocal(r.date) : ''}</td>
-          <td class="align-top">
-            <select data-idx="${idx}" class="field w-40">
-              ${['In Review','Needs Edits','Published','Rejected'].map(s=>`<option ${r.status===s?'selected':''}>${s}</option>`).join('')}
+          <td>
+            <button class="text-left hover:underline text-[0.8rem]" data-open="${esc(
+              r.id
+            )}">
+              ${esc(r.title || '(Untitled)')}
+            </button>
+            ${
+              r.tags && r.tags.length
+                ? `<div class="text-white/45 text-[9px] mt-1">${esc(
+                    r.tags.join(', ')
+                  )}</div>`
+                : ''
+            }
+          </td>
+          <td class="text-white/70">${esc(r.beat || '')}</td>
+          <td class="text-white/60 whitespace-nowrap">
+            ${r.date ? new Date(r.date).toLocaleString() : ''}
+          </td>
+          <td>
+            <select data-idx="${idx}" class="field w-32">
+              ${['In Review','Needs Edits','Published','Rejected']
+                .map(
+                  (s) =>
+                    `<option ${
+                      (r.status || 'In Review') === s
+                        ? 'selected'
+                        : ''
+                    }>${s}</option>`
+                )
+                .join('')}
             </select>
           </td>
-          <td class="align-top">
-            <div class="flex items-center gap-2">
-              <select data-trust="${idx}" class="field w-32">
-                ${['green','yellow','red'].map(l=>`<option ${r.trust&&r.trust.label===l?'selected':''} value="${l}">${l}</option>`).join('')}
+          <td>
+            <div class="flex flex-wrap items-center gap-2">
+              <select data-trust="${idx}" class="field w-24">
+                ${['green','yellow','red']
+                  .map(
+                    (l) =>
+                      `<option value="${l}" ${
+                        r.trust && r.trust.label === l
+                          ? 'selected'
+                          : ''
+                      }>${l}</option>`
+                  )
+                  .join('')}
               </select>
-              <input type="number" min="0" max="100" value="${r.trust?Number(r.trust.score||0):90}" data-score="${idx}" class="field w-20">
+              <input
+                type="number"
+                min="0"
+                max="100"
+                data-score="${idx}"
+                class="field w-16"
+                value="${
+                  r.trust
+                    ? Number(r.trust.score || 0)
+                    : 90
+                }"
+              />
             </div>
-            <div class="mt-1">${trustBadge(r.trust)}</div>
+            <div class="mt-1 text-[9px]">
+              ${trustBadge(r.trust)}
+            </div>
           </td>
-          <td class="align-top">
-            ${r.primary_url ? `<a class="link" href="${esc(r.primary_url)}" target="_blank" rel="noopener">Open</a>` : '<span class="text-white/40">—</span>'}
+          <td>
+            ${
+              r.primary_url
+                ? `<a class="link text-[0.75rem]" href="${esc(
+                    r.primary_url
+                  )}" target="_blank" rel="noopener">Open</a>`
+                : '<span class="text-white/40 text-[0.75rem]">—</span>'
+            }
           </td>
-          <td class="align-top">
-            <div class="flex flex-wrap gap-2">
-              <a href="${storyUrl}" target="_blank" class="btn">View</a>
-              <a href="${shareX}" target="_blank" rel="noopener" class="btn" aria-label="Share on X">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="-mb-[2px] inline"><path d="M20.945 3H17.3l-4.01 5.05L8.19 3H3l7.01 9.26L3.3 21h3.65l4.22-5.31L15.82 21H21l-7.28-9.62L20.945 3zM16.52 19.5l-7.2-9.47 1.17-1.48 7.38 9.63-1.35 1.32zm-9.93-15h.96l7.02 9.16-.96 1.2L6.59 4.5z"/></svg>
-                Share
-              </a>
-              <button data-copy="${location.origin+storyUrl}" class="btn">Copy link</button>
-              <button data-open="${esc(r.id)}" class="btn btn-primary">Inspect</button>
-              <button data-pub="${idx}" class="btn btn-primary">Publish</button>
-              <button data-ne="${idx}" class="btn">Needs Edits</button>
-              <button data-rej="${idx}" class="btn" style="border-color:rgba(239,68,68,.4)">Reject</button>
-              <button data-del="${idx}" class="btn" style="border-color:rgba(239,68,68,.4)">Delete</button>
+          <td>
+            <div class="flex flex-wrap gap-1">
+              <button class="btn text-[9px]" data-open="${esc(
+                r.id
+              )}">Inspect</button>
+              <a href="${storyUrl}" target="_blank" class="btn text-[9px]">View</a>
+              <a href="${shareUrl}" target="_blank" rel="noopener" class="btn text-[9px]">Share</a>
+              <button class="btn text-[9px]" data-copy="${location.origin +
+                storyUrl}">Copy link</button>
+              <button class="btn btn-primary text-[9px]" data-pub="${idx}">Publish</button>
+              <button class="btn text-[9px]" data-ne="${idx}">Needs edits</button>
+              <button class="btn text-[9px]" style="border-color:rgba(239,68,68,.45)" data-rej="${idx}">Reject</button>
+              <button class="btn text-[9px]" style="border-color:rgba(239,68,68,.45)" data-del="${idx}">Delete</button>
             </div>
           </td>
         `;
+
         rowsEl.appendChild(tr);
       });
 
-      // Open drawer
-      rowsEl.querySelectorAll('button[data-open]').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
+      // Inspect
+      rowsEl.querySelectorAll('button[data-open]').forEach((btn) => {
+        btn.addEventListener('click', () => {
           const id = btn.getAttribute('data-open');
-          const data = read();
-          const row = data.find(x=>String(x.id)===String(id));
-          if(row) openDrawer(row);
+          const dataAll = readSubs();
+          const row = dataAll.find(
+            (x) => String(x.id) === String(id)
+          );
+          if (row) openDrawer(row);
         });
       });
 
-      // Status change
-      rowsEl.querySelectorAll('select[data-idx]').forEach(sel=>{
-        sel.addEventListener('change', e=>{
+      // Status inline
+      rowsEl.querySelectorAll('select[data-idx]').forEach((sel) => {
+        sel.addEventListener('change', (e) => {
           const idx = +e.target.dataset.idx;
-          const data = read();
-          data[idx].status = e.target.value;
-          write(data); snack('Status updated'); render();
+          const dataAll = readSubs();
+          if (!dataAll[idx]) return;
+          dataAll[idx].status = e.target.value;
+          if (
+            e.target.value === 'Published' &&
+            !dataAll[idx].date
+          ) {
+            dataAll[idx].date = Date.now();
+          }
+          writeSubs(dataAll);
+          snack('Status updated');
+          render();
         });
       });
 
-      // Trust label/score
-      rowsEl.querySelectorAll('select[data-trust]').forEach(sel=>{
-        sel.addEventListener('change', e=>{
+      // Trust label
+      rowsEl.querySelectorAll('select[data-trust]').forEach((sel) => {
+        sel.addEventListener('change', (e) => {
           const idx = +e.target.dataset.trust;
-          const data = read();
-          data[idx].trust = data[idx].trust || {};
-          data[idx].trust.label = e.target.value;
-          if(typeof data[idx].trust.score !== 'number') data[idx].trust.score = 90;
-          write(data); render();
+          const dataAll = readSubs();
+          if (!dataAll[idx]) return;
+          dataAll[idx].trust = dataAll[idx].trust || {};
+          dataAll[idx].trust.label = e.target.value;
+          if (
+            typeof dataAll[idx].trust.score !== 'number'
+          ) {
+            dataAll[idx].trust.score = 90;
+          }
+          writeSubs(dataAll);
+          render();
         });
       });
-      rowsEl.querySelectorAll('input[data-score]').forEach(inp=>{
-        inp.addEventListener('change', e=>{
+
+      // Trust score
+      rowsEl.querySelectorAll('input[data-score]').forEach((inp) => {
+        inp.addEventListener('change', (e) => {
           const idx = +e.target.dataset.score;
-          const v = Math.max(0, Math.min(100, Number(e.target.value||0)));
-          const data = read();
-          data[idx].trust = data[idx].trust || {};
-          data[idx].trust.score = v;
-          write(data); render();
+          const val = Math.max(
+            0,
+            Math.min(100, Number(e.target.value || 0))
+          );
+          const dataAll = readSubs();
+          if (!dataAll[idx]) return;
+          dataAll[idx].trust = dataAll[idx].trust || {};
+          dataAll[idx].trust.score = val;
+          writeSubs(dataAll);
+          render();
         });
       });
 
       // Quick actions
-      rowsEl.querySelectorAll('button[data-copy]').forEach(btn=>{
-        btn.addEventListener('click', async ()=>{
-          try{ await navigator.clipboard.writeText(btn.getAttribute('data-copy')); btn.textContent='Copied!'; setTimeout(()=>btn.textContent='Copy link',1200);}catch{}
-        });
-      });
-      rowsEl.querySelectorAll('button[data-pub]').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-          const idx = +btn.getAttribute('data-pub');
-          const data = read();
-          data[idx].status = 'Published';
-          if(!data[idx].date) data[idx].date = Date.now();
-          write(data); snack('Published'); render();
-        });
-      });
-      rowsEl.querySelectorAll('button[data-ne]').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-          const idx = +btn.getAttribute('data-ne');
-          const data = read();
-          data[idx].status = 'Needs Edits';
-          write(data); snack('Marked Needs Edits'); render();
-        });
-      });
-      rowsEl.querySelectorAll('button[data-rej]').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-          const idx = +btn.getAttribute('data-rej');
-          const data = read();
-          data[idx].status = 'Rejected';
-          write(data); snack('Rejected'); render();
-        });
-      });
-      rowsEl.querySelectorAll('button[data-del]').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-          const idx = +btn.getAttribute('data-del');
-          const data = read();
-          if(confirm('Delete this submission?')){
-            data.splice(idx,1);
-            write(data); snack('Deleted'); render();
+      rowsEl.querySelectorAll('button[data-copy]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const url = btn.getAttribute('data-copy');
+          try {
+            await navigator.clipboard.writeText(url);
+            btn.textContent = 'Copied';
+            setTimeout(() => (btn.textContent = 'Copy link'), 1000);
+          } catch {
+            snack('Copy failed');
           }
         });
       });
 
-      // Bulk check
-      checkAll.checked = false;
-      checkAll.addEventListener('change', ()=>{
-        rowsEl.querySelectorAll('input[type="checkbox"][data-check]').forEach(cb=> cb.checked = checkAll.checked);
+      rowsEl.querySelectorAll('button[data-pub]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const idx = +btn.getAttribute('data-pub');
+          const dataAll = readSubs();
+          if (!dataAll[idx]) return;
+          dataAll[idx].status = 'Published';
+          if (!dataAll[idx].date) dataAll[idx].date = Date.now();
+          writeSubs(dataAll);
+          snack('Published');
+          render();
+        });
       });
+
+      rowsEl.querySelectorAll('button[data-ne]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const idx = +btn.getAttribute('data-ne');
+          const dataAll = readSubs();
+          if (!dataAll[idx]) return;
+          dataAll[idx].status = 'Needs Edits';
+          writeSubs(dataAll);
+          snack('Marked needs edits');
+          render();
+        });
+      });
+
+      rowsEl.querySelectorAll('button[data-rej]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const idx = +btn.getAttribute('data-rej');
+          const dataAll = readSubs();
+          if (!dataAll[idx]) return;
+          dataAll[idx].status = 'Rejected';
+          writeSubs(dataAll);
+          snack('Rejected');
+          render();
+        });
+      });
+
+      rowsEl.querySelectorAll('button[data-del]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const idx = +btn.getAttribute('data-del');
+          const dataAll = readSubs();
+          if (!dataAll[idx]) return;
+          if (
+            confirm(
+              'Delete this local record? This does not unsend anything already exported.'
+            )
+          ) {
+            dataAll.splice(idx, 1);
+            writeSubs(dataAll);
+            snack('Deleted');
+            render();
+          }
+        });
+      });
+
+      // Reset master checkbox visual (logic handled globally)
+      checkAll.checked = false;
     }
 
-    /* ====== Bulk Actions ====== */
-    function applyBulk(status){
-      const ids = Array.from(rowsEl.querySelectorAll('input[type="checkbox"][data-check]:checked')).map(cb=>cb.getAttribute('data-check'));
-      if(!ids.length) return;
-      const data = read();
-      ids.forEach(id=>{
-        const i = data.findIndex(r=>String(r.id)===String(id));
-        if(i>-1){
+    /* ========= Bulk actions ========= */
+    function applyBulk(status) {
+      const ids = Array.from(
+        rowsEl.querySelectorAll(
+          'input[type="checkbox"][data-check]:checked'
+        )
+      ).map((cb) => cb.getAttribute('data-check'));
+
+      if (!ids.length) return;
+
+      const data = readSubs();
+      ids.forEach((id) => {
+        const i = data.findIndex(
+          (r) => String(r.id) === String(id)
+        );
+        if (i > -1) {
           data[i].status = status;
-          if(status==='Published' && !data[i].date) data[i].date = Date.now();
+          if (
+            status === 'Published' &&
+            !data[i].date
+          ) {
+            data[i].date = Date.now();
+          }
         }
       });
-      write(data);
+      writeSubs(data);
       snack(`${status} (${ids.length})`);
       render();
     }
-    bulkPublish.addEventListener('click', ()=> applyBulk('Published'));
-    bulkReview.addEventListener('click',  ()=> applyBulk('In Review'));
-    bulkNeeds.addEventListener('click',   ()=> applyBulk('Needs Edits'));
-    bulkReject.addEventListener('click',  ()=> applyBulk('Rejected'));
 
-    /* ====== Export / Import ====== */
-    document.getElementById('exportCsv').onclick = ()=>{
-      const data = read();
-      const rows = [['ID','Title','Beat','Date','Status','Trust Label','Trust Score','Primary URL','Tags','WhyItMatters','Summary']].concat(
-        data.map(r=>[
-          r.id||'',
-          r.title||'',
-          r.beat||'',
-          new Date(r.date||Date.now()).toISOString(),
-          r.status||'',
-          r.trust?.label||'',
-          typeof r.trust?.score==='number'?r.trust.score:'',
-          r.primary_url||'',
-          Array.isArray(r.tags)?r.tags.join('|'):(r.tags||''),
-          r.why_it_matters||'',
-          r.summary||''
-        ])
+    $('bulkPublish').addEventListener('click', () =>
+      applyBulk('Published')
+    );
+    $('bulkReview').addEventListener('click', () =>
+      applyBulk('In Review')
+    );
+    $('bulkNeeds').addEventListener('click', () =>
+      applyBulk('Needs Edits')
+    );
+    $('bulkReject').addEventListener('click', () =>
+      applyBulk('Rejected')
+    );
+
+    // master checkbox (single handler)
+    checkAll.addEventListener('change', () => {
+      const checked = checkAll.checked;
+      rowsEl
+        .querySelectorAll(
+          'input[type="checkbox"][data-check]'
+        )
+        .forEach((cb) => {
+          cb.checked = checked;
+        });
+    });
+
+    /* ========= Export / Import ========= */
+    $('exportCsv').addEventListener('click', () => {
+      const data = readSubs();
+      const header = [
+        'ID',
+        'Title',
+        'Beat',
+        'Date',
+        'Status',
+        'Trust Label',
+        'Trust Score',
+        'Primary URL',
+        'Tags',
+        'WhyItMatters',
+        'Summary'
+      ];
+      const rows = data.map((r) => [
+        r.id || '',
+        r.title || '',
+        r.beat || '',
+        r.date ? new Date(r.date).toISOString() : '',
+        r.status || '',
+        r.trust?.label || '',
+        typeof r.trust?.score === 'number'
+          ? r.trust.score
+          : '',
+        r.primary_url || '',
+        Array.isArray(r.tags)
+          ? r.tags.join('|')
+          : r.tags || '',
+        r.why_it_matters || '',
+        r.summary || ''
+      ]);
+      const csv =
+        [header, ...rows]
+          .map((row) =>
+            row
+              .map((v) =>
+                `"${String(v).replace(/"/g, '""')}"`
+              )
+              .join(',')
+          )
+          .join('\n');
+      downloadBlob(
+        'onemarket_submissions.csv',
+        csv,
+        'text/csv;charset=utf-8;'
       );
-      const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-      downloadBlob('onemarket_submissions.csv', csv, 'text/csv;charset=utf-8;');
-    };
+    });
 
-    document.getElementById('exportJson').onclick = ()=>{
-      const data = read();
-      downloadBlob('onemarket_submissions.json', JSON.stringify(data, null, 2), 'application/json');
-    };
+    $('exportJson').addEventListener('click', () => {
+      const data = readSubs();
+      downloadBlob(
+        'onemarket_submissions.json',
+        JSON.stringify(data, null, 2),
+        'application/json'
+      );
+    });
 
-    document.getElementById('importJson').addEventListener('change', async (e)=>{
+    $('importJson').addEventListener('change', async (e) => {
       const file = e.target.files[0];
-      if(!file) return;
-      try{
+      if (!file) return;
+      try {
         const text = await file.text();
         const data = JSON.parse(text);
-        if(!Array.isArray(data)) throw new Error('Invalid JSON format');
-        write(data); render();
-        alert('Imported successfully.');
-      }catch(err){
+        if (!Array.isArray(data)) {
+          throw new Error('File must be a JSON array');
+        }
+        writeSubs(data);
+        snack('Imported JSON');
+        render();
+      } catch (err) {
         alert('Import failed: ' + err.message);
-      }finally{
+      } finally {
         e.target.value = '';
       }
     });
 
-    function downloadBlob(filename, content, type){
-      const blob = new Blob([content], {type});
+    function downloadBlob(filename, content, type) {
+      const blob = new Blob([content], { type });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = filename;
@@ -637,18 +1123,36 @@
       URL.revokeObjectURL(a.href);
     }
 
-    /* ====== Keyboard Shortcuts ====== */
-    document.addEventListener('keydown', (e)=>{
-      const isMac = navigator.platform.toUpperCase().includes('MAC');
+    /* ========= Keyboard shortcuts ========= */
+    document.addEventListener('keydown', (e) => {
+      const isMac = navigator.platform
+        .toUpperCase()
+        .includes('MAC');
       const mod = isMac ? e.metaKey : e.ctrlKey;
-      if(mod && e.key.toLowerCase()==='f'){ e.preventDefault(); fSearch.focus(); }
-      if(mod && e.key.toLowerCase()==='p'){ e.preventDefault(); applyBulk('Published'); }
-      if(mod && e.key.toLowerCase()==='r'){ e.preventDefault(); applyBulk('In Review'); }
+      if (!app.classList.contains('hidden')) {
+        if (mod && e.key.toLowerCase() === 'f') {
+          e.preventDefault();
+          fSearch.focus();
+        }
+        if (mod && e.key.toLowerCase() === 'p') {
+          e.preventDefault();
+          applyBulk('Published');
+        }
+        if (mod && e.key.toLowerCase() === 'r') {
+          e.preventDefault();
+          applyBulk('In Review');
+        }
+      }
     });
 
-    // Boot
-    loadFilters();
-    render();
+    /* ========= Boot ========= */
+    if (!app.classList.contains('hidden')) {
+      loadFilters();
+      render();
+    } else {
+      // still load filters so they're ready on unlock
+      loadFilters();
+    }
   </script>
 </body>
 </html>
