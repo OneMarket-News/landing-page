@@ -7,6 +7,7 @@
   <meta name="theme-color" content="#000" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     :root { color-scheme: dark; --lime:#a3e635; }
     body { background:#000; color:#fff }
@@ -14,7 +15,7 @@
       background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
       backdrop-filter:blur(10px) saturate(120%);
     }
-    .field{
+    .field {
       border-radius:9999px;
       border:1px solid rgba(255,255,255,.15);
       background:rgba(255,255,255,.06);
@@ -23,7 +24,7 @@
       outline:none;
       font-size:0.8rem;
     }
-    select.field{
+    select.field {
       appearance:none;
       padding-right:2.25rem;
       background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23cbd5e1" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5"/></svg>');
@@ -31,9 +32,10 @@
       background-position:right .7rem center;
       background-size:16px 16px;
     }
-    option{ background:#0b0b0b; color:#fff; }
-    .pulse-wrap{position:relative;overflow:hidden}
-    .pulse-line{
+    option { background:#0b0b0b; color:#fff; }
+
+    .pulse-wrap { position:relative; overflow:hidden }
+    .pulse-line {
       position:absolute;
       left:-30%;
       top:0;
@@ -44,24 +46,27 @@
       opacity:.0;
       animation:pulseSweep 18s infinite ease-in-out;
     }
-    @keyframes pulseSweep{
+    @keyframes pulseSweep {
       0%{transform:translateX(0);opacity:0}
       3%{opacity:.95}
       6%{transform:translateX(440%);opacity:.2}
       8%{opacity:0}
       100%{transform:translateX(440%);opacity:0}
     }
-    .breath{transition:opacity .3s ease}
-    .breath.dim{opacity:.97}
-    .card{
+
+    .breath { transition:opacity .3s ease }
+    .breath.dim { opacity:.97 }
+
+    .card {
       transition:transform .15s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
     }
-    .card:hover{
+    .card:hover {
       transform:translateY(-2px);
       box-shadow:0 14px 40px rgba(0,0,0,.65);
       border-color:rgba(163,230,53,.25);
     }
-    .glint{
+
+    .glint {
       background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);
       position:absolute;
       inset:auto 0 0 0;
@@ -69,48 +74,55 @@
       opacity:.0;
       transition:opacity .2s ease;
     }
-    .card:hover .glint{opacity:1}
-    .pci{
+    .card:hover .glint { opacity:1 }
+
+    .pci {
       height:6px;
       border-radius:9999px;
       background:rgba(255,255,255,.05);
       overflow:hidden;
     }
-    .pci>i{
+    .pci > i {
       display:block;
       height:100%;
       background:linear-gradient(90deg,rgba(163,230,53,.85),rgba(163,230,53,.55));
     }
-    .is-selected{
+
+    .is-selected {
       outline:2px solid rgba(163,230,53,.55);
       outline-offset:2px;
       background:rgba(255,255,255,.03);
     }
-    .hero{
+
+    .hero {
       background:
         radial-gradient(1200px 240px at 50% 0, rgba(163,230,53,.08), transparent 55%),
         linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
     }
-    .badge{
+
+    .badge {
       border-radius:9999px;
       background:rgba(255,255,255,.08);
       padding:.15rem .55rem;
       font-size:0.6rem;
     }
-    .banner{
+
+    .banner {
       display:none;
       margin:0 0 12px;
       padding:10px 12px;
       border-radius:12px;
       border:1px solid rgba(255,255,255,.15);
     }
-    .banner.err{display:block; background:rgba(239,68,68,.12); color:#fecaca}
-    .banner.ok{display:block; background:rgba(34,197,94,.12); color:#bbf7d0}
-    .mono{
+    .banner.err { display:block; background:rgba(239,68,68,.12); color:#fecaca }
+    .banner.ok  { display:block; background:rgba(34,197,94,.12); color:#bbf7d0 }
+
+    .mono {
       font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       font-size:0.7rem;
     }
-    .pill{
+
+    .pill {
       border-radius:9999px;
       border:1px solid rgba(255,255,255,.15);
       padding:.35rem .85rem;
@@ -119,10 +131,10 @@
       cursor:pointer;
       transition:all .18s ease;
     }
-    .pill:hover{
+    .pill:hover {
       background:rgba(255,255,255,.08);
     }
-    .pill-active{
+    .pill-active {
       background:rgba(255,255,255,.12);
       color:var(--lime);
       border-color:rgba(163,230,53,.5);
@@ -138,8 +150,9 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@OneMarketNews">
 </head>
+
 <body class="min-h-screen breath" id="root">
-  <!-- Header with pulse line -->
+  <!-- Header -->
   <header class="pulse-wrap sticky top-0 z-40 backdrop-blur bg-black/40 border-b border-white/10">
     <div class="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between gap-4">
       <div>
@@ -147,7 +160,7 @@
           ONE<span class="text-lime-400">MARKET</span> <span class="font-semibold text-white/80">News</span>
         </a>
         <p class="text-[10px] text-white/55 mt-0.5">
-          Ranked tech & markets stories with transparent sources and trust scores.
+          Ranked tech &amp; markets stories with transparent sources and trust scores.
         </p>
       </div>
       <nav class="text-[10px] sm:text-xs text-white/70 flex items-center gap-3">
@@ -161,16 +174,16 @@
   </header>
 
   <main class="mx-auto max-w-5xl px-4 py-6">
-    <!-- Error / status banner (dev/debug only) -->
+    <!-- Dev / status banner -->
     <div id="banner" class="banner mono"></div>
 
     <!-- Filters row -->
-    <div class="mb-4 flex flex-wrap gap-2 items-center">
+    <div class="mb-3 flex flex-wrap gap-2 items-center">
       <input
         id="q"
         placeholder="Search titles or tags (e.g. NVIDIA, AI, energy)…"
         class="field w-full sm:w-64 placeholder:text-white/45"
-      >
+      />
 
       <select id="beat" class="field text-[0.7rem]">
         <option value="">Topic: All</option>
@@ -212,16 +225,14 @@
         <button data-quick="AI" class="pill">AI</button>
         <button data-quick="Markets" class="pill">Markets</button>
         <button data-quick="Energy" class="pill">Energy</button>
-        <button
-          id="runTests"
-          class="pill"
-        >
-          Run self-tests
-        </button>
+        <button id="runTests" class="pill">Run self-tests</button>
       </div>
     </div>
 
-    <!-- Spotlight (top story) -->
+    <!-- Trending strip -->
+    <div id="trending" class="mb-4 text-[9px] text-white/55 hidden"></div>
+
+    <!-- Spotlight -->
     <section id="spotlight" class="mb-5 hidden">
       <article class="card hero relative overflow-hidden rounded-2xl border border-white/10 p-5">
         <div class="glint"></div>
@@ -282,6 +293,7 @@
     const elRefresh = document.getElementById('refresh');
     const elClear = document.getElementById('clearFilters');
     const elRunTests = document.getElementById('runTests');
+    const elTrending = document.getElementById('trending');
     const root = document.getElementById('root');
 
     /* ===== Dev / Debug Mode ===== */
@@ -321,13 +333,27 @@
       if (Array.isArray(v)) return v;
       try {
         const j = typeof v === 'string' ? JSON.parse(v) : v;
-        return Array.isArray(j) ? j : String(v).split(',').map(s=>s.trim()).filter(Boolean);
+        return Array.isArray(j) ? j : String(v).split(',').map(s => s.trim()).filter(Boolean);
       } catch {
-        return String(v).split(',').map(s=>s.trim()).filter(Boolean);
+        return String(v).split(',').map(s => s.trim()).filter(Boolean);
       }
     };
 
-    /* ===== LOAD ITEMS (Supabase) ===== */
+    function timeAgo(ts){
+      if (!ts) return '';
+      const diff = Date.now() - ts;
+      const s = Math.floor(diff / 1000);
+      if (s < 60) return 'Just now';
+      const m = Math.floor(s / 60);
+      if (m < 60) return m + 'm ago';
+      const h = Math.floor(m / 60);
+      if (h < 24) return h + 'h ago';
+      const d = Math.floor(h / 24);
+      if (d < 7) return d + 'd ago';
+      return new Date(ts).toLocaleDateString();
+    }
+
+    /* ===== LOAD ITEMS ===== */
     async function load() {
       try {
         const { data, error } = await supabase
@@ -368,7 +394,7 @@
           };
         });
 
-        // Only show posts with a trust object defined
+        // Only show posts with trust defined
         return items.filter(it => it.trust && typeof it.trust.label === 'string');
       } catch (err) {
         showError('Unexpected load error', err);
@@ -391,7 +417,7 @@
       return `<span class="rounded-full px-2 py-0.5 text-[9px] ${cls}" aria-label="Trust score ${s}%, ${label}">${txt}</span>`;
     }
 
-    /* ===== PCI BAR (optional visual confidence) ===== */
+    /* ===== PCI BAR ===== */
     function pci(score = 0){
       const s = Math.max(0, Math.min(100, Math.round(score)));
       if (!s) return '';
@@ -411,7 +437,7 @@
         ? `<span class="rounded-full bg-white/10 px-2 py-1 text-white/70 text-[9px]">${esc(s.beat)}</span>`
         : "";
       const time = s.date
-        ? `<span>•</span><time>${new Date(s.date).toLocaleString()}</time>`
+        ? `<span>•</span><time>${timeAgo(s.date)}</time>`
         : "";
       const tb = s.trust ? `<span>•</span>${trustBadge(s.trust)}` : "";
       const cite = (Array.isArray(s.citations) ? s.citations : [])
@@ -457,7 +483,7 @@
       const sp = document.getElementById('spotlight');
       if (!items.length) {
         sp.classList.add('hidden');
-        return;
+        return null;
       }
 
       const dayAgo = Date.now() - (24 * 3600 * 1000);
@@ -476,7 +502,7 @@
       const spShare = document.getElementById('spShare');
 
       spBeat.textContent = top.beat || 'Spotlight';
-      spTime.textContent = top.date ? new Date(top.date).toLocaleString() : '';
+      spTime.textContent = top.date ? timeAgo(top.date) : '';
 
       if (top.trust) {
         spTrustWrap.classList.remove('hidden');
@@ -514,6 +540,38 @@
         `&url=${encodeURIComponent(location.origin + '/story.html?id=' + top.id)}&via=OneMarketNews`;
 
       sp.classList.remove('hidden');
+      return top.id;
+    }
+
+    /* ===== TRENDING ===== */
+    function computeTrending(items, limit = 5){
+      const counts = {};
+      items.forEach(it => (it.tags || []).forEach(t => {
+        const key = String(t || '').trim().toLowerCase();
+        if (!key) return;
+        counts[key] = (counts[key] || 0) + 1;
+      }));
+      return Object.entries(counts)
+        .sort((a,b) => b[1] - a[1])
+        .slice(0, limit)
+        .map(([tag]) => tag);
+    }
+
+    function renderTrending(items){
+      const tags = computeTrending(items);
+      if (!tags.length) {
+        elTrending.classList.add('hidden');
+        return;
+      }
+      elTrending.innerHTML =
+        'Trending: ' +
+        tags.map(t =>
+          `<button class="underline text-lime-300/90 hover:text-lime-300 mr-2"
+                   onclick="document.getElementById('q').value='${esc(t)}';persistFilters();">
+             ${esc(t)}
+           </button>`
+        ).join('');
+      elTrending.classList.remove('hidden');
     }
 
     /* ===== FILTER STATE & RENDER ===== */
@@ -535,18 +593,49 @@
       const savedTrust = localStorage.getItem(KEY_FEED_TRUST);
       const savedQ     = localStorage.getItem(KEY_FEED_Q);
 
-      if (savedBeat !== null)  elBeat.value  = savedBeat;
+      if (savedBeat  !== null) elBeat.value  = savedBeat;
       if (savedTrust !== null) elTrust.value = savedTrust;
-      if (savedQ !== null)     elQ.value     = savedQ;
+      if (savedQ     !== null) elQ.value     = savedQ;
 
-      // fall back to generic prefs if present
       if (savedBeat === null || savedTrust === null) {
         try {
           const prefs = JSON.parse(localStorage.getItem("onemarket.user.prefs") || "{}");
-          if (savedBeat === null && prefs.beat)  elBeat.value  = prefs.beat;
+          if (savedBeat === null && prefs.beat)   elBeat.value  = prefs.beat;
           if (savedTrust === null && prefs.trust) elTrust.value = prefs.trust;
         } catch {}
       }
+    }
+
+    function render(items){
+      const q = elQ.value.trim().toLowerCase();
+      const beat = elBeat.value;
+      const tlabel = elTrust.value;
+
+      const filtered = items.filter(it => {
+        if (beat && it.beat !== beat) return false;
+        if (tlabel && (!it.trust || (it.trust.label || '').toLowerCase() !== tlabel)) return false;
+        if (!q) return true;
+        const hay = (it.title + " " + (Array.isArray(it.tags) ? it.tags.join(",") : it.tags || "")).toLowerCase();
+        return hay.includes(q);
+      });
+
+      const spotlightId = renderSpotlight(filtered);
+
+      const listItems = spotlightId
+        ? filtered.filter(it => it.id !== spotlightId)
+        : filtered;
+
+      const listHtml = listItems.map((s, i) => card(s, i)).join("") ||
+        `<div class="text-white/60 text-sm">
+          No stories match your filters.
+          <button class="underline text-lime-300 ml-1" onclick="clearFilters()">Reset filters</button>
+        </div>`;
+
+      elList.innerHTML = listHtml;
+
+      cachedView = listItems;
+      selectedIdx = listItems.length ? 0 : -1;
+      applySelection();
     }
 
     function persistFilters(){
@@ -570,34 +659,6 @@
       syncQuickPills();
     }
 
-    function render(items){
-      const q = elQ.value.trim().toLowerCase();
-      const beat = elBeat.value;
-      const tlabel = elTrust.value;
-
-      const filtered = items.filter(it => {
-        if (beat && it.beat !== beat) return false;
-        if (tlabel && (!it.trust || (it.trust.label || '').toLowerCase() !== tlabel)) return false;
-        if (!q) return true;
-        const hay = (it.title + " " + (Array.isArray(it.tags) ? it.tags.join(",") : it.tags || "")).toLowerCase();
-        return hay.includes(q);
-      });
-
-      renderSpotlight(filtered);
-
-      const listHtml = filtered.map((s, i) => card(s, i)).join("");
-      elList.innerHTML =
-        listHtml ||
-        `<div class="text-white/60 text-sm">
-          No stories match your filters.
-          <button class="underline text-lime-300 ml-1" onclick="(${clearFilters.toString()})()">Reset filters</button>
-        </div>`;
-
-      cachedView = filtered;
-      selectedIdx = filtered.length ? 0 : -1;
-      applySelection();
-    }
-
     function applySelection(){
       const cards = Array.from(document.querySelectorAll('[data-idx]'));
       cards.forEach(c => c.classList.remove('is-selected'));
@@ -609,7 +670,7 @@
     function openSelected(){
       if (selectedIdx < 0 || !cachedView[selectedIdx]) return;
       const id = cachedView[selectedIdx].id;
-      window.location.href = `/story.html?id=${encodeURIComponent(id)}`;
+      if (id) window.location.href = `/story.html?id=${encodeURIComponent(id)}`;
     }
 
     /* ===== QUICK TOPIC PILLS ===== */
@@ -617,11 +678,8 @@
       const currentBeat = elBeat.value;
       document.querySelectorAll('[data-quick]').forEach(btn => {
         const val = btn.getAttribute('data-quick');
-        if (val === currentBeat) {
-          btn.classList.add('pill-active');
-        } else {
-          btn.classList.remove('pill-active');
-        }
+        if (val === currentBeat) btn.classList.add('pill-active');
+        else btn.classList.remove('pill-active');
       });
     }
 
@@ -633,16 +691,14 @@
       });
     });
 
-    /* ===== CARD CLICK (whole card opens, links respected) ===== */
+    /* ===== CARD CLICK (full-card) ===== */
     elList.addEventListener('click', (e) => {
       const anchorOrButton = e.target.closest('a,button');
-      if (anchorOrButton) return; // let normal links/buttons work
+      if (anchorOrButton) return;
       const card = e.target.closest('[data-id]');
       if (!card) return;
       const id = card.getAttribute('data-id');
-      if (id) {
-        window.location.href = `/story.html?id=${encodeURIComponent(id)}`;
-      }
+      if (id) window.location.href = `/story.html?id=${encodeURIComponent(id)}`;
     });
 
     /* ===== Keyboard navigation ===== */
@@ -668,7 +724,7 @@
       }
     });
 
-    /* ===== Pulse line “breath” sync ===== */
+    /* ===== Pulse sync ===== */
     const pulse = document.getElementById('pulse');
     pulse.addEventListener('animationiteration', () => {
       root.classList.add('dim');
@@ -703,7 +759,7 @@
       } else {
         results.push('ℹ️ No rows returned to validate.');
       }
-      console.log('[Feed] Self-tests results:\\n' + results.join('\\n'));
+      console.log('[Feed] Self-tests results:\n' + results.join('\n'));
       showOk('Self-tests complete. Open console for details.');
     }
 
@@ -715,6 +771,7 @@
     async function boot(){
       applySavedFiltersOrPrefs();
       cache = await load();
+      renderTrending(cache);
       updateClearVisibility();
       syncQuickPills();
       render(cache);
@@ -751,4 +808,3 @@
   </script>
 </body>
 </html>
-
