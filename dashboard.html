@@ -4,53 +4,159 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>OneMarket News — Writer Dashboard</title>
-  <meta name="description" content="Contributor hub for OneMarket News: submit stories, track status, and review guidelines." />
+  <meta name="description" content="Contributor hub for OneMarket News: capture leads, submit stories, and track status." />
   <meta name="theme-color" content="#000" />
   <script src="https://cdn.tailwindcss.com"></script>
+
   <style>
     :root { --lime:#a3e635; color-scheme: dark; }
-    body { background:#000; color:#fff }
-    .glass { background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04)); backdrop-filter:blur(10px) saturate(120%) }
-    .field{width:100%;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);padding:.875rem 1rem;color:#fff;font-size:.95rem;line-height:1.25rem;outline:none}
-    .field::placeholder{color:rgba(255,255,255,.48)}
-    .btn{border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.07); border-radius:9999px; padding:.55rem .9rem; font-size:.9rem}
-    .btn:hover{background:rgba(255,255,255,.12)}
-    .btn-primary{background:var(--lime); color:#000; border-color:transparent}
-    .btn-primary:hover{background:#c3f36a}
+    body { background:#000; color:#fff; font-family: system-ui, -apple-system, BlinkMacSystemFont, -sans-serif; }
 
-    /* Pulse sweep bar */
-    .pulse-wrap{position:relative;overflow:hidden}
-    .pulse-line{
-      position:absolute;left:-30%;top:0;height:2px;width:30%;
+    .glass {
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
+      backdrop-filter:blur(10px) saturate(120%);
+    }
+
+    .field {
+      width:100%;
+      border-radius:14px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      padding:.7rem .9rem;
+      color:#fff;
+      font-size:.85rem;
+      line-height:1.3rem;
+      outline:none;
+      transition:border-color .15s, background-color .15s, box-shadow .15s;
+    }
+    .field::placeholder { color:rgba(255,255,255,.42); }
+    .field:focus {
+      border-color:rgba(163,230,53,.6);
+      box-shadow:0 0 0 1px rgba(163,230,53,.25);
+      background:rgba(255,255,255,.08);
+    }
+
+    .btn {
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(255,255,255,.07);
+      border-radius:9999px;
+      padding:.5rem .9rem;
+      font-size:.8rem;
+      color:#fff;
+      display:inline-flex;
+      align-items:center;
+      gap:.35rem;
+      transition:background .18s, border-color .18s, transform .1s;
+    }
+    .btn:hover { background:rgba(255,255,255,.14); }
+    .btn:active { transform:translateY(1px); }
+
+    .btn-primary {
+      background:var(--lime);
+      color:#000;
+      border-color:transparent;
+      font-weight:600;
+    }
+    .btn-primary:hover { background:#c3f36a; }
+
+    /* Pulse line header */
+    .pulse-wrap { position:relative; overflow:hidden; }
+    .pulse-line {
+      position:absolute;
+      left:-30%;
+      top:0;
+      height:2px;
+      width:30%;
       background:linear-gradient(90deg,transparent,rgba(163,230,53,.9),transparent);
       filter:drop-shadow(0 0 6px rgba(163,230,53,.5));
-      opacity:0;animation:pulseSweep 18s infinite ease-in-out;
+      opacity:0;
+      animation:pulseSweep 18s infinite ease-in-out;
     }
-    @keyframes pulseSweep{0%{transform:translateX(0);opacity:0}3%{opacity:.95}6%{transform:translateX(440%);opacity:.2}8%{opacity:0}100%{transform:translateX(440%);opacity:0}}
+    @keyframes pulseSweep {
+      0%{transform:translateX(0);opacity:0}
+      3%{opacity:.95}
+      6%{transform:translateX(440%);opacity:.25}
+      8%{opacity:0}
+      100%{transform:translateX(440%);opacity:0}
+    }
 
     /* Snackbar */
-    .snackbar{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:#0b0f14;border:1px solid rgba(255,255,255,.15);padding:.6rem .9rem;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.35);z-index:60;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s}
-    .snackbar.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(-2px)}
+    .snackbar {
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:18px;
+      background:#05070a;
+      border:1px solid rgba(255,255,255,.18);
+      padding:.55rem .9rem;
+      border-radius:12px;
+      box-shadow:0 10px 30px rgba(0,0,0,.45);
+      z-index:60;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .18s, transform .18s;
+      font-size:.75rem;
+      display:flex;
+      align-items:center;
+      gap:.35rem;
+    }
+    .snackbar.show {
+      opacity:1;
+      pointer-events:auto;
+      transform:translateX(-50%) translateY(-2px);
+    }
 
-    /* Table cells */
-    .td{padding:.6rem .75rem;border-top:1px solid rgba(255,255,255,.08)}
-    .th{padding:.4rem .75rem;color:rgba(255,255,255,.6);font-size:.8rem}
+    /* Table */
+    .td { padding:.55rem .6rem; border-top:1px solid rgba(255,255,255,.08); font-size:.78rem; }
+    .th { padding:.35rem .6rem; color:rgba(255,255,255,.6); font-size:.72rem; font-weight:500; }
 
     /* Badges */
-    .badge{border-radius:9999px;background:rgba(255,255,255,.1);padding:.15rem .5rem}
-    .s-green{color:#bbf7d0;background:rgba(34,197,94,.18)}
-    .s-yellow{color:#fde68a;background:rgba(234,179,8,.18)}
-    .s-red{color:#fecaca;background:rgba(239,68,68,.18)}
+    .badge {
+      border-radius:9999px;
+      padding:.12rem .5rem;
+      font-size:.65rem;
+      display:inline-flex;
+      align-items:center;
+      gap:.25rem;
+    }
+    .s-green  { color:#bbf7d0; background:rgba(34,197,94,.14); }
+    .s-yellow { color:#fde68a; background:rgba(234,179,8,.16); }
+    .s-gray   { color:#e5e7eb; background:rgba(75,85,99,.35); }
+
+    /* Modal */
+    .modal-backdrop {
+      position:fixed; inset:0; background:rgba(0,0,0,.6);
+    }
+    .modal {
+      position:fixed;
+      inset:0;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      padding-top:5rem;
+      z-index:50;
+    }
+
+    @media (max-width:768px){
+      .td, .th { padding-left:.4rem; padding-right:.4rem; }
+    }
   </style>
 </head>
+
 <body class="min-h-screen">
   <!-- Header -->
   <header class="pulse-wrap sticky top-0 z-40 backdrop-blur bg-black/40 border-b border-white/10">
-    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
-      <a href="./index.html" class="font-black tracking-tight">
-        ONE<span class="text-lime-400">MARKET</span> <span class="font-semibold text-white/80">News</span>
-      </a>
-      <nav class="text-sm text-white/70 flex items-center gap-4">
+    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-4">
+      <div>
+        <a href="./feed.html" class="font-black tracking-tight text-sm sm:text-base">
+          ONE<span class="text-lime-400">MARKET</span>
+          <span class="font-semibold text-white/80">News</span>
+        </a>
+        <p class="text-[10px] text-white/55 mt-0.5">
+          Fast lane for contributors — capture leads, submit clean copy, track decisions.
+        </p>
+      </div>
+      <nav class="text-[10px] sm:text-xs text-white/70 flex items-center gap-3">
         <a class="hover:text-white" href="./feed.html">Feed</a>
         <a class="hover:text-white" href="./admin.html">Admin</a>
         <a class="hover:text-white" href="./editor.html">Editor</a>
@@ -58,201 +164,311 @@
         <a class="hover:text-white" href="./settings.html">Settings</a>
       </nav>
     </div>
-    <div class="pulse-line"></div>
+    <div class="pulse-line" id="pulse"></div>
   </header>
 
   <!-- Main -->
   <main class="mx-auto max-w-7xl px-4 py-6 space-y-6">
-    <!-- Top strip: stats + actions -->
-    <section class="glass rounded-2xl border border-white/10 p-5">
-      <div class="flex flex-wrap items-center gap-3">
-        <button id="newDraft" class="btn-primary px-4 py-2 rounded-full font-semibold">New Quick Draft</button>
-        <button id="openShortcuts" class="btn px-4 py-2 rounded-full">⌘/ Show Shortcuts</button>
-        <div class="ml-auto grid grid-cols-3 gap-3 w-full sm:w-auto">
-          <div class="glass rounded-xl border border-white/10 p-3">
-            <div class="text-xs text-white/60">Submitted</div>
-            <div id="mSubmitted" class="text-2xl font-bold">0</div>
-          </div>
-          <div class="glass rounded-xl border border-white/10 p-3">
-            <div class="text-xs text-white/60">In Review</div>
-            <div id="mReview" class="text-2xl font-bold">0</div>
-          </div>
-          <div class="glass rounded-xl border border-white/10 p-3">
-            <div class="text-xs text-white/60">Published</div>
-            <div id="mPublished" class="text-2xl font-bold">0</div>
-          </div>
+    <!-- Top strip: CTA + stats -->
+    <section class="glass rounded-2xl border border-white/10 p-4 flex flex-wrap items-center gap-3">
+      <div class="flex flex-col gap-1">
+        <button id="newDraft" class="btn-primary px-4 py-2 rounded-full">
+          ✍️ Start a story
+        </button>
+        <div class="text-[10px] text-white/60">
+          One strong link + a clean summary is enough to start. You can refine later.
         </div>
       </div>
+      <div class="ml-auto grid grid-cols-3 gap-2 w-full sm:w-auto">
+        <div class="glass rounded-xl border border-white/10 px-3 py-2">
+          <div class="text-[9px] text-white/55">Submissions</div>
+          <div id="mSubmitted" class="text-xl font-semibold">0</div>
+        </div>
+        <div class="glass rounded-xl border border-white/10 px-3 py-2">
+          <div class="text-[9px] text-white/55">In Review</div>
+          <div id="mReview" class="text-xl font-semibold">0</div>
+        </div>
+        <div class="glass rounded-xl border border-white/10 px-3 py-2">
+          <div class="text-[9px] text-white/55">Published</div>
+          <div id="mPublished" class="text-xl font-semibold text-lime-400">0</div>
+        </div>
+      </div>
+      <button id="openShortcuts" class="btn text-[10px] ml-0 sm:ml-2">
+        ⌘/ Shortcuts
+      </button>
     </section>
 
     <!-- Quick Draft + Checklist -->
-    <section class="grid gap-6 lg:grid-cols-3">
+    <section class="grid gap-6 lg:grid-cols-3 items-start">
+      <!-- Quick Draft -->
       <div class="lg:col-span-2 glass rounded-2xl border border-white/10 p-6">
-        <h2 class="text-lg font-semibold flex items-center justify-between">
-          Quick Draft
-          <span id="draftSaved" class="text-xs text-white/50"></span>
-        </h2>
-        <p class="text-white/70 text-sm mt-1">Capture a lead fast. Autosaves locally; you can submit when ready.</p>
+        <div class="flex items-center justify-between gap-3">
+          <h2 class="text-lg font-semibold">Quick Draft</h2>
+          <span id="draftSaved" class="text-[10px] text-white/45"></span>
+        </div>
+        <p class="text-white/70 text-[11px] mt-1">
+          Capture a lead in under a minute. We autosave locally so you never lose a scoop.
+        </p>
+
         <div class="mt-4 grid gap-3">
-          <input id="qd_title" class="field" placeholder="Headline (concise, factual)">
-          <div class="grid sm:grid-cols-2 gap-3">
-            <input id="qd_primary" class="field" placeholder="Primary source URL (required to submit)">
-            <input id="qd_secondary" class="field" placeholder="Secondary URLs (comma-separated)">
+          <div>
+            <label for="qd_title" class="block text-[10px] text-white/55 mb-1">
+              Headline <span class="text-white/40">(concise, factual)</span>
+            </label>
+            <input id="qd_title" class="field" placeholder="e.g. NVIDIA unveils new inference stack for data centers">
           </div>
+
           <div class="grid sm:grid-cols-2 gap-3">
-            <select id="qd_beat" class="field">
-              <option>AI</option><option>Chips / Hardware</option><option>Energy</option>
-              <option>Markets</option><option>Policy / Regulation</option><option>Other</option>
-            </select>
-            <input id="qd_tags" class="field" placeholder="Tags (comma-separated)">
+            <div>
+              <label for="qd_primary" class="block text-[10px] text-white/55 mb-1">
+                Primary source URL <span class="text-red-300">*</span>
+              </label>
+              <input id="qd_primary" class="field" placeholder="Official blog, filing, earnings call, etc.">
+            </div>
+            <div>
+              <label for="qd_secondary" class="block text-[10px] text-white/55 mb-1">
+                Secondary URLs <span class="text-white/40">(optional)</span>
+              </label>
+              <input id="qd_secondary" class="field" placeholder="Comma-separated supporting links">
+            </div>
           </div>
-          <textarea id="qd_summary" class="field" rows="4" placeholder="2–4 sentence summary (your words) + why it matters."></textarea>
-          <div class="flex items-center gap-2">
-            <button id="qd_submit" class="btn-primary px-5 py-3 rounded-full font-semibold">Submit to Editors</button>
-            <button id="qd_clear" class="btn px-5 py-3 rounded-full">Clear Draft</button>
-            <span id="qd_msg" class="text-sm text-white/70"></span>
+
+          <div class="grid sm:grid-cols-2 gap-3">
+            <div>
+              <label for="qd_beat" class="block text-[10px] text-white/55 mb-1">Beat</label>
+              <select id="qd_beat" class="field">
+                <option>AI</option>
+                <option>Chips / Hardware</option>
+                <option>Energy</option>
+                <option>Markets</option>
+                <option>Policy / Regulation</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div>
+              <label for="qd_tags" class="block text-[10px] text-white/55 mb-1">
+                Tags <span class="text-white/40">(comma-separated)</span>
+              </label>
+              <input id="qd_tags" class="field" placeholder="NVIDIA, datacenter, inference">
+            </div>
+          </div>
+
+          <div>
+            <label for="qd_summary" class="block text-[10px] text-white/55 mb-1">
+              Summary &amp; why it matters
+            </label>
+            <textarea
+              id="qd_summary"
+              class="field"
+              rows="4"
+              placeholder="2–4 sentences in your own words. What happened, who’s affected, why it matters."
+            ></textarea>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 mt-1">
+            <button id="qd_submit" class="btn-primary px-5 py-2.5 rounded-full">
+              Submit to editors
+            </button>
+            <button id="qd_clear" class="btn px-4 py-2 rounded-full">
+              Clear draft
+            </button>
+            <span id="qd_msg" class="text-[11px] text-white/70"></span>
           </div>
         </div>
       </div>
 
+      <!-- Checklist -->
       <aside class="glass rounded-2xl border border-white/10 p-6">
-        <h3 class="text-lg font-semibold">Pre-Submit Checklist</h3>
-        <ul class="mt-3 space-y-2 text-sm text-white/80">
-          <li><input type="checkbox" class="mr-2" id="c1"> Headline is concise & factual</li>
-          <li><input type="checkbox" class="mr-2" id="c2"> Primary source is authoritative</li>
-          <li><input type="checkbox" class="mr-2" id="c3"> Summary is in my own words</li>
-          <li><input type="checkbox" class="mr-2" id="c4"> “Why it matters” is clear</li>
-          <li><input type="checkbox" class="mr-2" id="c5"> Conflicts of interest disclosed</li>
+        <h3 class="text-sm font-semibold">Pre-submit checklist</h3>
+        <ul class="mt-3 space-y-2 text-[11px] text-white/80">
+          <li><input type="checkbox" class="mr-2 align-middle"> Headline is concise, factual, no hype.</li>
+          <li><input type="checkbox" class="mr-2 align-middle"> Primary source is authoritative &amp; linked.</li>
+          <li><input type="checkbox" class="mr-2 align-middle"> Summary is in my own words (no copy/paste).</li>
+          <li><input type="checkbox" class="mr-2 align-middle"> “Why it matters” is explicit.</li>
+          <li><input type="checkbox" class="mr-2 align-middle"> Conflicts of interest are disclosed.</li>
         </ul>
-        <p class="text-xs text-white/50 mt-3">Tip: publish-ready items usually include 1 primary + 1–2 secondary links.</p>
+        <p class="text-[10px] text-white/50 mt-3">
+          Tip: Strong submissions usually include one primary document + 1–2 supporting links.
+        </p>
       </aside>
     </section>
 
     <!-- My Submissions -->
     <section class="glass rounded-2xl border border-white/10 p-6">
       <div class="flex flex-wrap items-center gap-2">
-        <h2 class="text-lg font-semibold">My Submissions</h2>
+        <div>
+          <h2 class="text-lg font-semibold">My submissions</h2>
+          <p class="text-[10px] text-white/55 mt-0.5">
+            Everything you’ve sent to OneMarket from this browser. Editors may sync statuses on their side.
+          </p>
+        </div>
         <div class="ml-auto flex flex-wrap gap-2">
-          <input id="f_q" class="field w-64" placeholder="Search title or tags…">
-          <select id="f_beat" class="field">
+          <input id="f_q" class="field w-40 sm:w-56" placeholder="Search title or tags…">
+          <select id="f_beat" class="field w-28">
             <option value="">All beats</option>
             <option>AI</option><option>Chips / Hardware</option><option>Energy</option>
             <option>Markets</option><option>Policy / Regulation</option><option>Other</option>
           </select>
-          <select id="f_status" class="field">
+          <select id="f_status" class="field w-28">
             <option value="">All status</option>
-            <option>In Review</option><option>Published</option>
+            <option>In Review</option>
+            <option>Published</option>
           </select>
-          <select id="f_sort" class="field">
+          <select id="f_sort" class="field w-28">
             <option value="date_desc">Newest</option>
             <option value="date_asc">Oldest</option>
-            <option value="title_asc">Title (A→Z)</option>
-            <option value="title_desc">Title (Z→A)</option>
+            <option value="title_asc">Title A–Z</option>
+            <option value="title_desc">Title Z–A</option>
           </select>
         </div>
       </div>
 
       <div class="mt-4 overflow-x-auto">
         <table class="min-w-full text-sm">
-          <thead><tr>
-            <th class="th text-left">Title</th>
-            <th class="th text-left">Beat</th>
-            <th class="th text-left">Date</th>
-            <th class="th text-left">Status</th>
-            <th class="th text-left">Primary URL</th>
-            <th class="th text-right">Actions</th>
-          </tr></thead>
+          <thead>
+            <tr>
+              <th class="th text-left">Title</th>
+              <th class="th text-left">Beat</th>
+              <th class="th text-left">Submitted</th>
+              <th class="th text-left">Status</th>
+              <th class="th text-left">Primary URL</th>
+              <th class="th text-right">Actions</th>
+            </tr>
+          </thead>
           <tbody id="subsTbody"></tbody>
         </table>
       </div>
     </section>
 
-    <footer class="text-center text-xs text-white/60">© <span id="year"></span> OneMarket News, LLC.</footer>
+    <footer class="text-center text-[10px] text-white/60">
+      © <span id="year"></span> OneMarket News, LLC.
+    </footer>
   </main>
 
-  <!-- Shortcuts modal -->
-  <div id="shortcuts" class="fixed inset-0 z-50 hidden">
-    <div class="absolute inset-0 bg-black/60"></div>
-    <div class="relative mx-auto mt-20 w-[min(92vw,560px)] glass rounded-2xl border border-white/10 p-6">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-semibold">Keyboard Shortcuts</h3>
-        <button id="closeShortcuts" class="btn px-3 py-1">Close</button>
+  <!-- Shortcuts Modal -->
+  <div id="shortcuts" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="relative mx-auto w-[min(92vw,560px)] glass rounded-2xl border border-white/10 p-6">
+      <div class="flex items-center justify-between gap-3">
+        <h3 class="text-base font-semibold">Keyboard shortcuts</h3>
+        <button id="closeShortcuts" class="btn px-3 py-1 text-[10px]">Close</button>
       </div>
-      <ul class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-white/80">
-        <li><span class="font-mono bg-white/10 px-2 py-1 rounded">⌘/</span> Toggle shortcuts</li>
-        <li><span class="font-mono bg-white/10 px-2 py-1 rounded">⌘N</span> New quick draft</li>
-        <li><span class="font-mono bg-white/10 px-2 py-1 rounded">⌘S</span> Save quick draft</li>
-        <li><span class="font-mono bg-white/10 px-2 py-1 rounded">⌘Enter</span> Submit quick draft</li>
+      <p class="text-[10px] text-white/55 mt-1">
+        Power tools for frequent contributors. Works in compatible browsers.
+      </p>
+      <ul class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-white/80">
+        <li><span class="font-mono bg-white/10 px-2 py-1 rounded text-[10px]">⌘ /</span> Toggle shortcuts</li>
+        <li><span class="font-mono bg-white/10 px-2 py-1 rounded text-[10px]">⌘ N</span> Focus quick draft</li>
+        <li><span class="font-mono bg-white/10 px-2 py-1 rounded text-[10px]">⌘ S</span> Save quick draft locally</li>
+        <li><span class="font-mono bg-white/10 px-2 py-1 rounded text-[10px]">⌘ Enter</span> Submit quick draft</li>
       </ul>
     </div>
   </div>
 
   <!-- Snackbar -->
-  <div id="snack" class="snackbar">Saved</div>
+  <div id="snack" class="snackbar">
+    <span>✅</span><span>Saved</span>
+  </div>
 
   <script>
-    /* ---------- Utilities ---------- */
-    const $ = (id)=>document.getElementById(id);
-    const snackEl = $('snack');
-    const snack = (t='Saved')=>{ snackEl.textContent=t; snackEl.classList.add('show'); setTimeout(()=>snackEl.classList.remove('show'), 1200); }
-    const escHtml = s => String(s||'').replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]) );
+    const $ = (id) => document.getElementById(id);
 
-    // Keys
-    const K_SUBS = 'onemarket.submissions';
+    const snackEl = $('snack');
+    function snack(text='Saved'){
+      snackEl.children[1].textContent = text;
+      snackEl.classList.add('show');
+      setTimeout(() => snackEl.classList.remove('show'), 1300);
+    }
+
+    const escHtml = s => String(s||'').replace(/[&<>"']/g, m=>({
+      "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
+    }[m]));
+
+    const K_SUBS   = 'onemarket.submissions';
     const K_QDRAFT = 'onemarket.quickdraft';
 
-    const read = (k, fb) => { try{ return JSON.parse(localStorage.getItem(k) ?? JSON.stringify(fb)); }catch{ return fb; } };
+    const read = (k, fb) => {
+      try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; }
+      catch { return fb; }
+    };
     const write = (k,v) => localStorage.setItem(k, JSON.stringify(v));
 
-    // Year
     $('year').textContent = new Date().getFullYear();
 
-    /* ---------- Stats / Submissions ---------- */
-    const mSubmitted = $('mSubmitted'), mReview = $('mReview'), mPublished = $('mPublished');
-    const tbody = $('subsTbody');
-    const f_q = $('f_q'), f_beat = $('f_beat'), f_status = $('f_status'), f_sort = $('f_sort');
+    /* ---------- Submissions & Stats ---------- */
+    const mSubmitted = $('mSubmitted');
+    const mReview    = $('mReview');
+    const mPublished = $('mPublished');
+    const tbody      = $('subsTbody');
+
+    const f_q      = $('f_q');
+    const f_beat   = $('f_beat');
+    const f_status = $('f_status');
+    const f_sort   = $('f_sort');
 
     function getSubs(){ return read(K_SUBS, []); }
     function setSubs(rows){ write(K_SUBS, rows); }
+
     function updateStats(rows){
       mSubmitted.textContent = rows.length;
-      mReview.textContent = rows.filter(r=>r.status==='In Review').length;
-      mPublished.textContent = rows.filter(r=>r.status==='Published').length;
+      mReview.textContent    = rows.filter(r => r.status === 'In Review').length;
+      mPublished.textContent = rows.filter(r => r.status === 'Published').length;
     }
 
     function rowHtml(r){
-      const badge = r.status==='Published' ? 's-green' : 's-yellow';
+      const status = r.status || 'In Review';
+      const badgeClass =
+        status === 'Published' ? 's-green' :
+        status === 'In Review' ? 's-yellow' : 's-gray';
+
       return `<tr>
-        <td class="td">${escHtml(r.title||'')}</td>
-        <td class="td text-white/70">${escHtml(r.beat||'')}</td>
-        <td class="td text-white/70">${r.date? new Date(r.date).toLocaleString():''}</td>
-        <td class="td"><span class="badge ${badge}">${escHtml(r.status||'In Review')}</span></td>
+        <td class="td">${escHtml(r.title || '')}</td>
+        <td class="td text-white/70">${escHtml(r.beat || '')}</td>
+        <td class="td text-white/55">${r.date ? new Date(r.date).toLocaleString() : ''}</td>
         <td class="td">
-          ${r.primary_url? `<a class="underline decoration-lime-400/60 underline-offset-2 text-white/80 hover:text-white" href="${escHtml(r.primary_url)}" target="_blank" rel="noopener">Open</a>` : '<span class="text-white/40">—</span>'}
+          <span class="badge ${badgeClass}">${escHtml(status)}</span>
         </td>
-        <td class="td text-right">
-          <button class="btn px-3 py-1 text-xs" data-act="toReview" data-id="${escHtml(r.id)}">Mark Review</button>
-          <button class="btn px-3 py-1 text-xs" data-act="toPub" data-id="${escHtml(r.id)}">Publish</button>
-          <button class="btn px-3 py-1 text-xs" data-act="del" data-id="${escHtml(r.id)}">Delete</button>
+        <td class="td">
+          ${
+            r.primary_url
+              ? `<a class="underline decoration-lime-400/70 underline-offset-2 text-white/85 hover:text-lime-300"
+                    href="${escHtml(r.primary_url)}" target="_blank" rel="noopener">Open</a>`
+              : '<span class="text-white/35">—</span>'
+          }
+        </td>
+        <td class="td text-right space-x-1 whitespace-nowrap">
+          <button class="btn px-3 py-1 text-[10px]" data-act="toReview" data-id="${escHtml(r.id)}">Mark review</button>
+          <button class="btn px-3 py-1 text-[10px]" data-act="toPub" data-id="${escHtml(r.id)}">Mark published</button>
+          <button class="btn px-3 py-1 text-[10px]" data-act="del" data-id="${escHtml(r.id)}">Delete</button>
         </td>
       </tr>`;
     }
 
     function applyFilters(rows){
       let out = rows.slice();
-      const q = (f_q.value||'').toLowerCase().trim();
-      const beat = f_beat.value;
+      const q  = (f_q.value || '').trim().toLowerCase();
+      const bt = f_beat.value;
       const st = f_status.value;
 
-      if (q) out = out.filter(r => ((r.title||'') + ' ' + (Array.isArray(r.tags)?r.tags.join(','):r.tags||'')).toLowerCase().includes(q));
-      if (beat) out = out.filter(r => r.beat === beat);
+      if (q) {
+        out = out.filter(r => (
+          ((r.title || '') + ' ' + (Array.isArray(r.tags) ? r.tags.join(',') : r.tags || ''))
+            .toLowerCase()
+            .includes(q)
+        ));
+      }
+      if (bt) out = out.filter(r => r.beat === bt);
       if (st) out = out.filter(r => r.status === st);
 
-      switch (f_sort.value){
-        case 'date_asc': out.sort((a,b)=> (a.date||0)-(b.date||0)); break;
-        case 'title_asc': out.sort((a,b)=> (a.title||'').localeCompare(b.title||'')); break;
-        case 'title_desc': out.sort((a,b)=> (b.title||'').localeCompare(a.title||'')); break;
-        default: out.sort((a,b)=> (b.date||0)-(a.date||0));
+      switch (f_sort.value) {
+        case 'date_asc':
+          out.sort((a,b) => (a.date || 0) - (b.date || 0)); break;
+        case 'title_asc':
+          out.sort((a,b) => (a.title || '').localeCompare(b.title || '')); break;
+        case 'title_desc':
+          out.sort((a,b) => (b.title || '').localeCompare(a.title || '')); break;
+        default:
+          out.sort((a,b) => (b.date || 0) - (a.date || 0)); break;
       }
       return out;
     }
@@ -261,7 +477,9 @@
       const rows = getSubs();
       updateStats(rows);
       const view = applyFilters(rows);
-      tbody.innerHTML = view.map(rowHtml).join('') || `<tr><td class="td text-white/60" colspan="6">No submissions yet.</td></tr>`;
+      tbody.innerHTML =
+        view.map(rowHtml).join('') ||
+        `<tr><td class="td text-white/60" colspan="6">No submissions yet — start a quick draft above.</td></tr>`;
     }
 
     [f_q, f_beat, f_status, f_sort].forEach(el => {
@@ -269,129 +487,248 @@
       el.addEventListener('change', renderTable);
     });
 
-    tbody.addEventListener('click', (e)=>{
-      const btn = e.target.closest('button[data-act]'); if(!btn) return;
-      const id = btn.getAttribute('data-id'); const act = btn.getAttribute('data-act');
-      const rows = getSubs(); const i = rows.findIndex(r=>String(r.id)===String(id)); if(i<0) return;
-      if (act==='del'){ rows.splice(i,1); setSubs(rows); snack('Deleted'); renderTable(); return; }
-      if (act==='toReview'){ rows[i].status='In Review'; rows[i].date=Date.now(); setSubs(rows); snack('Moved to Review'); renderTable(); return; }
-      if (act==='toPub'){ rows[i].status='Published'; rows[i].date=Date.now(); setSubs(rows); snack('Published'); renderTable(); return; }
+    tbody.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-act]');
+      if (!btn) return;
+      const id  = btn.getAttribute('data-id');
+      const act = btn.getAttribute('data-act');
+
+      const rows = getSubs();
+      const i = rows.findIndex(r => String(r.id) === String(id));
+      if (i < 0) return;
+
+      if (act === 'del') {
+        if (!confirm('Delete this local record? This does NOT unsend anything already submitted.')) return;
+        rows.splice(i, 1);
+        setSubs(rows);
+        snack('Deleted from dashboard');
+        renderTable();
+        return;
+      }
+
+      if (act === 'toReview') {
+        rows[i].status = 'In Review';
+        rows[i].date = rows[i].date || Date.now();
+        setSubs(rows);
+        snack('Marked as in review');
+        renderTable();
+        return;
+      }
+
+      if (act === 'toPub') {
+        rows[i].status = 'Published';
+        rows[i].date = rows[i].date || Date.now();
+        setSubs(rows);
+        snack('Marked as published');
+        renderTable();
+        return;
+      }
     });
 
     /* ---------- Quick Draft ---------- */
     const qd = {
-      title:$('qd_title'), primary:$('qd_primary'), secondary:$('qd_secondary'),
-      beat:$('qd_beat'), tags:$('qd_tags'), summary:$('qd_summary'),
-      submit:$('qd_submit'), clear:$('qd_clear'), saved:$('draftSaved'), msg:$('qd_msg')
+      title: $('qd_title'),
+      primary: $('qd_primary'),
+      secondary: $('qd_secondary'),
+      beat: $('qd_beat'),
+      tags: $('qd_tags'),
+      summary: $('qd_summary'),
+      submit: $('qd_submit'),
+      clear: $('qd_clear'),
+      saved: $('draftSaved'),
+      msg: $('qd_msg')
     };
 
-    // Load draft
     (function loadDraft(){
       const d = read(K_QDRAFT, null);
-      if(!d) return;
-      qd.title.value = d.title||''; qd.primary.value = d.primary||'';
-      qd.secondary.value = d.secondary||''; qd.beat.value = d.beat||'AI';
-      qd.tags.value = d.tags||''; qd.summary.value = d.summary||'';
-      qd.saved.textContent = 'Autosaved • ' + new Date(d._ts||Date.now()).toLocaleTimeString();
+      if (!d) return;
+      qd.title.value     = d.title     || '';
+      qd.primary.value   = d.primary   || '';
+      qd.secondary.value = d.secondary || '';
+      qd.beat.value      = d.beat      || 'AI';
+      qd.tags.value      = d.tags      || '';
+      qd.summary.value   = d.summary   || '';
+      if (d._ts) {
+        qd.saved.textContent = 'Autosaved • ' + new Date(d._ts).toLocaleTimeString();
+      }
     })();
 
-    // Autosave
-    const saveDraft = ()=>{
+    function saveDraft(){
       const d = {
-        title: qd.title.value.trim(),
-        primary: qd.primary.value.trim(),
-        secondary: qd.secondary.value.trim(),
-        beat: qd.beat.value,
-        tags: qd.tags.value.trim(),
-        summary: qd.summary.value.trim(),
-        _ts: Date.now()
+        title:    qd.title.value.trim(),
+        primary:  qd.primary.value.trim(),
+        secondary:qd.secondary.value.trim(),
+        beat:     qd.beat.value,
+        tags:     qd.tags.value.trim(),
+        summary:  qd.summary.value.trim(),
+        _ts:      Date.now()
       };
       write(K_QDRAFT, d);
       qd.saved.textContent = 'Autosaved • ' + new Date(d._ts).toLocaleTimeString();
-    };
-    [qd.title, qd.primary, qd.secondary, qd.beat, qd.tags, qd.summary].forEach(el=>{
+    }
+
+    [qd.title, qd.primary, qd.secondary, qd.beat, qd.tags, qd.summary].forEach(el => {
       el.addEventListener('input', saveDraft);
       el.addEventListener('change', saveDraft);
     });
 
-    // Submit to editors (Formspree or pipeline). Replace YOUR_FORM_ID.
-    qd.submit.addEventListener('click', async ()=>{
-      qd.msg.className = 'text-sm text-white/70';
+    qd.submit.addEventListener('click', async () => {
+      qd.msg.className = 'text-[11px] text-white/70';
       qd.msg.textContent = 'Submitting…';
 
       const primary = qd.primary.value.trim();
-      if(!primary){ qd.msg.className='text-sm text-red-300'; qd.msg.textContent='Primary source URL required.'; return; }
+      if (!primary) {
+        qd.msg.className = 'text-[11px] text-red-300';
+        qd.msg.textContent = 'Add a primary source URL before submitting.';
+        return;
+      }
 
-      // Create local submission row
       const row = {
-        id: 'm_' + Math.random().toString(36).slice(2,10),
+        id: 'm_' + Math.random().toString(36).slice(2, 10),
         title: qd.title.value.trim() || '(Untitled)',
         beat: qd.beat.value,
-        tags: (qd.tags.value||'').split(',').map(s=>s.trim()).filter(Boolean),
+        tags: (qd.tags.value || '')
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean),
         date: Date.now(),
         status: 'In Review',
         primary_url: primary,
         summary: qd.summary.value.trim(),
-        citations: (qd.secondary.value||'').split(',').map(s=>s.trim()).filter(Boolean)
+        citations: (qd.secondary.value || '')
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean)
       };
-      const rows = getSubs(); rows.unshift(row); setSubs(rows); renderTable();
 
-      // Send to Formspree
-      try{
+      const rows = getSubs();
+      rows.unshift(row);
+      setSubs(rows);
+      renderTable();
+
+      try {
         const fd = new FormData();
         fd.set('title', row.title);
         fd.set('beat', row.beat);
         fd.set('tags', row.tags.join(', '));
         fd.set('primary_url', row.primary_url);
-        fd.set('secondary_urls', (qd.secondary.value||''));
+        fd.set('secondary_urls', qd.secondary.value || '');
         fd.set('summary', row.summary);
-        const res = await fetch('https://formspree.io/f/YOUR_FORM_ID', { method:'POST', body:fd, headers:{'Accept':'application/json'} });
-        if(res.ok){
-          qd.msg.className='text-sm text-lime-300';
-          qd.msg.textContent='Received! Editors will review shortly.';
-          snack('Submitted');
-          // Keep draft but clear fields?
-          // If you want to clear: uncomment next 3 lines
-          // qd.title.value = qd.primary.value = qd.secondary.value = qd.tags.value = qd.summary.value = '';
-          // qd.beat.value = 'AI';
-          // saveDraft();
-        }else{
-          qd.msg.className='text-sm text-red-300'; qd.msg.textContent='Submission failed. Saved locally — try again.';
+
+        // TODO: plug in your real endpoint
+        const res = await fetch('https://formspree.io/f/YOUR_FORM_ID', {
+          method: 'POST',
+          body: fd,
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (res.ok) {
+          qd.msg.className = 'text-[11px] text-lime-300';
+          qd.msg.textContent = 'Submitted. Editors will review shortly.';
+          snack('Submitted to editors');
+        } else {
+          qd.msg.className = 'text-[11px] text-red-300';
+          qd.msg.textContent = 'Could not reach server. Saved locally — try again soon.';
         }
-      }catch{
-        qd.msg.className='text-sm text-red-300'; qd.msg.textContent='Network error. Saved locally — try again later.';
+      } catch {
+        qd.msg.className = 'text-[11px] text-red-300';
+        qd.msg.textContent = 'Network error. Saved locally — try again later.';
       }
     });
 
-    // Clear draft
-    qd.clear.addEventListener('click', ()=>{
-      if(!confirm('Clear the quick draft?')) return;
+    qd.clear.addEventListener('click', () => {
+      if (!confirm('Clear the quick draft?')) return;
       write(K_QDRAFT, {});
-      qd.title.value = qd.primary.value = qd.secondary.value = qd.tags.value = qd.summary.value = '';
-      qd.beat.value = 'AI'; qd.saved.textContent = '';
+      qd.title.value = qd.primary.value = qd.secondary.value =
+        qd.tags.value = qd.summary.value = '';
+      qd.beat.value = 'AI';
+      qd.saved.textContent = '';
+      qd.msg.textContent = '';
       snack('Draft cleared');
     });
 
-    // New draft shortcut button
-    $('newDraft').addEventListener('click', ()=>{
+    $('newDraft').addEventListener('click', () => {
       qd.title.focus();
-      snack('Ready for a new draft');
+      snack('Cursor moved to headline');
     });
 
     /* ---------- Shortcuts ---------- */
-    const shortcuts = $('shortcuts'), openShort = $('openShortcuts'), closeShort = $('closeShortcuts');
-    openShort.addEventListener('click', ()=> shortcuts.classList.remove('hidden'));
-    closeShort.addEventListener('click', ()=> shortcuts.classList.add('hidden'));
-    document.addEventListener('keydown', (e)=>{
-      const isMac = navigator.platform.toUpperCase().includes('MAC');
-      const mod = isMac ? e.metaKey : e.ctrlKey;
-      if(mod && e.key === '/'){ e.preventDefault(); shortcuts.classList.toggle('hidden'); }
-      if(mod && (e.key==='n' || e.key==='N')){ e.preventDefault(); $('newDraft').click(); }
-      if(mod && (e.key==='s' || e.key==='S')){ e.preventDefault(); saveDraft(); snack('Draft saved'); }
-      if(mod && e.key === 'Enter'){ e.preventDefault(); qd.submit.click(); }
+    const shortcuts = $('shortcuts');
+    $('openShortcuts').addEventListener('click', () => {
+      shortcuts.classList.remove('hidden');
+    });
+    $('closeShortcuts').addEventListener('click', () => {
+      shortcuts.classList.add('hidden');
+    });
+    shortcuts.addEventListener('click', (e) => {
+      if (e.target === shortcuts || e.target.classList.contains('modal-backdrop')) {
+        shortcuts.classList.add('hidden');
+      }
     });
 
-    // Initial render
+    document.addEventListener('keydown', (e) => {
+      const isMac = navigator.platform.toUpperCase().includes('MAC');
+      const mod = isMac ? e.metaKey : e.ctrlKey;
+
+      if (mod && e.key === '/') {
+        e.preventDefault();
+        shortcuts.classList.toggle('hidden');
+      }
+      if (mod && (e.key === 'n' || e.key === 'N')) {
+        e.preventDefault();
+        qd.title.focus();
+        snack('Cursor moved to headline');
+      }
+      if (mod && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+        saveDraft();
+        snack('Draft saved locally');
+      }
+      if (mod && e.key === 'Enter') {
+        e.preventDefault();
+        qd.submit.click();
+      }
+    });
+
+    /* ---------- Pulse highlight on top cards ---------- */
+    const pulse = document.getElementById('pulse');
+    pulse.addEventListener('animationiteration', () => {
+      const cards = Array.from(document.querySelectorAll('.glass'))
+        .slice(0, 2);
+      cards.forEach(c => {
+        c.animate(
+          [
+            { boxShadow:'0 0 0 0 rgba(163,230,53,0)' },
+            { boxShadow:'0 0 0 6px rgba(163,230,53,.06)' },
+            { boxShadow:'0 0 0 0 rgba(163,230,53,0)' }
+          ],
+          { duration:900, easing:'ease-out' }
+        );
+      });
+    });
+
+    /* ---------- Active nav highlight ---------- */
+    (function highlightActiveNav(){
+      const here = new URL(location.href);
+      const normalize = (p) => p.replace(/\/$/, "/dashboard.html");
+      const current = normalize(here.pathname);
+      document.querySelectorAll("header nav a[href]").forEach(a => {
+        const dest = new URL(a.getAttribute("href"), here).pathname;
+        if (normalize(dest) === current) {
+          a.classList.add(
+            "text-lime-300",
+            "bg-white/5",
+            "rounded-lg",
+            "ring-2",
+            "ring-lime-300/40",
+            "px-2",
+            "py-1"
+          );
+        }
+      });
+    })();
+
+    /* ---------- Initial render ---------- */
     renderTable();
   </script>
 </body>
