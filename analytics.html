@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OneMarket — Analytics</title>
+  <meta name="theme-color" content="#000" />
+  <meta name="description" content="Analytics for OneMarket News: submissions, trust scores, beats and trends." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { --lime:#a3e635; color-scheme: dark; }
+    body {
+      background:#000;
+      color:#fff;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,-sans-serif;
+    }
+
+    .noise{
+      background-image:radial-gradient(1px 1px at 25px 25px,rgba(255,255,255,.9)1px,transparent 0);
+      opacity:.06;
+    }
+    .glass{
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
+      backdrop-filter:blur(10px) saturate(120%);
+    }
+
+    .field{
+      width:100%;
+      border-radius:12px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      padding:.5rem .7rem;
+      color:#fff;
+      outline:none;
+      font-size:.75rem;
+    }
+    .field::placeholder{color:rgba(255,255,255,.4)}
+    .field:focus{
+      border-color:rgba(163,230,53,.7);
+      background:rgba(255,255,255,.08);
+      box-shadow:0 0 0 1px rgba(163,230,53,.18);
+    }
+
+    .pill{
+      border-radius:9999px;
+      padding:.35rem .7rem;
+      border:1px solid rgba(255,255,255,.14);
+      font-size:.7rem;
+      color:rgba(255,255,255,.8);
+      background:rgba(255,255,255,.04);
+      display:inline-flex;
+      align-items:center;
+      gap:.25rem;
+      cursor:pointer;
+      transition:all .15s ease;
+      white-space:nowrap;
+    }
+    .pill:hover{
+      background:rgba(255,255,255,.10);
+      border-color:rgba(255,255,255,.32);
+    }
+    .pill-active{
+      background:var(--lime);
+      color:#000;
+      border-color:transparent;
+      font-weight:600;
+    }
+
+    .badge{
+      border-radius:9999px;
+      padding:.12rem .5rem;
+      font-size:.65rem;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+    }
+    .b-green{background:rgba(22,163,74,.22);color:#bbf7d0;border-color:rgba(22,163,74,.45);}
+    .b-yellow{background:rgba(202,138,4,.22);color:#fde68a;border-color:rgba(202,138,4,.5);}
+    .b-red{background:rgba(185,28,28,.26);color:#fecaca;border-color:rgba(248,113,113,.55);}
+
+    .snackbar{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:18px;
+      background:#05070b;
+      border:1px solid rgba(255,255,255,.15);
+      padding:.5rem .85rem;
+      border-radius:12px;
+      box-shadow:0 10px 30px rgba(0,0,0,.35);
+      z-index:60;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .18s, transform .18s;
+      font-size:.7rem;
+      display:flex;
+      align-items:center;
+      gap:.35rem;
+    }
+    .snackbar.show{
+      opacity:1;
+      pointer-events:auto;
+      transform:translateX(-50%) translateY(-2px);
+    }
+
+    /* Simple horizontal bars */
+    .bar-wrap{
+      width:100%;
+      background:rgba(255,255,255,.04);
+      border-radius:9999px;
+      overflow:hidden;
+      height:7px;
+    }
+    .bar-fill{
+      height:100%;
+      border-radius:9999px;
+      background:linear-gradient(90deg,rgba(163,230,53,.95),rgba(163,230,53,.5));
+      transition:width .25s ease-out;
+    }
+
+    /* Sparkline-style timeline */
+    .spark-wrap{
+      display:flex;
+      gap:2px;
+      align-items:flex-end;
+      height:32px;
+    }
+    .spark-bar{
+      flex:1;
+      background:rgba(163,230,53,.26);
+      border-radius:3px 3px 0 0;
+    }
+    .spark-bar.zero{
+      background:rgba(148,163,253,.12);
+    }
+
+    @media (max-width:768px){
+      .hide-sm{display:none}
+    }
+  </style>
+</head>
+<body>
+  <!-- Background -->
+  <div class="fixed inset-0 -z-10">
+    <div class="absolute inset-0 bg-gradient-to-b from-black/35 via-black/20 to-black/85"></div>
+    <div aria-hidden class="noise absolute inset-0"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 backdrop-blur bg-black/65 border-b border-white/10">
+    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-4">
+      <div>
+        <a href="./feed.html" class="font-black tracking-tight text-sm sm:text-base">
+          ONE<span class="text-lime-400">MARKET</span>
+          <span class="font-semibold text-white/80">News</span>
+        </a>
+        <p class="text-[9px] text-white/55 mt-0.5">
+          Analytics — overview of submissions, beats, trust scores &amp; trends (local prototype).
+        </p>
+      </div>
+      <nav class="text-[9px] sm:text-xs text-white/70 flex items-center gap-3">
+        <a class="hover:text-white" href="./feed.html">Feed</a>
+        <a class="hover:text-white" href="./dashboard.html">Writer</a>
+        <a class="hover:text-white" href="./editor.html">Editor</a>
+        <a class="hover:text-white" href="./admin.html">Admin</a>
+        <a class="hover:text-white" href="./settings.html">Settings</a>
+        <span class="px-2 py-1 rounded-lg bg-white/5 text-lime-300 text-[9px] border border-lime-300/40">
+          Analytics
+        </span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-4 py-6 space-y-6">
+    <!-- Top summary cards -->
+    <section class="grid gap-4 md:grid-cols-4">
+      <div class="glass rounded-2xl border border-white/10 px-4 py-3 flex flex-col justify-between">
+        <div class="text-[9px] text-white/60 uppercase tracking-wide">Total submissions</div>
+        <div id="m_total" class="mt-1 text-2xl font-bold">0</div>
+        <div class="text-[9px] text-white/45 mt-1">Across all statuses &amp; beats.</div>
+      </div>
+      <div class="glass rounded-2xl border border-white/10 px-4 py-3">
+        <div class="text-[9px] text-white/60 uppercase tracking-wide">Published</div>
+        <div id="m_published" class="mt-1 text-2xl font-bold text-lime-400">0</div>
+        <div class="text-[9px] text-white/45 mt-1">
+          <span id="m_pub_pct">0%</span> of all submissions.
+        </div>
+      </div>
+      <div class="glass rounded-2xl border border-white/10 px-4 py-3">
+        <div class="text-[9px] text-white/60 uppercase tracking-wide">Avg trust (published)</div>
+        <div id="m_trust_avg" class="mt-1 text-2xl font-bold">—</div>
+        <div class="text-[9px] text-white/45 mt-1">Only entries with trust scores.</div>
+      </div>
+      <div class="glass rounded-2xl border border-white/10 px-4 py-3">
+        <div class="text-[9px] text-white/60 uppercase tracking-wide">Active beats</div>
+        <div id="m_beats" class="mt-1 text-2xl font-bold">0</div>
+        <div class="text-[9px] text-white/45 mt-1" id="m_beats_list">—</div>
+      </div>
+    </section>
+
+    <!-- Status & trust breakdown -->
+    <section class="grid gap-4 lg:grid-cols-3">
+      <!-- Status breakdown -->
+      <div class="glass rounded-2xl border border-white/10 p-4 space-y-2 lg:col-span-1">
+        <div class="flex items-center justify-between gap-2">
+          <h2 class="text-sm font-semibold">Status breakdown</h2>
+          <span class="text-[9px] text-white/45">From local submissions</span>
+        </div>
+        <div id="status_rows" class="space-y-2 text-[10px]"></div>
+      </div>
+
+      <!-- Trust by beat -->
+      <div class="glass rounded-2xl border border-white/10 p-4 space-y-2 lg:col-span-2">
+        <div class="flex items-center justify-between gap-2">
+          <h2 class="text-sm font-semibold">Trust by beat</h2>
+          <span class="text-[9px] text-white/45">Avg trust for published stories</span>
+        </div>
+        <div id="trust_beats" class="space-y-2 text-[10px]"></div>
+      </div>
+    </section>
+
+    <!-- Timeline & tags -->
+    <section class="grid gap-4 lg:grid-cols-3">
+      <!-- Submissions timeline -->
+      <div class="glass rounded-2xl border border-white/10 p-4 space-y-2 lg:col-span-2">
+        <div class="flex items-center justify-between gap-2">
+          <h2 class="text-sm font-semibold">Submission timeline</h2>
+          <span class="text-[9px] text-white/45">Last 14 days (local)</span>
+        </div>
+        <div id="spark_empty" class="text-[9px] text-white/45 mt-1 hidden">
+          No recent submissions yet. As writers submit, activity will appear here.
+        </div>
+        <div id="spark_wrap" class="mt-1">
+          <div class="spark-wrap" id="spark_bars"></div>
+          <div id="spark_labels" class="flex justify-between text-[8px] text-white/40 mt-1"></div>
+        </div>
+      </div>
+
+      <!-- Top tags -->
+      <div class="glass rounded-2xl border border-white/10 p-4 space-y-2">
+        <div class="flex items-center justify-between gap-2">
+          <h2 class="text-sm font-semibold">Top tags</h2>
+          <span class="text-[9px] text-white/45">Across all submissions</span>
+        </div>
+        <div id="tags_list" class="mt-1 flex flex-wrap gap-1.5 text-[9px]"></div>
+      </div>
+    </section>
+
+    <!-- Recent published table -->
+    <section class="glass rounded-2xl border border-white/10 p-4 space-y-2">
+      <div class="flex items-center justify-between gap-2">
+        <h2 class="text-sm font-semibold">Recent published stories</h2>
+        <div class="flex items-center gap-2">
+          <span class="text-[9px] text-white/45 hide-sm">Snapshot from this browser's submissions data.</span>
+          <button id="btn_refresh" class="pill">Refresh snapshot</button>
+        </div>
+      </div>
+      <div class="overflow-x-auto mt-1">
+        <table class="min-w-full text-[9px]">
+          <thead>
+            <tr class="text-left text-white/55 border-b border-white/10">
+              <th class="py-1 pr-2">Title</th>
+              <th class="py-1 px-2">Beat</th>
+              <th class="py-1 px-2">Date</th>
+              <th class="py-1 px-2">Trust</th>
+              <th class="py-1 px-2">Primary</th>
+            </tr>
+          </thead>
+          <tbody id="recent_published"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="text-center text-[9px] text-white/55">
+      © <span id="year"></span> OneMarket News, LLC.
+      • Analytics reads from <code>onemarket.submissions</code> in this browser (prototype).
+    </footer>
+  </main>
+
+  <!-- Snackbar -->
+  <div id="snack" class="snackbar">
+    <span>✅</span><span>Updated</span>
+  </div>
+
+  <script>
+    const LS_SUBS_KEY = 'onemarket.submissions';
+
+    const $ = id => document.getElementById(id);
+
+    // Year
+    $('year').textContent = new Date().getFullYear();
+
+    // Snackbar
+    const snackEl = $('snack');
+    function snack(msg='Updated'){
+      snackEl.children[1].textContent = msg;
+      snackEl.classList.add('show');
+      setTimeout(()=>snackEl.classList.remove('show'), 1100);
+    }
+
+    // Utils
+    function esc(s){
+      return String(s || '').replace(/[&<>"']/g, m => ({
+        '&':'&amp;',
+        '<':'&lt;',
+        '>':'&gt;',
+        '"':'&quot;',
+        "'":'&#39;'
+      }[m]));
+    }
+
+    function readSubs(){
+      try {
+        const raw = localStorage.getItem(LS_SUBS_KEY);
+        if (!raw) return [];
+        const arr = JSON.parse(raw);
+        return Array.isArray(arr) ? arr : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function compute(){
+      const rows = readSubs();
+      const total = rows.length;
+
+      const byStatus = {
+        'In Review':0,
+        'Needs Edits':0,
+        'Published':0,
+        'Rejected':0,
+        'Other':0
+      };
+
+      const beats = {};
+      const trustPublished = [];
+      const trustByBeat = {};
+      const tags = {};
+
+      // Last 14 days buckets (YYYY-MM-DD)
+      const now = new Date();
+      const daysWindow = 14;
+      const buckets = [];
+      for (let i = daysWindow - 1; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+        const key = d.toISOString().slice(0,10);
+        buckets.push({ key, label: `${d.getMonth()+1}/${d.getDate()}`, count: 0 });
+      }
+
+      rows.forEach(r => {
+        const st = r.status || 'In Review';
+        if (byStatus[st] !== undefined) byStatus[st]++; else byStatus.Other++;
+
+        const beat = r.beat || 'Uncategorized';
+        beats[beat] = (beats[beat] || 0) + 1;
+
+        // Tags
+        let tList = [];
+        if (Array.isArray(r.tags)) tList = r.tags;
+        else if (typeof r.tags === 'string') {
+          tList = r.tags.split(',').map(s => s.trim()).filter(Boolean);
+        }
+        tList.forEach(t => { tags[t] = (tags[t] || 0) + 1; });
+
+        // Trust for published
+        if (st === 'Published' && r.trust && typeof r.trust.score === 'number') {
+          const score = Number(r.trust.score);
+          if (!Number.isNaN(score)) {
+            trustPublished.push(score);
+            trustByBeat[beat] = trustByBeat[beat] || [];
+            trustByBeat[beat].push(score);
+          }
+        }
+
+        // Timeline
+        if (r.date) {
+          const d = new Date(r.date);
+          if (!isNaN(d)) {
+            const key = d.toISOString().slice(0,10);
+            const bucket = buckets.find(b => b.key === key);
+            if (bucket) bucket.count++;
+          }
+        }
+      });
+
+      return { rows, total, byStatus, beats, trustPublished, trustByBeat, tags, buckets };
+    }
+
+    function renderSummary(data){
+      const { total, byStatus, beats, trustPublished } = data;
+      const published = byStatus['Published'] || 0;
+
+      $('m_total').textContent = total;
+      $('m_published').textContent = published;
+      $('m_pub_pct').textContent = total ? Math.round((published / total) * 100) + '%' : '0%';
+
+      if (trustPublished.length) {
+        const avg = trustPublished.reduce((a,b)=>a+b,0) / trustPublished.length;
+        $('m_trust_avg').textContent = Math.round(avg) + '%';
+      } else {
+        $('m_trust_avg').textContent = '—';
+      }
+
+      const beatNames = Object.keys(beats).sort((a,b)=>beats[b]-beats[a]);
+      $('m_beats').textContent = beatNames.length;
+      $('m_beats_list').textContent = beatNames.slice(0,3).join(' • ') || 'No beats yet';
+    }
+
+    function renderStatus(data){
+      const { total, byStatus } = data;
+      const container = $('status_rows');
+      container.innerHTML = '';
+
+      const order = ['Published','In Review','Needs Edits','Rejected','Other'];
+      const colors = {
+        'Published':'b-green',
+        'In Review':'',
+        'Needs Edits':'b-yellow',
+        'Rejected':'b-red',
+        'Other':''
+      };
+
+      order.forEach(st => {
+        const count = byStatus[st] || 0;
+        if (!count && st === 'Other') return;
+        const pct = total ? Math.round(count / total * 100) : 0;
+
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-2';
+        row.innerHTML = `
+          <span class="badge ${colors[st]||''}">${esc(st)}</span>
+          <span class="text-white/85 font-semibold text-[10px]">${count}</span>
+          <span class="text-white/45 text-[9px]">${pct}%</span>
+        `;
+        container.appendChild(row);
+      });
+
+      if (!total) {
+        container.innerHTML =
+          '<div class="text-[9px] text-white/45">No submissions stored yet. Once writers submit drafts, this panel will populate.</div>';
+      }
+    }
+
+    function renderTrustByBeat(data){
+      const { trustByBeat } = data;
+      const container = $('trust_beats');
+      container.innerHTML = '';
+
+      const entries = Object.entries(trustByBeat).map(([beat, arr]) => {
+        const avg = arr.reduce((a,b)=>a+b,0)/arr.length;
+        return { beat, avg, count: arr.length };
+      }).sort((a,b)=>b.avg-a.avg);
+
+      if (!entries.length) {
+        container.innerHTML =
+          '<div class="text-[9px] text-white/45">No trust scores yet. Once editors assign trust on published stories, you\'ll see beat quality here.</div>';
+        return;
+      }
+
+      const maxAvg = Math.max(...entries.map(e => e.avg)) || 1;
+
+      entries.forEach(e => {
+        const pctWidth = Math.max(8, (e.avg / maxAvg) * 100); // ensure visible
+        const row = document.createElement('div');
+        row.className = 'space-y-1';
+        row.innerHTML = `
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="badge">${esc(e.beat)}</span>
+              <span class="text-[9px] text-white/55">${e.count} story${e.count!==1?'ies':''}</span>
+            </div>
+            <span class="text-[10px] font-semibold text-lime-300">${Math.round(e.avg)}%</span>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar-fill" style="width:${pctWidth}%;"></div>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function renderTimeline(data){
+      const { buckets } = data;
+      const totalCounts = buckets.reduce((s,b)=>s+b.count,0);
+      const barsEl = $('spark_bars');
+      const labelsEl = $('spark_labels');
+      const emptyEl = $('spark_empty');
+      const wrapEl = $('spark_wrap');
+
+      barsEl.innerHTML = '';
+      labelsEl.innerHTML = '';
+
+      if (!buckets.length || totalCounts === 0) {
+        emptyEl.classList.remove('hidden');
+        wrapEl.classList.add('opacity-40');
+        return;
+      }
+
+      emptyEl.classList.add('hidden');
+      wrapEl.classList.remove('opacity-40');
+
+      const maxCount = Math.max(...buckets.map(b=>b.count)) || 1;
+
+      buckets.forEach(b => {
+        const hPct = (b.count / maxCount) * 100;
+        const bar = document.createElement('div');
+        bar.className = 'spark-bar' + (b.count === 0 ? ' zero' : '');
+        bar.style.height = (4 + hPct * 0.7) + '%'; // min height + scale
+        barsEl.appendChild(bar);
+      });
+
+      const first = buckets[0];
+      const last = buckets[buckets.length-1];
+      labelsEl.innerHTML = `
+        <span>${esc(first.label)}</span>
+        <span>${esc(last.label)}</span>
+      `;
+    }
+
+    function renderTags(data){
+      const { tags } = data;
+      const container = $('tags_list');
+      container.innerHTML = '';
+
+      const entries = Object.entries(tags)
+        .sort((a,b)=>b[1]-a[1])
+        .slice(0,20);
+
+      if (!entries.length) {
+        container.innerHTML =
+          '<div class="text-[9px] text-white/45">Tags will appear once submissions include tag metadata.</div>';
+        return;
+      }
+
+      entries.forEach(([tag, count], idx) => {
+        const pill = document.createElement('div');
+        pill.className = 'pill' + (idx < 3 ? ' pill-active' : '');
+        pill.innerHTML = `<span>#${esc(tag)}</span><span class="text-white/55">${count}</span>`;
+        container.appendChild(pill);
+      });
+    }
+
+    function renderRecentPublished(data){
+      const { rows } = data;
+      const tbody = $('recent_published');
+      tbody.innerHTML = '';
+
+      const published = rows
+        .filter(r => r.status === 'Published')
+        .sort((a,b) => (b.date||0) - (a.date||0))
+        .slice(0, 12);
+
+      if (!published.length) {
+        tbody.innerHTML =
+          '<tr><td colspan="5" class="py-3 text-[9px] text-white/45">No published stories yet. Once you publish from the Editor, a snapshot will appear here.</td></tr>';
+        return;
+      }
+
+      published.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-white/8';
+        const url = r.id ? `/story.html?id=${encodeURIComponent(r.id)}` : (r.primary_url || '#');
+
+        const trustLabel = r.trust?.label || '';
+        const trustScore = typeof r.trust?.score === 'number'
+          ? Math.round(r.trust.score) + '%'
+          : '';
+
+        const trustBadge = trustLabel
+          ? `<span class="badge ${
+              trustLabel==='green' ? 'b-green'
+              : trustLabel==='yellow' ? 'b-yellow'
+              : 'b-red'
+            }">${trustScore || ''} ${esc(trustLabel)}</span>`
+          : (trustScore ? `<span class="badge">${trustScore}</span>` : '—');
+
+        tr.innerHTML = `
+          <td class="py-1 pr-2 align-top">
+            <a href="${esc(url)}" class="hover:underline" target="_blank" rel="noopener">
+              ${esc(r.title || '(Untitled)')}
+            </a>
+          </td>
+          <td class="py-1 px-2 align-top text-white/70">${esc(r.beat || '')}</td>
+          <td class="py-1 px-2 align-top text-white/55 whitespace-nowrap">
+            ${r.date ? esc(new Date(r.date).toLocaleString()) : ''}
+          </td>
+          <td class="py-1 px-2 align-top">${trustBadge}</td>
+          <td class="py-1 px-2 align-top">
+            ${
+              r.primary_url
+                ? `<a href="${esc(r.primary_url)}" class="text-lime-300 hover:text-lime-200 underline underline-offset-2" target="_blank" rel="noopener">Source</a>`
+                : '<span class="text-white/35">—</span>'
+            }
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderAll(){
+      const data = compute();
+      renderSummary(data);
+      renderStatus(data);
+      renderTrustByBeat(data);
+      renderTimeline(data);
+      renderTags(data);
+      renderRecentPublished(data);
+    }
+
+    // Refresh button
+    $('btn_refresh').addEventListener('click', () => {
+      renderAll();
+      snack('Analytics refreshed');
+    });
+
+    // Initial render
+    renderAll();
+  </script>
+</body>
+</html>
