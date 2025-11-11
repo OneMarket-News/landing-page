@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OneMarket — Sign in</title>
+  <meta name="description" content="Sign in to OneMarket News to submit stories, review content, and view internal dashboards." />
+  <meta name="theme-color" content="#000" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root { --lime:#a3e635; color-scheme: dark; }
+    body { background:#000; color:#fff; font-family: system-ui, -apple-system, BlinkMacSystemFont, -sans-serif; }
+
+    .bg-grid {
+      background-image:
+        radial-gradient(circle at 0 0, rgba(148,163,253,.08) 0, transparent 55%),
+        radial-gradient(circle at 100% 0, rgba(163,230,53,.06) 0, transparent 55%);
+    }
+    .noise {
+      background-image:radial-gradient(1px 1px at 25px 25px,rgba(255,255,255,.9)1px,transparent 0);
+      opacity:.04;
+      pointer-events:none;
+    }
+    .glass {
+      background:linear-gradient(180deg,rgba(15,23,42,.96),rgba(2,6,23,.98));
+      backdrop-filter:blur(18px) saturate(130%);
+    }
+    .input {
+      width:100%;
+      border-radius:9999px;
+      padding:.7rem .9rem;
+      background:rgba(15,23,42,1);
+      border:1px solid rgba(148,163,253,.22);
+      color:#e5e7eb;
+      font-size:.85rem;
+      outline:none;
+      transition:border-color .16s ease, box-shadow .16s ease, background .16s ease;
+    }
+    .input::placeholder {
+      color:rgba(148,163,253,.55);
+    }
+    .input:focus {
+      border-color:var(--lime);
+      box-shadow:0 0 0 1px rgba(163,230,53,.35);
+      background:#020817;
+    }
+    .btn {
+      border-radius:9999px;
+      padding:.65rem .9rem;
+      font-size:.85rem;
+      border:1px solid rgba(148,163,253,.4);
+      background:rgba(15,23,42,1);
+      color:#e5e7eb;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:.4rem;
+      transition:all .18s ease;
+      cursor:pointer;
+      width:100%;
+    }
+    .btn:hover {
+      background:rgba(17,24,39,1);
+      box-shadow:0 10px 28px rgba(15,23,42,.9);
+    }
+    .btn-primary {
+      background:var(--lime);
+      border-color:transparent;
+      color:#020817;
+      font-weight:600;
+    }
+    .btn-primary:hover {
+      background:#c4f15b;
+      box-shadow:0 14px 40px rgba(163,230,53,.32);
+    }
+    .pill {
+      display:inline-flex;
+      align-items:center;
+      gap:.25rem;
+      padding:.2rem .55rem;
+      border-radius:9999px;
+      border:1px solid rgba(148,163,253,.25);
+      font-size:.6rem;
+      color:rgba(148,163,253,.9);
+      background:rgba(2,6,23,.96);
+    }
+    .pill span.dot {
+      width:6px;
+      height:6px;
+      border-radius:999px;
+      background:var(--lime);
+      box-shadow:0 0 8px rgba(163,230,53,.9);
+    }
+    .error {
+      font-size:.75rem;
+      color:#fecaca;
+      margin-top:.35rem;
+    }
+    .success {
+      font-size:.75rem;
+      color:#bbf7d0;
+      margin-top:.35rem;
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(10px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+    .fade-in { animation:fadeUp .35s ease-out both; }
+    a.link {
+      color:#a5b4fc;
+      text-decoration:underline;
+      text-underline-offset:2px;
+      font-size:.75rem;
+    }
+    a.link:hover {
+      color:#c7d2fe;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-grid">
+  <!-- Background layers -->
+  <div class="fixed inset-0 noise"></div>
+
+  <!-- Header (simple, consistent) -->
+  <header class="sticky top-0 z-30 backdrop-blur bg-black/40 border-b border-white/10">
+    <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-4">
+      <a href="/feed.html" class="font-black tracking-tight text-sm sm:text-base">
+        ONE<span class="text-lime-400">MARKET</span> <span class="font-semibold text-white/80">News</span>
+      </a>
+      <nav class="flex items-center gap-3 text-[9px] sm:text-[10px] text-white/65">
+        <a href="/feed.html" class="hover:text-white">Feed</a>
+        <a href="/contributors.html" class="hover:text-white">Write</a>
+        <a href="/methodology.html" class="hover:text-white hidden sm:inline">Methodology</a>
+        <a href="/login.html" class="text-lime-300 hover:text-lime-200">Sign in</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="mx-auto max-w-6xl px-4 py-10 flex items-center justify-center">
+    <section class="w-full max-w-md glass rounded-3xl border border-white/10 px-5 sm:px-7 py-6 sm:py-7 fade-in shadow-2xl">
+      <div class="flex items-center justify-between gap-2 mb-2">
+        <div>
+          <div class="pill">
+            <span class="dot"></span>
+            <span>Secure editor & contributor access</span>
+          </div>
+          <h1 class="mt-3 text-xl sm:text-2xl font-semibold tracking-tight">
+            Sign in to OneMarket
+          </h1>
+          <p class="mt-1 text-[10px] sm:text-[11px] text-slate-300/80">
+            Use your account to submit stories, review content, and view internal dashboards.
+          </p>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <form id="loginForm" class="mt-4 space-y-3">
+        <div>
+          <label for="email" class="block text-[10px] text-slate-300/80 mb-1">Email</label>
+          <input
+            id="email"
+            type="email"
+            required
+            autocomplete="email"
+            placeholder="you@onemarket.news"
+            class="input"
+          />
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label for="password" class="block text-[10px] text-slate-300/80">Password</label>
+            <a href="/reset-password.html" class="link text-[9px]">Forgot?</a>
+          </div>
+          <input
+            id="password"
+            type="password"
+            required
+            autocomplete="current-password"
+            placeholder="••••••••"
+            class="input"
+          />
+        </div>
+        <div class="flex items-center justify-between gap-2 mt-1">
+          <label class="inline-flex items-center gap-1 text-[9px] text-slate-400">
+            <input id="remember" type="checkbox" class="h-3 w-3 rounded bg-slate-900 border-slate-600" checked />
+            Keep me signed in
+          </label>
+          <a href="/signup.html" class="link text-[9px]">Need an account?</a>
+        </div>
+        <button id="submitBtn" type="submit" class="btn btn-primary mt-2">
+          <span id="btnText">Sign in</span>
+          <span id="btnSpinner" class="hidden w-3 h-3 border-2 border-black/40 border-t-black rounded-full animate-spin"></span>
+        </button>
+        <div id="message" class=""></div>
+      </form>
+
+      <!-- Divider / subtle hint -->
+      <div class="mt-5 pt-4 border-t border-white/5 text-[9px] text-slate-400 space-y-1">
+        <div>Access levels:</div>
+        <div class="flex flex-wrap gap-1">
+          <span class="badge">Reader: public feed only</span>
+          <span class="badge">Writer: submissions & profile</span>
+          <span class="badge">Editor: review & trust tools</span>
+          <span class="badge">Admin: analytics & growth</span>
+        </div>
+        <p class="mt-1 text-[8px] text-slate-500">
+          Roles are assigned by OneMarket. If you need elevated access, contact an admin.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Supabase init (same project you’re using elsewhere)
+    const SUPABASE_URL = 'https://fdwjzdvdqskcdidiervv.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZkd2p6ZHZkcXNrY2RpZGllcnZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMDk0MDgsImV4cCI6MjA3Nzc4NTQwOH0.iCEfiC1EH4Ec0GZB7y437yTA-ylyszIdhMJu-UimbCQ';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const form = document.getElementById('loginForm');
+    const msgEl = document.getElementById('message');
+    const btn = document.getElementById('submitBtn');
+    const btnText = document.getElementById('btnText');
+    const btnSpinner = document.getElementById('btnSpinner');
+
+    function setLoading(isLoading) {
+      if (isLoading) {
+        btn.disabled = true;
+        btn.classList.add('opacity-80','cursor-wait');
+        btnSpinner.classList.remove('hidden');
+        btnText.textContent = 'Signing in…';
+      } else {
+        btn.disabled = false;
+        btn.classList.remove('opacity-80','cursor-wait');
+        btnSpinner.classList.add('hidden');
+        btnText.textContent = 'Sign in';
+      }
+    }
+
+    function showError(text) {
+      msgEl.className = 'error';
+      msgEl.textContent = text;
+    }
+
+    function showSuccess(text) {
+      msgEl.className = 'success';
+      msgEl.textContent = text;
+    }
+
+    function getNextUrl() {
+      const params = new URLSearchParams(location.search);
+      const next = params.get('next');
+      if (next && next.startsWith('/')) return next;
+      return '/feed.html';
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msgEl.textContent = '';
+      msgEl.className = '';
+      setLoading(true);
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      if (!email || !password) {
+        showError('Email and password are required.');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (error) {
+          if (error.message.toLowerCase().includes('invalid login')) {
+            showError('Incorrect email or password.');
+          } else {
+            showError(error.message || 'Unable to sign in. Please try again.');
+          }
+          setLoading(false);
+          return;
+        }
+
+        if (!data.session) {
+          showError('No active session returned. Please try again.');
+          setLoading(false);
+          return;
+        }
+
+        showSuccess('Signed in. Redirecting…');
+        const nextUrl = getNextUrl();
+        setTimeout(() => {
+          window.location.href = nextUrl;
+        }, 400);
+      } catch (err) {
+        console.error(err);
+        showError('Unexpected error. Please try again.');
+        setLoading(false);
+      }
+    });
+
+    // If already logged in, gently send them where they were going
+    (async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (data?.user && !error) {
+        // Already signed in; respect ?next= if present
+        const to = getNextUrl();
+        if (to !== '/login.html') {
+          window.location.replace(to);
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
