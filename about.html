@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OneMarket — About</title>
+  <meta name="description" content="OneMarket is a trust-weighted newswire for AI, markets, chips, energy, and policy." />
+  <meta name="theme-color" content="#000" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { --lime:#a3e635; color-scheme: dark; }
+    body {
+      margin:0;
+      min-height:100vh;
+      background:
+        radial-gradient(circle at top, rgba(163,230,53,0.06), transparent 55%),
+        #020817;
+      color:#fff;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+    }
+    .glass {
+      background:linear-gradient(180deg,rgba(15,23,42,.98),rgba(2,6,23,.96));
+      border-radius:24px;
+      border:1px solid rgba(148,163,253,.16);
+      backdrop-filter:blur(18px) saturate(130%);
+      box-shadow:0 18px 55px rgba(0,0,0,.7);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="sticky top-0 z-40 backdrop-blur bg-black/40 border-b border-white/10">
+    <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-4">
+      <a href="/feed.html" class="font-black tracking-tight text-sm sm:text-base">
+        ONE<span class="text-lime-400">MARKET</span>
+        <span class="font-semibold text-white/80">News</span>
+      </a>
+      <nav class="flex items-center gap-3 text-[10px] text-white/65">
+        <a href="/feed.html" class="hover:text-white">Feed</a>
+        <a href="/about.html" class="text-lime-300">About</a>
+        <a href="/methodology.html" class="hover:text-white">Methodology</a>
+        <a href="/guidelines.html" class="hover:text-white">Guidelines</a>
+        <a href="/login.html" class="hover:text-lime-300">Sign in</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="mx-auto max-w-6xl px-4 py-8 space-y-6">
+    <section class="glass p-6 sm:p-8">
+      <div class="flex flex-wrap items-center gap-4">
+        <div>
+          <p class="text-[10px] uppercase tracking-[0.18em] text-slate-400">About OneMarket</p>
+          <h1 class="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight">
+            A verified signal layer for AI, markets, chips, and energy.
+          </h1>
+          <p class="mt-2 text-sm text-slate-300/90 max-w-2xl">
+            OneMarket is a curated, trust-weighted feed for people who actually move markets:
+            builders, analysts, founders, and operators. Every story is sourced, scored, and
+            ranked to reduce noise and surface what matters now.
+          </p>
+        </div>
+        <div class="ml-auto text-right text-xs text-slate-400">
+          <div class="text-lime-300 font-semibold">Built to be screenshot into decks.</div>
+          <div>Transparent sourcing • Editor workflow • Growth-grade analytics</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid gap-4 md:grid-cols-3">
+      <div class="glass p-5">
+        <h2 class="text-sm font-semibold mb-1.5">Verified inputs</h2>
+        <p class="text-[0.78rem] text-slate-300/90">
+          We prioritize filings, earnings, primary research, and first-party announcements,
+          then layer in reputable reporting and on-the-ground experts.
+        </p>
+      </div>
+      <div class="glass p-5">
+        <h2 class="text-sm font-semibold mb-1.5">Opinionated ranking</h2>
+        <p class="text-[0.78rem] text-slate-300/90">
+          Stories are ranked by trust score, recency, and structural impact on AI, compute,
+          energy, and capital flows—never by outrage.
+        </p>
+      </div>
+      <div class="glass p-5">
+        <h2 class="text-sm font-semibold mb-1.5">Human + machine</h2>
+        <p class="text-[0.78rem] text-slate-300/90">
+          An ingestion worker and heuristics handle volume; editors and contributors handle
+          nuance, context, and conflicts of interest.
+        </p>
+      </div>
+    </section>
+
+    <section class="glass p-6 sm:p-7">
+      <h2 class="text-sm font-semibold mb-2">For builders, by builders</h2>
+      <p class="text-[0.78rem] text-slate-300/90 max-w-3xl mb-3">
+        OneMarket is designed as a product, not a blog. Every piece of structure—the beats,
+        trust labels, citations, analytics, contributor workflows—is there so you can plug
+        this into your day job with minimal friction.
+      </p>
+      <ul class="grid gap-2 text-[0.78rem] text-slate-200/90 sm:grid-cols-2">
+        <li>• Follow high-signal beats (AI, markets, energy, chips, policy).</li>
+        <li>• Click through to primary sources in one tap.</li>
+        <li>• See trust & verification at a glance.</li>
+        <li>• Contributor pipeline with editor review and audit history.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="mt-8 mb-4 text-center text-[10px] text-slate-500">
+    © <span id="year"></span> OneMarket News, LLC •
+    <a href="/methodology.html" class="hover:text-lime-300">Methodology</a> •
+    <a href="/terms.html" class="hover:text-lime-300">Terms</a> •
+    <a href="/privacy.html" class="hover:text-lime-300">Privacy</a>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
