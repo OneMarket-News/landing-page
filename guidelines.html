@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OneMarket — Contributor Guidelines</title>
+  <meta name="theme-color" content="#000" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { --lime:#a3e635; color-scheme: dark; }
+    body {
+      margin:0;
+      min-height:100vh;
+      background:
+        radial-gradient(circle at top, rgba(163,230,53,0.05), transparent 55%),
+        #020817;
+      color:#fff;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+    }
+    .glass {
+      background:linear-gradient(180deg,rgba(15,23,42,.98),rgba(2,6,23,.96));
+      border-radius:24px;
+      border:1px solid rgba(148,163,253,.16);
+      backdrop-filter:blur(18px) saturate(130%);
+      box-shadow:0 18px 55px rgba(0,0,0,.7);
+    }
+  </style>
+</head>
+<body>
+  <header class="sticky top-0 z-40 backdrop-blur bg-black/40 border-b border-white/10">
+    <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-4">
+      <a href="/feed.html" class="font-black tracking-tight text-sm sm:text-base">
+        ONE<span class="text-lime-400">MARKET</span>
+        <span class="font-semibold text-white/80">News</span>
+      </a>
+      <nav class="flex items-center gap-3 text-[10px] text-white/65">
+        <a href="/feed.html" class="hover:text-white">Feed</a>
+        <a href="/about.html" class="hover:text-white">About</a>
+        <a href="/methodology.html" class="hover:text-white">Methodology</a>
+        <a href="/guidelines.html" class="text-lime-300">Guidelines</a>
+        <a href="/login.html" class="hover:text-lime-300">Sign in</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-4 py-8 space-y-6">
+    <section class="glass p-6 sm:p-8">
+      <p class="text-[10px] uppercase tracking-[0.18em] text-slate-400 mb-1">
+        Contributor Guidelines
+      </p>
+      <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight mb-2">
+        How to file stories that ship fast & score high.
+      </h1>
+      <p class="text-sm text-slate-300/90 max-w-3xl">
+        OneMarket is built for contributors who value accuracy, speed, and clarity.
+        Follow these guidelines to maximize your publish rate and trust score.
+      </p>
+    </section>
+
+    <section class="glass p-6 sm:p-7 space-y-3 text-[0.8rem] text-slate-200/90">
+      <h2 class="text-sm font-semibold">1. Sources</h2>
+      <ul class="space-y-1.5">
+        <li>• Always include at least one <strong>primary or authoritative</strong> source URL.</li>
+        <li>• Add 1–2 secondary links for context, not for drama.</li>
+        <li>• Screenshots or rumors alone are not enough for Green trust.</li>
+      </ul>
+
+      <h2 class="text-sm font-semibold mt-4">2. Headlines & summaries</h2>
+      <ul class="space-y-1.5">
+        <li>• Keep headlines concise, factual, non-clickbait.</li>
+        <li>• Use the summary to explain <em>what happened</em> in your own words.</li>
+        <li>• Add a one-line “why it matters” anchored in impact (not vibes).</li>
+      </ul>
+
+      <h2 class="text-sm font-semibold mt-4">3. Beats & tags</h2>
+      <ul class="space-y-1.5">
+        <li>• Choose the most relevant beat: AI, Markets, Energy, Chips/Hardware, Policy, Other.</li>
+        <li>• Use tags that help search & filter (e.g. “NVIDIA”, “Data centers”, “OpenAI”).</li>
+      </ul>
+
+      <h2 class="text-sm font-semibold mt-4">4. Conflicts & ethics</h2>
+      <ul class="space-y-1.5">
+        <li>• Disclose holdings, employment, or advisory roles when relevant.</li>
+        <li>• No paid placements disguised as news.</li>
+        <li>• Plagiarism or fabricated info = permanent removal.</li>
+      </ul>
+
+      <h2 class="text-sm font-semibold mt-4">5. Trust & promotion</h2>
+      <ul class="space-y-1.5">
+        <li>• Consistent, well-sourced work → higher trust scores → more front-page placement.</li>
+        <li>• Editors may adjust trust labels; changes are logged internally.</li>
+      </ul>
+
+      <p class="mt-4 text-[0.72rem] text-slate-400">
+        Full details live in our internal playbook. For now, if you follow this page,
+        you’re publishing at a professional standard.
+      </p>
+    </section>
+  </main>
+
+  <footer class="mt-8 mb-4 text-center text-[10px] text-slate-500">
+    © <span id="year"></span> OneMarket News, LLC •
+    <a href="/terms.html" class="hover:text-lime-300">Terms</a> •
+    <a href="/privacy.html" class="hover:text-lime-300">Privacy</a>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
