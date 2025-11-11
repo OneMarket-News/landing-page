@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OneMarket — Methodology</title>
+  <meta name="description" content="How OneMarket scores trust, selects sources, and ranks stories." />
+  <meta name="theme-color" content="#000" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { --lime:#a3e635; color-scheme: dark; }
+    body {
+      margin:0;
+      min-height:100vh;
+      background:
+        radial-gradient(circle at top, rgba(163,230,53,0.06), transparent 55%),
+        #020817;
+      color:#fff;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+    }
+    .glass {
+      background:linear-gradient(180deg,rgba(15,23,42,.98),rgba(2,6,23,.96));
+      border-radius:24px;
+      border:1px solid rgba(148,163,253,.16);
+      backdrop-filter:blur(18px) saturate(130%);
+      box-shadow:0 18px 55px rgba(0,0,0,.7);
+    }
+    .badge {
+      border-radius:9999px;
+      padding:.18rem .6rem;
+      font-size:.6rem;
+      border:1px solid rgba(148,163,253,.32);
+      color:rgba(199,210,254,0.9);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="sticky top-0 z-40 backdrop-blur bg-black/40 border-b border-white/10">
+    <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-4">
+      <a href="/feed.html" class="font-black tracking-tight text-sm sm:text-base">
+        ONE<span class="text-lime-400">MARKET</span>
+        <span class="font-semibold text-white/80">News</span>
+      </a>
+      <nav class="flex items-center gap-3 text-[10px] text-white/65">
+        <a href="/feed.html" class="hover:text-white">Feed</a>
+        <a href="/about.html" class="hover:text-white">About</a>
+        <a href="/methodology.html" class="text-lime-300">Methodology</a>
+        <a href="/guidelines.html" class="hover:text-white">Guidelines</a>
+        <a href="/login.html" class="hover:text-lime-300">Sign in</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-4 py-8 space-y-6">
+    <section class="glass p-6 sm:p-8">
+      <p class="text-[10px] uppercase tracking-[0.18em] text-slate-400 mb-1">Methodology</p>
+      <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight mb-2">
+        How OneMarket scores trust and ranks stories.
+      </h1>
+      <p class="text-sm text-slate-300/90 max-w-3xl">
+        OneMarket is not an algorithmic mystery box. Every story in the feed is backed by
+        explicit sources, a transparent trust label, and a reviewable workflow.
+      </p>
+    </section>
+
+    <section class="grid gap-4 md:grid-cols-3">
+      <div class="glass p-5">
+        <h2 class="text-sm font-semibold mb-1.5">Source hierarchy</h2>
+        <ul class="text-[0.78rem] text-slate-300/90 space-y-1">
+          <li>1️⃣ Regulatory filings &amp; earnings</li>
+          <li>2️⃣ Official company / project posts</li>
+          <li>3️⃣ Tier-1 reporting &amp; research</li>
+          <li>4️⃣ Verified domain experts</li>
+          <li>5️⃣ Social chatter (flagged, rarely primary)</li>
+        </ul>
+      </div>
+      <div class="glass p-5">
+        <h2 class="text-sm font-semibold mb-1.5">Trust labels</h2>
+        <p class="text-[0.78rem] text-slate-300/90 mb-2">
+          Each published story receives a trust label and score:
+        </p>
+        <ul class="text-[0.78rem] text-slate-300/90 space-y-1">
+          <li><span class="badge" style="border-color:rgba(22,163,74,.5);color:#bbf7d0;">Green</span> Multiple primary / authoritative sources.</li>
+          <li><span class="badge" style="border-color:#eab308;color:#fde68a;">Yellow</span> Credible but incomplete / developing.</li>
+          <li><span class="badge" style="border-color:#ef4444;color:#fecaca;">Red</span> Speculative, contested, or requires caution.</li>
+        </ul>
+      </div>
+      <div class="glass p-5">
+        <h2 class="text-sm font-semibold mb-1.5">Scoring inputs</h2>
+        <ul class="text-[0.78rem] text-slate-300/90 space-y-1">
+          <li>✔ Source tier &amp; diversity</li>
+          <li>✔ Historical accuracy of contributor</li>
+          <li>✔ Clarity of citations &amp; links</li>
+          <li>✔ Alignment across independent sources</li>
+          <li>✔ Editor overrides logged and auditable</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="glass p-6 sm:p-7 space-y-2">
+      <h2 class="text-sm font-semibold">Editorial & contributor workflow</h2>
+      <ol class="text-[0.78rem] text-slate-300/90 space-y-1.5 max-w-3xl">
+        <li><strong>1. Submission.</strong> Writers submit via the dashboard with required primary URL, tags, and a neutral summary.</li>
+        <li><strong>2. Triage.</strong> Editors review sources, check conflicts, assign initial trust label & score.</li>
+        <li><strong>3. Publish.</strong> Approved items move to the public feed with citations and trust badge visible.</li>
+        <li><strong>4. Revisions.</strong> If facts change, items can be updated with a visible edit trail.</li>
+      </ol>
+      <p class="text-[0.7rem] text-slate-400">
+        Internally, this is backed by roles, logs, and audit-friendly state changes so that
+        partners and buyers can verify how decisions were made.
+      </p>
+    </section>
+  </main>
+
+  <footer class="mt-8 mb-4 text-center text-[10px] text-slate-500">
+    © <span id="year"></span> OneMarket News, LLC •
+    <a href="/about.html" class="hover:text-lime-300">About</a> •
+    <a href="/terms.html" class="hover:text-lime-300">Terms</a> •
+    <a href="/privacy.html" class="hover:text-lime-300">Privacy</a>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
