@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OneMarket — Profile & Activity</title>
+  <meta name="theme-color" content="#000" />
+  <meta name="description" content="Contributor profile, publishing stats, and activity history for OneMarket News." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root { --lime:#a3e635; color-scheme: dark; }
+    body { background:#000; color:#fff; font-family: system-ui, -apple-system, BlinkMacSystemFont, -sans-serif; }
+    .glass {
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
+      backdrop-filter:blur(10px) saturate(120%);
+    }
+    .noise {
+      background-image:radial-gradient(1px 1px at 25px 25px,rgba(255,255,255,.9)1px,transparent 0);
+      opacity:.06;
+      pointer-events:none;
+    }
+    .pill {
+      border-radius:9999px;
+      border:1px solid rgba(255,255,255,.14);
+      padding:.25rem .7rem;
+      font-size:.65rem;
+      background:rgba(255,255,255,.02);
+      display:inline-flex;
+      align-items:center;
+      gap:.3rem;
+    }
+    .pill span.dot {
+      width:6px;
+      height:6px;
+      border-radius:999px;
+      background:var(--lime);
+    }
+    .badge {
+      border-radius:9999px;
+      padding:.15rem .5rem;
+      font-size:.7rem;
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(255,255,255,.06);
+    }
+    .badge-role-admin { color:#bbf7d0; border-color:rgba(22,163,74,.6); }
+    .badge-role-editor { color:#bfdbfe; border-color:rgba(59,130,246,.6); }
+    .badge-role-writer { color:#e5e7eb; border-color:rgba(75,85,99,.9); }
+    .trust-green { background:rgba(22,163,74,.18); color:#bbf7d0; }
+    .trust-yellow { background:rgba(202,138,4,.22); color:#facc15; }
+    .trust-red { background:rgba(220,38,38,.22); color:#fecaca; }
+    .snackbar {
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:18px;
+      background:#020817;
+      border:1px solid rgba(148,163,253,.26);
+      padding:.55rem .95rem;
+      border-radius:12px;
+      box-shadow:0 10px 32px rgba(0,0,0,.5);
+      z-index:60;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .18s ease, transform .18s ease;
+      font-size:.78rem;
+      display:flex;
+      align-items:center;
+      gap:.4rem;
+    }
+    .snackbar.show {
+      opacity:1;
+      pointer-events:auto;
+      transform:translateX(-50%) translateY(-2px);
+    }
+    .snackbar span.dot {
+      width:7px;
+      height:7px;
+      border-radius:999px;
+      background:var(--lime);
+    }
+    .link {
+      color:#bef264;
+      text-decoration:underline;
+      text-underline-offset:2px;
+    }
+    .row-hover:hover {
+      background:rgba(255,255,255,.02);
+    }
+    @keyframes fadeInUp{
+      from{opacity:0;transform:translateY(6px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+    .fade-in { animation:fadeInUp .35s ease-out both; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <!-- BG -->
+  <div class="fixed inset-0 -z-10">
+    <div class="absolute inset-0 bg-gradient-to-b from-black via-black/80 to-black"></div>
+    <div class="noise absolute inset-0"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 backdrop-blur bg-black/55 border-b border-white/10">
+    <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-4">
+      <a href="/feed.html" class="font-black tracking-tight text-sm sm:text-base">
+        ONE<span class="text-lime-400">MARKET</span> <span class="font-semibold text-white/80">News</span>
+      </a>
+      <nav class="text-[10px] sm:text-xs text-white/70 flex items-center gap-3">
+        <a class="hover:text-white" href="/feed.html">Feed</a>
+        <a class="hover:text-white" href="/writer.html">Writer</a>
+        <a class="hover:text-white" href="/editor.html">Editor</a>
+        <a class="hover:text-white" href="/analytics.html">Analytics</a>
+        <a class="hover:text-white" href="/settings.html">Settings</a>
+        <button id="logoutBtn" class="hidden sm:inline-flex px-3 py-1 rounded-full border border-white/15 text-[10px] hover:bg-white/5">
+          Log out
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="mx-auto max-w-6xl px-4 py-6 space-y-6">
+    <!-- Profile header -->
+    <section class="glass rounded-2xl border border-white/10 p-5 flex flex-wrap items-start gap-4 fade-in">
+      <div class="flex items-center gap-3">
+        <div id="avatar"
+             class="h-11 w-11 rounded-2xl bg-gradient-to-br from-lime-400/20 via-sky-400/10 to-emerald-500/15
+                    flex items-center justify-center text-lime-300 font-semibold text-lg">
+          U
+        </div>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 id="displayName" class="text-xl font-semibold">Loading…</h1>
+            <span id="roleBadge" class="badge badge-role-writer text-xs">writer</span>
+          </div>
+          <div id="email" class="text-xs text-white/55">—</div>
+          <div id="metaLine" class="text-[10px] text-white/45 mt-1">
+            Joined — • Last active —
+          </div>
+        </div>
+      </div>
+      <div class="ml-auto flex flex-col gap-2 items-start sm:items-end text-[10px] text-white/60">
+        <div class="pill">
+          <span class="dot"></span>
+          Viewing
+          <span id="viewingLabel" class="font-semibold text-white/85">Your profile</span>
+        </div>
+        <div id="adminHint" class="hidden text-[9px] text-white/40">
+          Admin: append <code>?user=&lt;id&gt;</code> to inspect another contributor.
+        </div>
+      </div>
+    </section>
+
+    <!-- Stat cards -->
+    <section class="grid gap-4 sm:grid-cols-4 fade-in">
+      <div class="glass rounded-2xl border border-white/10 p-4">
+        <div class="text-[10px] text-white/55">Total submissions</div>
+        <div id="statTotalSubs" class="mt-1 text-2xl font-bold">0</div>
+        <div id="statTotalSubsDetail" class="text-[9px] text-white/40 mt-1"></div>
+      </div>
+      <div class="glass rounded-2xl border border-white/10 p-4">
+        <div class="text-[10px] text-white/55">Published</div>
+        <div id="statPublished" class="mt-1 text-2xl font-bold">0</div>
+        <div id="statPubRate" class="text-[9px] text-white/40 mt-1">0% approval</div>
+      </div>
+      <div class="glass rounded-2xl border border-white/10 p-4">
+        <div class="text-[10px] text-white/55">Avg trust (published)</div>
+        <div id="statAvgTrust" class="mt-1 text-2xl font-bold">—</div>
+        <div id="statTrustLabel" class="text-[9px] text-white/40 mt-1"></div>
+      </div>
+      <div class="glass rounded-2xl border border-white/10 p-4">
+        <div class="text-[10px] text-white/55">Beats</div>
+        <div id="statTopBeat" class="mt-1 text-sm font-semibold">—</div>
+        <div id="statBeatsDetail" class="text-[9px] text-white/40 mt-1"></div>
+      </div>
+    </section>
+
+    <!-- Activity & breakdown -->
+    <section class="grid gap-6 lg:grid-cols-3 fade-in">
+      <!-- Recent submissions list -->
+      <div class="lg:col-span-2 glass rounded-2xl border border-white/10 p-5">
+        <div class="flex items-center gap-2 mb-2">
+          <h2 class="text-sm font-semibold">Recent submissions</h2>
+          <span id="recentCount" class="text-[9px] text-white/40"></span>
+          <div class="ml-auto flex items-center gap-2 text-[9px] text-white/45">
+            <label class="flex items-center gap-1">
+              <input type="checkbox" id="filterPublishedOnly" class="h-3 w-3 accent-lime-400">
+              <span>Published only</span>
+            </label>
+          </div>
+        </div>
+        <div id="recentEmpty" class="hidden text-[10px] text-white/45 mt-2">
+          No submissions yet. Use the Writer page to submit your first story.
+        </div>
+        <div class="mt-1 divide-y divide-white/5" id="recentList"></div>
+      </div>
+
+      <!-- Breakdown / meta -->
+      <aside class="glass rounded-2xl border border-white/10 p-5 space-y-4">
+        <div>
+          <h3 class="text-sm font-semibold mb-1">Status breakdown</h3>
+          <ul id="statusBreakdown" class="text-[10px] text-white/60 space-y-1">
+            <!-- filled in JS -->
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold mb-1">Source & trust</h3>
+          <div id="sourceSummary" class="text-[10px] text-white/55 space-y-1">
+            <!-- filled in JS -->
+          </div>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold mb-1">Links</h3>
+          <ul class="text-[10px] text-lime-300 space-y-1">
+            <li><a id="linkWriter" href="/writer.html" class="underline underline-offset-2">Open Writer dashboard</a></li>
+            <li><a id="linkEditor" href="/editor.html" class="underline underline-offset-2 text-white/60 hover:text-lime-300">Editor review (if you have access)</a></li>
+            <li><a id="linkAnalytics" href="/analytics.html" class="underline underline-offset-2 text-white/60 hover:text-lime-300">Global analytics (admins)</a></li>
+          </ul>
+        </div>
+      </aside>
+    </section>
+
+    <!-- Table of all submissions -->
+    <section class="glass rounded-2xl border border-white/10 p-5 fade-in">
+      <div class="flex items-center gap-2 mb-3">
+        <h2 class="text-sm font-semibold">All submissions from this user</h2>
+        <span id="tableCount" class="text-[9px] text-white/40"></span>
+        <div class="ml-auto flex items-center gap-2 text-[9px] text-white/50">
+          <input id="searchInput" class="px-2 py-1 rounded-full bg-black/40 border border-white/15 text-[9px] outline-none w-40"
+                 placeholder="Search title / tag / URL">
+          <select id="statusFilter" class="px-2 py-1 rounded-full bg-black/40 border border-white/15 text-[9px] outline-none">
+            <option value="">Status: All</option>
+            <option>In Review</option>
+            <option>Needs Edits</option>
+            <option>Published</option>
+            <option>Rejected</option>
+          </select>
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-[10px]">
+          <thead class="text-white/50 border-b border-white/10">
+            <tr>
+              <th class="py-1 pr-2 text-left">Title</th>
+              <th class="py-1 px-2 text-left">Beat</th>
+              <th class="py-1 px-2 text-left">Status</th>
+              <th class="py-1 px-2 text-left">Trust</th>
+              <th class="py-1 px-2 text-left">Primary URL</th>
+              <th class="py-1 pl-2 text-right">Created</th>
+            </tr>
+          </thead>
+          <tbody id="subsTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="text-center text-[9px] text-white/45">
+      © <span id="year"></span> OneMarket News, LLC.
+    </footer>
+  </main>
+
+  <!-- Snackbar -->
+  <div id="snackbar" class="snackbar">
+    <span class="dot"></span>
+    <span id="snackbarText">Copied</span>
+  </div>
+
+  <script>
+    // ====== CONFIG: plug in your existing Supabase URL + anon key ======
+    const SUPABASE_URL = 'https://fdwjzdvdqskcdidiervv.supabase.co'; // or your env
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZkd2p6ZHZkcXNrY2RpZGllcnZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMDk0MDgsImV4cCI6MjA3Nzc4NTQwOH0.iCEfiC1EH4Ec0GZB7y437yTA-ylyszIdhMJu-UimbCQ';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ====== DOM ======
+    const yearEl = document.getElementById('year');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const displayNameEl = document.getElementById('displayName');
+    const emailEl = document.getElementById('email');
+    const roleBadgeEl = document.getElementById('roleBadge');
+    const avatarEl = document.getElementById('avatar');
+    const metaLineEl = document.getElementById('metaLine');
+    const viewingLabelEl = document.getElementById('viewingLabel');
+    const adminHintEl = document.getElementById('adminHint');
+
+    const statTotalSubsEl = document.getElementById('statTotalSubs');
+    const statTotalSubsDetailEl = document.getElementById('statTotalSubsDetail');
+    const statPublishedEl = document.getElementById('statPublished');
+    const statPubRateEl = document.getElementById('statPubRate');
+    const statAvgTrustEl = document.getElementById('statAvgTrust');
+    const statTrustLabelEl = document.getElementById('statTrustLabel');
+    const statTopBeatEl = document.getElementById('statTopBeat');
+    const statBeatsDetailEl = document.getElementById('statBeatsDetail');
+
+    const recentCountEl = document.getElementById('recentCount');
+    const recentEmptyEl = document.getElementById('recentEmpty');
+    const recentListEl = document.getElementById('recentList');
+    const filterPublishedOnlyEl = document.getElementById('filterPublishedOnly');
+
+    const statusBreakdownEl = document.getElementById('statusBreakdown');
+    const sourceSummaryEl = document.getElementById('sourceSummary');
+
+    const tableCountEl = document.getElementById('tableCount');
+    const subsTableBodyEl = document.getElementById('subsTableBody');
+    const searchInputEl = document.getElementById('searchInput');
+    const statusFilterEl = document.getElementById('statusFilter');
+
+    const snackbarEl = document.getElementById('snackbar');
+    const snackbarTextEl = document.getElementById('snackbarText');
+
+    yearEl.textContent = new Date().getFullYear();
+
+    function showSnack(msg) {
+      snackbarTextEl.textContent = msg;
+      snackbarEl.classList.add('show');
+      setTimeout(() => snackbarEl.classList.remove('show'), 1200);
+    }
+
+    function esc(str) {
+      return String(str || '').replace(/[&<>"']/g, m => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[m]));
+    }
+
+    function trustBadge(label, score) {
+      if (!label && (score == null || score === '')) return '';
+      const s = typeof score === 'number' ? Math.round(score) : null;
+      const cls =
+        label === 'green' ? 'trust-green' :
+        label === 'yellow' ? 'trust-yellow' :
+        'trust-red';
+      const txt = [
+        label || '',
+        s != null ? `${s}%` : ''
+      ].filter(Boolean).join(' • ');
+      return `<span class="badge ${cls}">${esc(txt)}</span>`;
+    }
+
+    function formatDate(ts) {
+      if (!ts) return '';
+      try {
+        return new Date(ts).toLocaleString();
+      } catch {
+        return '';
+      }
+    }
+
+    // ====== Auth & profile load ======
+    async function getSessionUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        const next = encodeURIComponent(location.pathname + location.search);
+        window.location.href = `/login.html?next=${next}`;
+        return null;
+      }
+      return user;
+    }
+
+    async function getProfile(id) {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, display_name, role, created_at')
+        .eq('id', id)
+        .maybeSingle();
+      if (error) {
+        console.error('Profile load error', error);
+        return null;
+      }
+      return data;
+    }
+
+    async function userIsAdmin(userId) {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .maybeSingle();
+      if (error || !data) return false;
+      return ['admin'].includes(data.role);
+    }
+
+    // ====== Submissions load (for one user) ======
+    async function getUserSubmissions(userId) {
+      const { data, error } = await supabase
+        .from('submissions')
+        .select('id, title, status, beat, tags, primary_url, trust_label, trust_score, created_at, published_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Submissions load error', error);
+        return [];
+      }
+      return data || [];
+    }
+
+    // ====== Render profile, stats, lists ======
+    function renderProfileHeader(user, profile, viewingOwn) {
+      const name = profile?.display_name || (user?.email?.split('@')[0]) || 'Contributor';
+      displayNameEl.textContent = name;
+      emailEl.textContent = user?.email || '—';
+
+      const initials = name
+        .split(' ')
+        .map(p => p[0])
+        .join('')
+        .slice(0,2)
+        .toUpperCase();
+      avatarEl.textContent = initials || 'U';
+
+      const role = profile?.role || 'writer';
+      roleBadgeEl.textContent = role;
+      roleBadgeEl.classList.remove('badge-role-admin','badge-role-editor','badge-role-writer');
+      if (role === 'admin') roleBadgeEl.classList.add('badge-role-admin');
+      else if (role === 'editor') roleBadgeEl.classList.add('badge-role-editor');
+      else roleBadgeEl.classList.add('badge-role-writer');
+
+      const joined = profile?.created_at ? formatDate(profile.created_at) : '—';
+      metaLineEl.textContent = `Joined ${joined} • Activity below is live`;
+
+      viewingLabelEl.textContent = viewingOwn ? 'Your profile' : 'Viewing contributor';
+      if (!viewingOwn && role === 'admin') {
+        viewingLabelEl.textContent = 'Viewing admin';
+      }
+    }
+
+    function computeStats(subs) {
+      const total = subs.length;
+      const byStatus = subs.reduce((acc, s) => {
+        acc[s.status] = (acc[s.status] || 0) + 1;
+        return acc;
+      }, {});
+      const published = subs.filter(s => s.status === 'Published');
+      const pubCount = published.length;
+      const pubRate = total ? Math.round((pubCount / total) * 100) : 0;
+
+      const trustVals = published
+        .map(s => (typeof s.trust_score === 'number' ? s.trust_score : null))
+        .filter(v => v != null);
+      const avgTrust = trustVals.length
+        ? Math.round(trustVals.reduce((a,b)=>a+b,0) / trustVals.length)
+        : null;
+
+      // beats
+      const beatCounts = subs.reduce((acc, s) => {
+        if (!s.beat) return acc;
+        acc[s.beat] = (acc[s.beat] || 0) + 1;
+        return acc;
+      }, {});
+      const beats = Object.entries(beatCounts).sort((a,b)=>b[1]-a[1]);
+      const topBeat = beats[0]?.[0] || '—';
+
+      // sources
+      const domainCounts = {};
+      for (const s of subs) {
+        if (!s.primary_url) continue;
+        try {
+          const u = new URL(s.primary_url);
+          const host = u.hostname.replace(/^www\./,'');
+          domainCounts[host] = (domainCounts[host] || 0) + 1;
+        } catch {}
+      }
+
+      return {
+        total,
+        byStatus,
+        pubCount,
+        pubRate,
+        avgTrust,
+        topBeat,
+        beats,
+        domainCounts
+      };
+    }
+
+    function renderStats(stats) {
+      const { total, pubCount, pubRate, avgTrust, topBeat, beats, domainCounts, byStatus } = stats;
+
+      statTotalSubsEl.textContent = total;
+      if (!total) {
+        statTotalSubsDetailEl.textContent = 'No submissions yet';
+      } else {
+        const inReview = byStatus['In Review'] || 0;
+        const needs = byStatus['Needs Edits'] || 0;
+        statTotalSubsDetailEl.textContent =
+          `${inReview} in review • ${needs} needs edits`;
+      }
+
+      statPublishedEl.textContent = pubCount;
+      statPubRateEl.textContent = `${pubRate || 0}% of submissions published`;
+
+      if (avgTrust != null) {
+        statAvgTrustEl.textContent = avgTrust + '%';
+        const label =
+          avgTrust >= 90 ? 'High signal' :
+          avgTrust >= 75 ? 'Solid signal' :
+          avgTrust >= 60 ? 'Mixed signal' : 'Needs work';
+        statTrustLabelEl.textContent = label;
+      } else {
+        statAvgTrustEl.textContent = '—';
+        statTrustLabelEl.textContent = 'No published trust data yet';
+      }
+
+      statTopBeatEl.textContent = topBeat;
+      if (beats.length) {
+        const detail = beats.slice(0,3)
+          .map(([beat,count]) => `${beat} (${count})`)
+          .join(' • ');
+        statBeatsDetailEl.textContent = detail;
+      } else {
+        statBeatsDetailEl.textContent = 'No beat preference yet';
+      }
+
+      // Status breakdown list
+      statusBreakdownEl.innerHTML = '';
+      const statuses = ['In Review','Needs Edits','Published','Rejected'];
+      statuses.forEach(st => {
+        const c = byStatus[st] || 0;
+        const li = document.createElement('li');
+        li.textContent = `${st}: ${c}`;
+        statusBreakdownEl.appendChild(li);
+      });
+
+      // Source summary
+      sourceSummaryEl.innerHTML = '';
+      const domains = Object.entries(domainCounts).sort((a,b)=>b[1]-a[1]).slice(0,4);
+      if (!domains.length) {
+        sourceSummaryEl.innerHTML = '<div>No primary URLs yet.</div>';
+      } else {
+        domains.forEach(([host, count]) => {
+          const div = document.createElement('div');
+          div.textContent = `${host} — ${count} link${count!==1?'s':''}`;
+          sourceSummaryEl.appendChild(div);
+        });
+      }
+    }
+
+    function renderRecent(subs) {
+      const limit = 8;
+      const publishedOnly = filterPublishedOnlyEl.checked;
+      const filtered = subs.filter(s => !publishedOnly || s.status === 'Published').slice(0, limit);
+
+      recentListEl.innerHTML = '';
+      recentCountEl.textContent = filtered.length
+        ? `${filtered.length} shown`
+        : '';
+      recentEmptyEl.classList.toggle('hidden', !!filtered.length || !!subs.length);
+
+      if (!filtered.length && subs.length) {
+        recentListEl.innerHTML =
+          '<div class="text-[10px] text-white/45 mt-2">No items match this filter.</div>';
+        return;
+      }
+
+      filtered.forEach(s => {
+        const row = document.createElement('div');
+        row.className = 'py-2 flex flex-col gap-0.5 row-hover';
+        const link = s.primary_url
+          ? `<a href="${esc(s.primary_url)}" target="_blank" rel="noopener" class="link text-[9px]">${esc(s.primary_url)}</a>`
+          : '<span class="text-[9px] text-white/30">No primary URL</span>';
+
+        const tBadge = trustBadge(s.trust_label, s.trust_score);
+        row.innerHTML = `
+          <div class="flex items-center gap-2">
+            <div class="text-[10px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
+              ${esc(s.status || '')}
+            </div>
+            ${s.beat ? `<div class="text-[9px] text-white/55">${esc(s.beat)}</div>` : ''}
+            <div class="text-[8px] text-white/35 ml-auto">${formatDate(s.created_at)}</div>
+          </div>
+          <div class="text-[11px] font-semibold">
+            ${esc(s.title || '(Untitled submission)')}
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            ${link}
+            ${tBadge ? `<span class="ml-1">${tBadge}</span>` : ''}
+          </div>
+        `;
+        // enable quick copy
+        row.addEventListener('dblclick', () => {
+          if (s.primary_url) {
+            navigator.clipboard.writeText(s.primary_url).then(()=> showSnack('Primary URL copied'));
+          }
+        });
+        recentListEl.appendChild(row);
+      });
+    }
+
+    function renderTable(subs) {
+      const q = (searchInputEl.value || '').toLowerCase().trim();
+      const st = statusFilterEl.value;
+      const filtered = subs.filter(s => {
+        if (st && s.status !== st) return false;
+        if (!q) return true;
+        const hay = [
+          s.title,
+          s.beat,
+          s.primary_url,
+          Array.isArray(s.tags) ? s.tags.join(',') : ''
+        ].join(' ').toLowerCase();
+        return hay.includes(q);
+      });
+
+      tableCountEl.textContent =
+        filtered.length ? `${filtered.length} row${filtered.length!==1?'s':''}` : '';
+
+      subsTableBodyEl.innerHTML = '';
+      if (!filtered.length) {
+        subsTableBodyEl.innerHTML =
+          '<tr><td colspan="6" class="py-3 text-center text-[10px] text-white/45">No submissions match this filter.</td></tr>';
+        return;
+      }
+
+      filtered.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-white/5 row-hover';
+        tr.innerHTML = `
+          <td class="py-1 pr-2 align-top">
+            ${esc(s.title || '(Untitled)')}
+            ${Array.isArray(s.tags) && s.tags.length
+              ? `<div class="text-[8px] text-white/40 mt-0.5">${esc(s.tags.join(', '))}</div>`
+              : ''}
+          </td>
+          <td class="py-1 px-2 align-top text-white/60">${esc(s.beat || '')}</td>
+          <td class="py-1 px-2 align-top">
+            <span class="px-2 py-0.5 rounded-full bg-white/5 border border-white/12 text-[8px]">${esc(s.status || '')}</span>
+          </td>
+          <td class="py-1 px-2 align-top">
+            ${trustBadge(s.trust_label, s.trust_score) || '<span class="text-[8px] text-white/30">—</span>'}
+          </td>
+          <td class="py-1 px-2 align-top">
+            ${s.primary_url
+              ? `<a href="${esc(s.primary_url)}" target="_blank" rel="noopener" class="link text-[8px]">Open</a>`
+              : '<span class="text-[8px] text-white/30">—</span>'}
+          </td>
+          <td class="py-1 pl-2 align-top text-right text-white/45 whitespace-nowrap">
+            ${formatDate(s.created_at)}
+          </td>
+        `;
+        subsTableBodyEl.appendChild(tr);
+      });
+    }
+
+    // ====== Logout ======
+    logoutBtn.addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      window.location.href = '/login.html';
+    });
+
+    // ====== Boot flow ======
+    (async function boot(){
+      const user = await getSessionUser();
+      if (!user) return;
+
+      // Check if admin (for impersonation help text)
+      const admin = await userIsAdmin(user.id);
+      if (admin) {
+        adminHintEl.classList.remove('hidden');
+      }
+
+      const params = new URLSearchParams(location.search);
+      const requestedUserId = params.get('user');
+
+      let targetUserId = user.id;
+      let viewingOwn = true;
+
+      if (requestedUserId && admin && requestedUserId !== user.id) {
+        targetUserId = requestedUserId;
+        viewingOwn = false;
+      }
+
+      // Load profile for target user
+      const profile = await getProfile(targetUserId);
+      // If invalid target, fallback to self
+      if (!profile && targetUserId !== user.id) {
+        targetUserId = user.id;
+        viewingOwn = true;
+      }
+
+      // Fetch auth user for target (we only have email for current user; for others we show limited info)
+      let targetUser = user;
+      if (!viewingOwn && admin) {
+        // You won't have direct email on client for others due to RLS;
+        // keep it to profile.display_name to avoid leaking PII.
+        targetUser = { email: '(restricted)', id: targetUserId };
+      }
+
+      renderProfileHeader(targetUser, profile, viewingOwn);
+
+      const subs = await getUserSubmissions(targetUserId);
+      const stats = computeStats(subs);
+      renderStats(stats);
+      renderRecent(subs);
+      renderTable(subs);
+
+      filterPublishedOnlyEl.addEventListener('change', () => renderRecent(subs));
+      searchInputEl.addEventListener('input', () => renderTable(subs));
+      statusFilterEl.addEventListener('change', () => renderTable(subs));
+    })();
+  </script>
+</body>
+</html>
