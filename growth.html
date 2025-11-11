@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OneMarket — Growth Dashboard</title>
+  <meta name="description" content="Growth, engagement, and contributor funnel metrics for OneMarket News." />
+  <meta name="theme-color" content="#000" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root { --lime:#a3e635; color-scheme: dark; }
+    body { background:#000; color:#fff; font-family: system-ui, -apple-system, BlinkMacSystemFont, -sans-serif; }
+
+    .glass {
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
+      backdrop-filter:blur(10px) saturate(120%);
+    }
+    .noise {
+      background-image:radial-gradient(1px 1px at 25px 25px,rgba(255,255,255,.9)1px,transparent 0);
+      opacity:.06;
+      pointer-events:none;
+    }
+    .pill {
+      border-radius:9999px;
+      border:1px solid rgba(255,255,255,.16);
+      padding:.25rem .7rem;
+      font-size:.65rem;
+      background:rgba(255,255,255,.02);
+      display:inline-flex;
+      align-items:center;
+      gap:.35rem;
+      color:rgba(248,250,252,.85);
+    }
+    .pill span.dot {
+      width:6px;
+      height:6px;
+      border-radius:999px;
+      background:var(--lime);
+    }
+    .badge {
+      border-radius:9999px;
+      padding:.15rem .5rem;
+      font-size:.65rem;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.04);
+    }
+    .badge-soft {
+      border-color:rgba(148,163,253,.35);
+      color:#bfdbfe;
+    }
+    .badge-danger {
+      border-color:rgba(248,113,113,.6);
+      color:#fecaca;
+    }
+    .snackbar {
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:18px;
+      background:#020817;
+      border:1px solid rgba(148,163,253,.26);
+      padding:.55rem .95rem;
+      border-radius:12px;
+      box-shadow:0 10px 32px rgba(0,0,0,.5);
+      z-index:60;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .18s ease, transform .18s ease;
+      font-size:.78rem;
+      display:flex;
+      align-items:center;
+      gap:.4rem;
+    }
+    .snackbar.show {
+      opacity:1;
+      pointer-events:auto;
+      transform:translateX(-50%) translateY(-2px);
+    }
+    .snackbar span.dot {
+      width:7px;
+      height:7px;
+      border-radius:999px;
+      background:var(--lime);
+    }
+    .row-hover:hover {
+      background:rgba(255,255,255,.02);
+    }
+    @keyframes fadeInUp{
+      from{opacity:0;transform:translateY(6px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+    .fade-in { animation:fadeInUp .32s ease-out both; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <!-- Background -->
+  <div class="fixed inset-0 -z-10">
+    <div class="absolute inset-0 bg-gradient-to-b from-black via-black/85 to-black"></div>
+    <div class="noise absolute inset-0"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 backdrop-blur bg-black/60 border-b border-white/10">
+    <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-4">
+      <a href="/feed.html" class="font-black tracking-tight text-sm sm:text-base">
+        ONE<span class="text-lime-400">MARKET</span> <span class="font-semibold text-white/80">News</span>
+      </a>
+      <nav class="text-[10px] sm:text-xs text-white/70 flex items-center gap-3">
+        <a class="hover:text-white" href="/feed.html">Feed</a>
+        <a class="hover:text-white" href="/writer.html">Writer</a>
+        <a class="hover:text-white" href="/editor.html">Editor</a>
+        <a class="hover:text-white" href="/analytics.html">Analytics</a>
+        <a class="hover:text-white font-semibold text-lime-300" href="/growth.html">Growth</a>
+        <a class="hover:text-white" href="/settings.html">Settings</a>
+        <button id="logoutBtn" class="hidden sm:inline-flex px-3 py-1 rounded-full border border-white/15 text-[10px] hover:bg-white/5">
+          Log out
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="mx-auto max-w-6xl px-4 py-6 space-y-6">
+    <!-- Top: title + range + status -->
+    <section class="glass rounded-2xl border border-white/10 p-5 flex flex-wrap items-center gap-4 fade-in">
+      <div>
+        <div class="text-[9px] text-white/50 mb-0.5">Internal • Admin-only</div>
+        <h1 class="text-xl sm:text-2xl font-semibold">Growth & Activation Dashboard</h1>
+        <p class="text-[10px] sm:text-xs text-white/55 mt-1">
+          Track users, contributors, and the funnel from signup → first publish. Designed for investors, ops, and future you.
+        </p>
+      </div>
+      <div class="ml-auto flex flex-col items-end gap-2">
+        <div class="pill">
+          <span class="dot"></span>
+          <span id="rangeLabel">Last 30 days</span>
+        </div>
+        <div class="flex gap-1 text-[9px] text-white/55">
+          <button data-range="7"  class="px-2 py-0.5 rounded-full border border-white/15 bg-white/5 hover:bg-white/10">7d</button>
+          <button data-range="30" class="px-2 py-0.5 rounded-full border border-white/15 bg-white/15 text-lime-300">30d</button>
+          <button data-range="90" class="px-2 py-0.5 rounded-full border border-white/15 bg-white/5 hover:bg-white/10">90d</button>
+          <button data-range="365" class="px-2 py-0.5 rounded-full border border-white/15 bg-white/5 hover:bg-white/10">All</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Core KPI tiles -->
+    <section class="grid gap-4 sm:grid-cols-4 fade-in">
+      <div class="glass rounded-2xl border border-white/10 p-4">
+        <div class="text-[9px] text-white/55">Total registered users</div>
+        <div id="kpiUsers" class="mt-1 text-2xl font-bold">—</div>
+        <div id="kpiUsersDelta" class="text-[9px] text-emerald-300 mt-1">+0 in range</div>
+      </div>
+      <div class="glass rounded-2xl border border-white/10 p-4">
+        <div class="text-[9px] text-white/55">Contributors (≥1 submission)</div>
+        <div id="kpiContrib" class="mt-1 text-2xl font-bold">—</div>
+        <div id="kpiContribRate" class="text-[9px] text-white/45 mt-1">—% of users</div>
+      </div>
+      <div class="glass rounded-2xl border border-white/10 p-4">
+        <div class="text-[9px] text-white/55">Publishing contributors (≥1 published)</div>
+        <div id="kpiPubContrib" class="mt-1 text-2xl font-bold">—</div>
+        <div id="kpiPubContribRate" class="text-[9px] text-white/45 mt-1">—% of contributors</div>
+      </div>
+      <div class="glass rounded-2xl border border-white/10 p-4">
+        <div class="text-[9px] text-white/55">Submissions → Published</div>
+        <div id="kpiFunnel" class="mt-1 text-2xl font-bold">—</div>
+        <div id="kpiFunnelDetail" class="text-[9px] text-white/45 mt-1">Approval rate —%</div>
+      </div>
+    </section>
+
+    <!-- Growth chart & funnel breakdown -->
+    <section class="grid gap-6 lg:grid-cols-3 fade-in">
+      <!-- Growth / retention chart -->
+      <div class="lg:col-span-2 glass rounded-2xl border border-white/10 p-5">
+        <div class="flex items-center gap-2 mb-2">
+          <h2 class="text-sm font-semibold">User growth & activation</h2>
+          <span id="chartMeta" class="text-[9px] text-white/45"></span>
+          <div class="ml-auto text-[8px] text-white/40">
+            Simple in-browser chart from Supabase data. Export-ready.
+          </div>
+        </div>
+        <div class="relative h-40 sm:h-48">
+          <canvas id="growthChart" class="w-full h-full"></canvas>
+        </div>
+        <div class="mt-2 grid grid-cols-2 gap-2 text-[9px] text-white/55">
+          <div id="activationStat">Loading activation…</div>
+          <div id="retentionStat" class="text-white/45">Retention signal will appear as data accumulates.</div>
+        </div>
+      </div>
+
+      <!-- Funnel -->
+      <aside class="glass rounded-2xl border border-white/10 p-5 space-y-3">
+        <div class="flex items-center gap-2">
+          <h3 class="text-sm font-semibold">Acquisition → Activation funnel</h3>
+          <span class="badge badge-soft text-[8px]">Auto-updates</span>
+        </div>
+        <ul class="space-y-2 text-[9px] text-white/70" id="funnelList">
+          <!-- filled by JS -->
+        </ul>
+        <div class="mt-2 text-[8px] text-white/40">
+          Definitions:
+          <br>• <b>Registered</b>: has an account.
+          <br>• <b>Contributor</b>: ≥1 submission.
+          <br>• <b>Publisher</b>: ≥1 published submission.
+        </div>
+      </aside>
+    </section>
+
+    <!-- Leaderboards & recent cohorts -->
+    <section class="grid gap-6 lg:grid-cols-2 fade-in">
+      <!-- Top contributors -->
+      <div class="glass rounded-2xl border border-white/10 p-5">
+        <div class="flex items-center gap-2 mb-2">
+          <h2 class="text-sm font-semibold">Top contributors (by published stories)</h2>
+          <span class="text-[8px] text-white/40">Last 90 days</span>
+        </div>
+        <div id="topContribEmpty" class="hidden text-[9px] text-white/45">
+          No published contributors yet. Once stories go live, rankings appear here.
+        </div>
+        <div id="topContribList" class="space-y-1 text-[9px] text-white/80"></div>
+      </div>
+
+      <!-- Recent signups -->
+      <div class="glass rounded-2xl border border-white/10 p-5">
+        <div class="flex items-center gap-2 mb-2">
+          <h2 class="text-sm font-semibold">Recent signups</h2>
+          <span class="text-[8px] text-white/40" id="recentSignupMeta"></span>
+          <button id="copyGrowthSummary" class="ml-auto px-2 py-0.5 rounded-full border border-white/15 text-[8px] hover:bg-white/5">
+            Copy investor summary
+          </button>
+        </div>
+        <div class="max-h-40 overflow-y-auto divide-y divide-white/5 text-[9px]" id="recentSignupList"></div>
+      </div>
+    </section>
+
+    <!-- Raw events / log-style table -->
+    <section class="glass rounded-2xl border border-white/10 p-5 fade-in">
+      <div class="flex items-center gap-2 mb-3">
+        <h2 class="text-sm font-semibold">Submissions timeline (range)</h2>
+        <span id="timelineMeta" class="text-[8px] text-white/40"></span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-[9px]">
+          <thead class="text-white/50 border-b border-white/10">
+            <tr>
+              <th class="py-1 pr-2 text-left">When</th>
+              <th class="py-1 px-2 text-left">User</th>
+              <th class="py-1 px-2 text-left">Title</th>
+              <th class="py-1 px-2 text-left">Status</th>
+              <th class="py-1 px-2 text-left">Beat</th>
+            </tr>
+          </thead>
+          <tbody id="timelineBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="text-center text-[9px] text-white/45">
+      © <span id="year"></span> OneMarket News, LLC. • Designed to be screenshot-ready for investors.
+    </footer>
+  </main>
+
+  <!-- Snackbar -->
+  <div id="snackbar" class="snackbar">
+    <span class="dot"></span>
+    <span id="snackbarText">Copied</span>
+  </div>
+
+  <script>
+    // ====== CONFIG: Supabase client ======
+    const SUPABASE_URL = 'https://fdwjzdvdqskcdidiervv.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZkd2p6ZHZkcXNrY2RpZGllcnZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMDk0MDgsImV4cCI6MjA3Nzc4NTQwOH0.iCEfiC1EH4Ec0GZB7y437yTA-ylyszIdhMJu-UimbCQ';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ====== DOM helpers ======
+    const $ = (id) => document.getElementById(id);
+    const yearEl = $('year');
+    yearEl.textContent = new Date().getFullYear();
+
+    const logoutBtn = $('logoutBtn');
+    const snackbarEl = $('snackbar');
+    const snackbarTextEl = $('snackbarText');
+
+    const rangeButtons = document.querySelectorAll('[data-range]');
+    const rangeLabelEl = $('rangeLabel');
+
+    const kpiUsersEl = $('kpiUsers');
+    const kpiUsersDeltaEl = $('kpiUsersDelta');
+    const kpiContribEl = $('kpiContrib');
+    const kpiContribRateEl = $('kpiContribRate');
+    const kpiPubContribEl = $('kpiPubContrib');
+    const kpiPubContribRateEl = $('kpiPubContribRate');
+    const kpiFunnelEl = $('kpiFunnel');
+    const kpiFunnelDetailEl = $('kpiFunnelDetail');
+
+    const chartMetaEl = $('chartMeta');
+    const activationStatEl = $('activationStat');
+    const retentionStatEl = $('retentionStat');
+
+    const funnelListEl = $('funnelList');
+    const topContribListEl = $('topContribList');
+    const topContribEmptyEl = $('topContribEmpty');
+
+    const recentSignupMetaEl = $('recentSignupMeta');
+    const recentSignupListEl = $('recentSignupList');
+
+    const timelineMetaEl = $('timelineMeta');
+    const timelineBodyEl = $('timelineBody');
+
+    const copyGrowthSummaryBtn = $('copyGrowthSummary');
+
+    let currentRangeDays = 30;
+    let profiles = [];
+    let submissions = [];
+
+    function showSnack(msg) {
+      snackbarTextEl.textContent = msg;
+      snackbarEl.classList.add('show');
+      setTimeout(() => snackbarEl.classList.remove('show'), 1200);
+    }
+
+    function esc(str) {
+      return String(str || '').replace(/[&<>"']/g, m => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[m]));
+    }
+
+    function formatDate(ts) {
+      if (!ts) return '';
+      try { return new Date(ts).toLocaleString(); } catch { return ''; }
+    }
+
+    // ====== Auth: require admin ======
+    async function getSessionUser() {
+      const { data, error } = await supabase.auth.getUser();
+      if (error) {
+        console.error('auth error', error);
+        return null;
+      }
+      return data.user || null;
+    }
+
+    async function isAdmin(userId) {
+      if (!userId) return false;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .maybeSingle();
+      if (error || !data) return false;
+      return data.role === 'admin';
+    }
+
+    logoutBtn.addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      window.location.href = '/login.html';
+    });
+
+    // ====== Data loading ======
+    async function loadProfiles() {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, display_name, role, created_at')
+        .order('created_at', { ascending: true });
+      if (error) {
+        console.error('profiles error', error);
+        return [];
+      }
+      return data || [];
+    }
+
+    async function loadSubmissions() {
+      const { data, error } = await supabase
+        .from('submissions')
+        .select('id, user_id, title, status, beat, created_at, published_at')
+        .order('created_at', { ascending: true });
+      if (error) {
+        console.error('submissions error', error);
+        return [];
+      }
+      return data || [];
+    }
+
+    // ====== Metrics helpers ======
+    function filterByRange(list, field, days) {
+      if (!days || days >= 365) return list; // treat 365 as "All"
+      const now = new Date();
+      const start = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));
+      return list.filter(item => {
+        const ts = item[field] || item.created_at;
+        if (!ts) return false;
+        return new Date(ts) >= start;
+      });
+    }
+
+    function computeKPIs() {
+      const totalUsers = profiles.length;
+      const rangeProfiles = filterByRange(profiles, 'created_at', currentRangeDays);
+      const newUsers = rangeProfiles.length;
+
+      // Contributors & publishing contributors
+      const byUser = {};
+      submissions.forEach(s => {
+        if (!s.user_id) return;
+        byUser[s.user_id] = byUser[s.user_id] || { subs: 0, pubs: 0 };
+        byUser[s.user_id].subs++;
+        if (s.status === 'Published') byUser[s.user_id].pubs++;
+      });
+
+      const contributorIds = Object.keys(byUser).filter(id => byUser[id].subs > 0);
+      const pubContributorIds = Object.keys(byUser).filter(id => byUser[id].pubs > 0);
+
+      const contribCount = contributorIds.length;
+      const pubContribCount = pubContributorIds.length;
+
+      const subsTotal = submissions.length;
+      const subsPublished = submissions.filter(s => s.status === 'Published').length;
+      const funnelRate = subsTotal ? Math.round((subsPublished / subsTotal) * 100) : 0;
+
+      // Activation: users who have at least 1 submission
+      const activationRate = totalUsers
+        ? Math.round((contribCount / totalUsers) * 100)
+        : 0;
+
+      return {
+        totalUsers,
+        newUsers,
+        contribCount,
+        pubContribCount,
+        activationRate,
+        funnelRate,
+        subsTotal,
+        subsPublished,
+        contributorIds,
+        pubContributorIds
+      };
+    }
+
+    function renderKPIs() {
+      const k = computeKPIs();
+
+      kpiUsersEl.textContent = k.totalUsers;
+      kpiUsersDeltaEl.textContent = `+${k.newUsers} new in range`;
+
+      kpiContribEl.textContent = k.contribCount;
+      const contribPct = k.totalUsers ? Math.round((k.contribCount / k.totalUsers) * 100) : 0;
+      kpiContribRateEl.textContent = `${contribPct}% of registered users`;
+
+      kpiPubContribEl.textContent = k.pubContribCount;
+      const pubContribPct = k.contribCount ? Math.round((k.pubContribCount / k.contribCount) * 100) : 0;
+      kpiPubContribRateEl.textContent = `${pubContribPct || 0}% of contributors`;
+
+      kpiFunnelEl.textContent = `${k.subsPublished}/${k.subsTotal || 0}`;
+      kpiFunnelDetailEl.textContent = `Approval rate ${k.funnelRate || 0}%`;
+
+      activationStatEl.textContent =
+        `Activation: ${k.activationRate || 0}% of users have submitted at least one story.`;
+    }
+
+    function buildFunnel() {
+      const k = computeKPIs();
+      const lines = [];
+
+      lines.push(`Registered users: ${k.totalUsers}`);
+      lines.push(`Contributors (≥1 submission): ${k.contribCount} (${k.totalUsers ? Math.round((k.contribCount / k.totalUsers)*100) : 0}%)`);
+      lines.push(`Publishing contributors (≥1 published): ${k.pubContribCount} (${k.contribCount ? Math.round((k.pubContribCount / k.contribCount)*100) : 0}%)`);
+      lines.push(`Submissions: ${k.subsTotal} • Published: ${k.subsPublished} (${k.funnelRate || 0}% approval)`);
+
+      funnelListEl.innerHTML = '';
+      lines.forEach((text, i) => {
+        const li = document.createElement('li');
+        li.textContent = text;
+        funnelListEl.appendChild(li);
+      });
+    }
+
+    function renderTopContributors() {
+      const now = new Date();
+      const windowStart = new Date(now.getTime() - (90 * 24 * 60 * 60 * 1000));
+
+      const counts = {};
+      submissions.forEach(s => {
+        if (s.status !== 'Published') return;
+        if (!s.user_id) return;
+        const ts = s.published_at || s.created_at;
+        if (!ts || new Date(ts) < windowStart) return;
+        counts[s.user_id] = (counts[s.user_id] || 0) + 1;
+      });
+
+      const rows = Object.entries(counts)
+        .sort((a,b) => b[1] - a[1])
+        .slice(0, 8);
+
+      topContribListEl.innerHTML = '';
+      if (!rows.length) {
+        topContribEmptyEl.classList.remove('hidden');
+        return;
+      }
+
+      topContribEmptyEl.classList.add('hidden');
+
+      rows.forEach(([userId, count], idx) => {
+        const p = profiles.find(p => p.id === userId);
+        const name = p?.display_name || `User ${userId.slice(0,6)}…`;
+        const role = p?.role || 'writer';
+        const line = document.createElement('div');
+        line.className = 'flex items-center gap-2 row-hover px-2 py-1 rounded-lg';
+        line.innerHTML = `
+          <div class="w-4 text-[8px] text-white/40">${idx+1}</div>
+          <div class="flex-1">
+            <div class="text-[9px] font-semibold">${esc(name)}</div>
+            <div class="text-[8px] text-white/40">${role} • ${count} published</div>
+          </div>
+          <a href="/profile.html?user=${encodeURIComponent(userId)}" class="text-[8px] text-lime-300 underline underline-offset-2">
+            View
+          </a>
+        `;
+        topContribListEl.appendChild(line);
+      });
+    }
+
+    function renderRecentSignups() {
+      const sorted = [...profiles].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+      const recent = sorted.slice(0, 15);
+
+      recentSignupListEl.innerHTML = '';
+      if (!recent.length) {
+        recentSignupMetaEl.textContent = 'No signups yet.';
+        return;
+      }
+
+      recentSignupMetaEl.textContent = `${recent.length} most recent accounts`;
+
+      recent.forEach(p => {
+        const subsForUser = submissions.filter(s => s.user_id === p.id);
+        const pubsForUser = subsForUser.filter(s => s.status === 'Published');
+        const div = document.createElement('div');
+        div.className = 'py-1.5 row-hover';
+        const name = p.display_name || `User ${p.id.slice(0,6)}…`;
+        const role = p.role || 'writer';
+        div.innerHTML = `
+          <div class="flex items-center gap-2">
+            <div class="text-[9px] font-semibold">${esc(name)}</div>
+            <span class="badge text-[7px]">${role}</span>
+            <div class="ml-auto text-[8px] text-white/40">${formatDate(p.created_at)}</div>
+          </div>
+          <div class="text-[8px] text-white/45">
+            ${subsForUser.length} submissions • ${pubsForUser.length} published
+          </div>
+        `;
+        recentSignupListEl.appendChild(div);
+      });
+    }
+
+    function renderTimeline() {
+      const list = filterByRange(submissions, 'created_at', currentRangeDays);
+      const joined = list
+        .slice()
+        .sort((a,b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 40);
+
+      timelineBodyEl.innerHTML = '';
+      timelineMetaEl.textContent = `${joined.length} events in range`;
+
+      if (!joined.length) {
+        timelineBodyEl.innerHTML =
+          '<tr><td colspan="5" class="py-3 text-center text-[9px] text-white/40">No submissions yet in this range.</td></tr>';
+        return;
+      }
+
+      joined.forEach(s => {
+        const p = profiles.find(p => p.id === s.user_id);
+        const name = p?.display_name || (s.user_id ? `User ${s.user_id.slice(0,6)}…` : 'Unknown');
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-white/5 row-hover';
+        tr.innerHTML = `
+          <td class="py-1 pr-2 align-top text-white/55">${formatDate(s.created_at)}</td>
+          <td class="py-1 px-2 align-top text-white/70">${esc(name)}</td>
+          <td class="py-1 px-2 align-top text-white/80">${esc(s.title || '(Untitled)')}</td>
+          <td class="py-1 px-2 align-top">
+            <span class="px-2 py-0.5 rounded-full bg-white/5 border border-white/12 text-[8px]">${esc(s.status || '')}</span>
+          </td>
+          <td class="py-1 px-2 align-top text-white/60">${esc(s.beat || '')}</td>
+        `;
+        timelineBodyEl.appendChild(tr);
+      });
+    }
+
+    // ====== Simple canvas chart (no external libs) ======
+    function renderGrowthChart() {
+      const canvas = $('growthChart');
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const styleWidth = canvas.clientWidth || 400;
+      const styleHeight = canvas.clientHeight || 160;
+      canvas.width = styleWidth * dpr;
+      canvas.height = styleHeight * dpr;
+      ctx.scale(dpr, dpr);
+
+      ctx.clearRect(0, 0, styleWidth, styleHeight);
+
+      // Build daily buckets for range
+      const now = new Date();
+      const days = currentRangeDays >= 365 ? 90 : currentRangeDays; // cap for display
+      const start = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));
+
+      const dailyUsers = {};
+      const dailyActive = {};
+      profiles.forEach(p => {
+        const d = new Date(p.created_at);
+        if (d < start || d > now) return;
+        const key = d.toISOString().slice(0,10);
+        dailyUsers[key] = (dailyUsers[key] || 0) + 1;
+      });
+      submissions.forEach(s => {
+        const d = new Date(s.created_at);
+        if (d < start || d > now) return;
+        const key = d.toISOString().slice(0,10);
+        dailyActive[key] = (dailyActive[key] || 0) + 1;
+      });
+
+      const labels = [];
+      const cumUsers = [];
+      const actUsers = [];
+      let running = 0;
+
+      for (let i = 0; i <= days; i++) {
+        const d = new Date(start.getTime() + (i * 24 * 60 * 60 * 1000));
+        const key = d.toISOString().slice(0,10);
+        running += dailyUsers[key] || 0;
+        labels.push(key.slice(5)); // MM-DD
+        cumUsers.push(running);
+        actUsers.push(dailyActive[key] || 0);
+      }
+
+      const maxVal = Math.max(1, ...cumUsers, ...actUsers);
+      const pad = 12;
+      const w = styleWidth;
+      const h = styleHeight;
+
+      // Grid
+      ctx.strokeStyle = 'rgba(148,163,253,0.15)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(pad, pad);
+      ctx.lineTo(pad, h - pad);
+      ctx.lineTo(w - pad, h - pad);
+      ctx.stroke();
+
+      // Helper to map
+      const xFor = (i) => pad + (i / Math.max(1, labels.length - 1)) * (w - pad*2);
+      const yFor = (v) => (h - pad) - (v / maxVal) * (h - pad*2.2);
+
+      // Cumulative users line
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(163,230,53,0.95)';
+      ctx.lineWidth = 1.6;
+      cumUsers.forEach((v, i) => {
+        const x = xFor(i), y = yFor(v);
+        if (i === 0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      });
+      ctx.stroke();
+
+      // Active (submissions) line
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(148,163,253,0.9)';
+      ctx.lineWidth = 1;
+      actUsers.forEach((v, i) => {
+        const x = xFor(i), y = yFor(v);
+        if (i === 0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      });
+      ctx.stroke();
+
+      // Legend
+      ctx.font = '8px system-ui';
+      ctx.fillStyle = 'rgba(226,232,240,0.9)';
+      ctx.fillText('Cumulative users', pad + 4, pad + 8);
+      ctx.fillStyle = 'rgba(148,163,253,0.9)';
+      ctx.fillText('Daily submissions', pad + 4, pad + 18);
+
+      const totalInRange = filterByRange(profiles, 'created_at', currentRangeDays).length;
+      const subInRange = filterByRange(submissions, 'created_at', currentRangeDays).length;
+      chartMetaEl.textContent = `${totalInRange} new users • ${subInRange} submissions in range`;
+    }
+
+    // ====== Copyable investor summary ======
+    function buildGrowthSummaryText() {
+      const k = computeKPIs();
+      const lines = [];
+      lines.push('OneMarket Growth Snapshot');
+      lines.push(`Total registered users: ${k.totalUsers}`);
+      lines.push(`New users in last ${currentRangeDays >= 365 ? 'period' : currentRangeDays + 'd'}: ${k.newUsers}`);
+      lines.push(`Contributors (≥1 submission): ${k.contribCount} (${k.totalUsers ? Math.round((k.contribCount/k.totalUsers)*100) : 0}% of users)`);
+      lines.push(`Publishing contributors (≥1 published): ${k.pubContribCount}`);
+      lines.push(`Submissions: ${k.subsTotal} • Published: ${k.subsPublished} (${k.funnelRate || 0}% approval)`);
+      return lines.join('\n');
+    }
+
+    copyGrowthSummaryBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(buildGrowthSummaryText());
+        showSnack('Growth summary copied');
+      } catch {
+        showSnack('Unable to copy');
+      }
+    });
+
+    // ====== Range switching ======
+    rangeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        rangeButtons.forEach(b => b.classList.remove('bg-white/15','text-lime-300'));
+        btn.classList.add('bg-white/15','text-lime-300');
+        const v = parseInt(btn.getAttribute('data-range'), 10);
+        currentRangeDays = v;
+        rangeLabelEl.textContent =
+          v >= 365 ? 'All time' :
+          `Last ${v} days`;
+        // re-render
+        renderKPIs();
+        buildFunnel();
+        renderGrowthChart();
+        renderTimeline();
+      });
+    });
+
+    // ====== Boot ======
+    (async function boot(){
+      const user = await getSessionUser();
+      if (!user) {
+        const next = encodeURIComponent(location.pathname + location.search);
+        window.location.href = `/login.html?next=${next}`;
+        return;
+      }
+
+      const admin = await isAdmin(user.id);
+      if (!admin) {
+        // Non-admins: redirect or show soft denial
+        window.location.href = '/analytics.html';
+        return;
+      }
+      logoutBtn.classList.remove('hidden');
+
+      profiles = await loadProfiles();
+      submissions = await loadSubmissions();
+
+      renderKPIs();
+      buildFunnel();
+      renderTopContributors();
+      renderRecentSignups();
+      renderTimeline();
+      renderGrowthChart();
+    })();
+  </script>
+</body>
+</html>
