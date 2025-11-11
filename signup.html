@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OneMarket — Create your account</title>
+  <meta name="description" content="Join OneMarket News to submit stories, track trust scores, and access internal dashboards." />
+  <meta name="theme-color" content="#000" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root { --lime:#a3e635; color-scheme: dark; }
+    body { background:#000; color:#fff; font-family: system-ui, -apple-system, BlinkMacSystemFont, -sans-serif; }
+
+    .bg-grid {
+      background-image:
+        radial-gradient(circle at 0 0, rgba(148,163,253,.08) 0, transparent 55%),
+        radial-gradient(circle at 100% 0, rgba(163,230,53,.06) 0, transparent 55%);
+    }
+    .noise {
+      background-image:radial-gradient(1px 1px at 25px 25px,rgba(255,255,255,.9)1px,transparent 0);
+      opacity:.04;
+      pointer-events:none;
+    }
+    .glass {
+      background:linear-gradient(180deg,rgba(15,23,42,.97),rgba(2,6,23,.99));
+      backdrop-filter:blur(18px) saturate(130%);
+    }
+    .input {
+      width:100%;
+      border-radius:9999px;
+      padding:.7rem .9rem;
+      background:rgba(15,23,42,1);
+      border:1px solid rgba(148,163,253,.22);
+      color:#e5e7eb;
+      font-size:.85rem;
+      outline:none;
+      transition:border-color .16s ease, box-shadow .16s ease, background .16s ease;
+    }
+    .input::placeholder {
+      color:rgba(148,163,253,.55);
+    }
+    .input:focus {
+      border-color:var(--lime);
+      box-shadow:0 0 0 1px rgba(163,230,53,.35);
+      background:#020817;
+    }
+    .btn {
+      border-radius:9999px;
+      padding:.65rem .9rem;
+      font-size:.85rem;
+      border:1px solid rgba(148,163,253,.4);
+      background:rgba(15,23,42,1);
+      color:#e5e7eb;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:.4rem;
+      transition:all .18s ease;
+      cursor:pointer;
+      width:100%;
+    }
+    .btn:hover {
+      background:rgba(17,24,39,1);
+      box-shadow:0 10px 28px rgba(15,23,42,.9);
+    }
+    .btn-primary {
+      background:var(--lime);
+      border-color:transparent;
+      color:#020817;
+      font-weight:600;
+    }
+    .btn-primary:hover {
+      background:#c4f15b;
+      box-shadow:0 14px 40px rgba(163,230,53,.32);
+    }
+    .pill {
+      display:inline-flex;
+      align-items:center;
+      gap:.25rem;
+      padding:.2rem .55rem;
+      border-radius:9999px;
+      border:1px solid rgba(148,163,253,.25);
+      font-size:.6rem;
+      color:rgba(148,163,253,.9);
+      background:rgba(2,6,23,.96);
+    }
+    .pill span.dot {
+      width:6px;
+      height:6px;
+      border-radius:999px;
+      background:var(--lime);
+      box-shadow:0 0 8px rgba(163,230,53,.9);
+    }
+    .error {
+      font-size:.75rem;
+      color:#fecaca;
+      margin-top:.35rem;
+    }
+    .success {
+      font-size:.75rem;
+      color:#bbf7d0;
+      margin-top:.35rem;
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(10px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+    .fade-in { animation:fadeUp .35s ease-out both; }
+    a.link {
+      color:#a5b4fc;
+      text-decoration:underline;
+      text-underline-offset:2px;
+      font-size:.75rem;
+    }
+    a.link:hover {
+      color:#c7d2fe;
+    }
+    .note {
+      font-size:8px;
+      color:rgba(148,163,253,.7);
+      margin-top:4px;
+    }
+    .badge {
+      border-radius:9999px;
+      padding:.2rem .55rem;
+      font-size:.6rem;
+      border:1px solid rgba(148,163,253,.25);
+      color:rgba(199,210,254,1);
+      background:rgba(15,23,42,1);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-grid">
+  <!-- Noise layer -->
+  <div class="fixed inset-0 noise"></div>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-30 backdrop-blur bg-black/40 border-b border-white/10">
+    <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-4">
+      <a href="/feed.html" class="font-black tracking-tight text-sm sm:text-base">
+        ONE<span class="text-lime-400">MARKET</span> <span class="font-semibold text-white/80">News</span>
+      </a>
+      <nav class="flex items-center gap-3 text-[9px] sm:text-[10px] text-white/65">
+        <a href="/feed.html" class="hover:text-white">Feed</a>
+        <a href="/contributors.html" class="hover:text-white">Write</a>
+        <a href="/methodology.html" class="hover:text-white hidden sm:inline">Methodology</a>
+        <a href="/login.html" class="hover:text-lime-300">Sign in</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="mx-auto max-w-6xl px-4 py-10 flex items-center justify-center">
+    <section class="w-full max-w-md glass rounded-3xl border border-white/10 px-5 sm:px-7 py-6 sm:py-7 fade-in shadow-2xl">
+      <div class="flex items-center justify-between gap-2 mb-2">
+        <div>
+          <div class="pill">
+            <span class="dot"></span>
+            <span>Create your OneMarket account</span>
+          </div>
+          <h1 class="mt-3 text-xl sm:text-2xl font-semibold tracking-tight">
+            Join the verified feed
+          </h1>
+          <p class="mt-1 text-[10px] sm:text-[11px] text-slate-300/80">
+            One account for reading, submitting stories, and tracking your impact.
+          </p>
+        </div>
+      </div>
+
+      <form id="signupForm" class="mt-4 space-y-3">
+        <div>
+          <label for="name" class="block text-[10px] text-slate-300/80 mb-1">Display name</label>
+          <input
+            id="name"
+            type="text"
+            autocomplete="name"
+            placeholder="How you’d like to appear (optional)"
+            class="input"
+          />
+          <div class="note">You can change this later in your profile.</div>
+        </div>
+
+        <div>
+          <label for="email" class="block text-[10px] text-slate-300/80 mb-1">Email</label>
+          <input
+            id="email"
+            type="email"
+            required
+            autocomplete="email"
+            placeholder="you@example.com"
+            class="input"
+          />
+        </div>
+
+        <div>
+          <label for="password" class="block text-[10px] text-slate-300/80 mb-1">Password</label>
+          <input
+            id="password"
+            type="password"
+            required
+            minlength="8"
+            autocomplete="new-password"
+            placeholder="At least 8 characters"
+            class="input"
+          />
+        </div>
+
+        <div>
+          <label for="confirm" class="block text-[10px] text-slate-300/80 mb-1">Confirm password</label>
+          <input
+            id="confirm"
+            type="password"
+            required
+            minlength="8"
+            autocomplete="new-password"
+            placeholder="Re-enter your password"
+            class="input"
+          />
+        </div>
+
+        <div class="flex items-start gap-2 mt-1">
+          <input id="tos" type="checkbox" class="mt-[2px] h-3 w-3 rounded bg-slate-900 border-slate-600" required />
+          <label for="tos" class="text-[8px] text-slate-400 leading-snug">
+            I agree to the
+            <a href="/terms.html" class="link text-[8px]">Terms</a> and
+            <a href="/privacy.html" class="link text-[8px]">Privacy Policy</a>.
+          </label>
+        </div>
+
+        <button id="submitBtn" type="submit" class="btn btn-primary mt-2">
+          <span id="btnText">Create account</span>
+          <span id="btnSpinner" class="hidden w-3 h-3 border-2 border-black/40 border-t-black rounded-full animate-spin"></span>
+        </button>
+
+        <div id="message" class=""></div>
+      </form>
+
+      <div class="mt-4 text-[9px] text-slate-400">
+        Already have an account?
+        <a href="/login.html" class="link text-[9px]">Sign in</a>
+      </div>
+
+      <div class="mt-5 pt-4 border-t border-white/5 text-[9px] text-slate-400 space-y-1">
+        <div class="flex flex-wrap gap-1 items-center">
+          <span class="badge">New users start as <strong class="font-semibold">reader/writer</strong></span>
+          <span class="badge">Editors & admins are invited manually</span>
+        </div>
+        <p class="note">
+          After email confirmation, you’ll be redirected to your next step (dashboard, feed, or a page that requested login).
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const SUPABASE_URL = 'https://fdwjzdvdqskcdidiervv.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZkd2p6ZHZkcXNrY2RpZGllcnZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMDk0MDgsImV4cCI6MjA3Nzc4NTQwOH0.iCEfiC1EH4Ec0GZB7y437yTA-ylyszIdhMJu-UimbCQ';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const form = document.getElementById('signupForm');
+    const msgEl = document.getElementById('message');
+    const btn = document.getElementById('submitBtn');
+    const btnText = document.getElementById('btnText');
+    const btnSpinner = document.getElementById('btnSpinner');
+
+    function setLoading(isLoading) {
+      if (isLoading) {
+        btn.disabled = true;
+        btn.classList.add('opacity-80','cursor-wait');
+        btnSpinner.classList.remove('hidden');
+        btnText.textContent = 'Creating account…';
+      } else {
+        btn.disabled = false;
+        btn.classList.remove('opacity-80','cursor-wait');
+        btnSpinner.classList.add('hidden');
+        btnText.textContent = 'Create account';
+      }
+    }
+
+    function showError(text) {
+      msgEl.className = 'error';
+      msgEl.textContent = text;
+    }
+
+    function showSuccess(text) {
+      msgEl.className = 'success';
+      msgEl.textContent = text;
+    }
+
+    function getNextUrl() {
+      const params = new URLSearchParams(location.search);
+      const next = params.get('next');
+      if (next && next.startsWith('/')) return next;
+      return '/dashboard.html'; // default after confirmation
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msgEl.textContent = '';
+      msgEl.className = '';
+      setLoading(true);
+
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const confirm = document.getElementById('confirm').value;
+
+      if (!email || !password || !confirm) {
+        showError('Please fill in all required fields.');
+        setLoading(false);
+        return;
+      }
+
+      if (password !== confirm) {
+        showError('Passwords do not match.');
+        setLoading(false);
+        return;
+      }
+
+      if (password.length < 8) {
+        showError('Password must be at least 8 characters.');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const redirectTo = window.location.origin + '/login.html?next=' + encodeURIComponent(getNextUrl());
+
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: redirectTo,
+            data: {
+              display_name: name || email,
+            }
+          }
+        });
+
+        if (error) {
+          if (error.message.toLowerCase().includes('user already registered')) {
+            showError('There is already an account with this email. Try signing in instead.');
+          } else {
+            showError(error.message || 'Unable to create your account. Please try again.');
+          }
+          setLoading(false);
+          return;
+        }
+
+        // Depending on Supabase settings, email confirmation may be required.
+        if (data.user && !data.session) {
+          showSuccess('Check your email to confirm your account. Once confirmed, you can sign in.');
+        } else if (data.session) {
+          // If auto-confirm is enabled, we have a session.
+          showSuccess('Account created. Redirecting…');
+          const nextUrl = getNextUrl();
+          setTimeout(() => {
+            window.location.href = nextUrl;
+          }, 500);
+        } else {
+          showSuccess('Check your email to confirm your account.');
+        }
+
+        form.reset();
+      } catch (err) {
+        console.error(err);
+        showError('Unexpected error. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    // If already logged in, redirect them away from signup
+    (async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (data?.user && !error) {
+        const to = getNextUrl();
+        window.location.replace(to);
+      }
+    })();
+  </script>
+</body>
+</html>
